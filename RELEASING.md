@@ -78,16 +78,17 @@ Como o projeto ainda está antes da versão `1.0.0`,
 
 1. Integre os Conventional Commits em `main`.
 2. O job `release-please` abre ou atualiza uma Release PR.
-3. Revise a versão em `package.json`, `package-lock.json` e
+3. O workflow normaliza o Markdown do changelog e registra a correção na PR.
+4. Revise a versão em `package.json`, `package-lock.json` e
    `.release-please-manifest.json`.
-4. Revise as notas adicionadas ao `CHANGELOG.md`.
-5. Faça merge da Release PR.
-6. O Release Please cria a tag e a GitHub Release.
-7. A matrix compila Linux x64, macOS x64, macOS arm64 e Windows x64.
-8. O job final incorpora os três binários Unix ao pacote npm.
-9. O pacote instalado é validado exigindo o executável nativo Linux.
-10. Executáveis, pacote npm e checksums são anexados à release.
-11. O mesmo `.tgz` validado é publicado no registry npm.
+5. Revise as notas adicionadas ao `CHANGELOG.md`.
+6. Faça merge da Release PR.
+7. O Release Please cria a tag e a GitHub Release.
+8. A matrix compila Linux x64, macOS x64, macOS arm64 e Windows x64.
+9. O job final incorpora os três binários Unix ao pacote npm.
+10. O pacote instalado é validado exigindo o executável nativo Linux.
+11. Executáveis, pacote npm e checksums são anexados à release.
+12. O mesmo `.tgz` validado é publicado no registry npm.
 
 Não crie a tag antes da Release PR. O merge dessa PR é o evento que publica a
 versão.
@@ -187,6 +188,7 @@ publicar conteúdo produzido por outro commit.
 | `.release-please-manifest.json` | Versão conhecida pelo Release Please. |
 | `CHANGELOG.md` | Histórico público mantido pela Release PR. |
 | `scripts/validate-release.mjs` | Coerência local de versão e configuração. |
+| `scripts/normalize-changelog.mjs` | Normalização automática do Markdown da Release PR. |
 | `scripts/build-executable.mjs` | Build e teste do Node.js SEA. |
 | `scripts/stage-npm-binaries.mjs` | Incorporação dos executáveis Unix ao pacote npm. |
 | `scripts/validate-npm-package.mjs` | Instalação isolada e validação do binário nativo. |

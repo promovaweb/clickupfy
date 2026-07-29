@@ -18,6 +18,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "build:executable": "node scripts/build-executable.mjs",
+    "changelog:check": "node scripts/normalize-changelog.mjs --check",
+    "changelog:format": "node scripts/normalize-changelog.mjs",
     "dev": "tsx src/cli.ts",
     "npm:stage": "node scripts/stage-npm-binaries.mjs",
     "npm:validate-package": "node scripts/validate-npm-package.mjs",
@@ -28,7 +30,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "validar": "npm run typecheck && npm run test && npm run build && npm run release:check"
+    "validar": "npm run typecheck && npm run test && npm run build && npm run release:check && npm run changelog:check"
   },
   "engines": {
     "node": ">=22.12.0"

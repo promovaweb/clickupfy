@@ -62,6 +62,7 @@ if (!new RegExp(`^## (?:\\[)?${versaoEscapada}(?:\\])?\\b`, "m").test(changelog)
 for (const caminho of [
   "bin/clickupfy.cjs",
   "scripts/build-executable.mjs",
+  "scripts/normalize-changelog.mjs",
   "scripts/stage-npm-binaries.mjs",
   "scripts/validate-npm-package.mjs",
   "scripts/publish-npm-package.mjs",
@@ -71,6 +72,8 @@ for (const caminho of [
 for (const trecho of [
   "macos-15-intel",
   "macos-15",
+  "steps.release.outputs.prs_created",
+  "node scripts/normalize-changelog.mjs",
   "npm run npm:stage",
   "npm run publish:npm",
 ]) {
