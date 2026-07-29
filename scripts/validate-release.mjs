@@ -7,7 +7,11 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const tagInformada = process.argv[2] ?? process.env.GITHUB_REF_NAME;
+const tagInformada =
+  process.argv[2] ??
+  (process.env.GITHUB_REF_TYPE === "tag"
+    ? process.env.GITHUB_REF_NAME
+    : undefined);
 const packageJson = await lerJson("package.json");
 const packageLock = await lerJson("package-lock.json");
 const manifesto = await lerJson(".release-please-manifest.json");
