@@ -1,0 +1,60 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "07d64d33b136797929b90babff30df0105f62190",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "component": "clickupfy",
+      "package-name": "@promovaweb/clickupfy",
+      "changelog-path": "CHANGELOG.md",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "initial-version": "0.1.0",
+      "bump-minor-pre-major": true,
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Funcionalidades"
+        },
+        {
+          "type": "fix",
+          "section": "Correções"
+        },
+        {
+          "type": "perf",
+          "section": "Desempenho"
+        },
+        {
+          "type": "refactor",
+          "section": "Refatorações"
+        },
+        {
+          "type": "docs",
+          "section": "Documentação"
+        },
+        {
+          "type": "build",
+          "section": "Build"
+        },
+        {
+          "type": "ci",
+          "section": "Integração contínua"
+        },
+        {
+          "type": "revert",
+          "section": "Reversões"
+        },
+        {
+          "type": "test",
+          "section": "Testes",
+          "hidden": true
+        },
+        {
+          "type": "chore",
+          "section": "Manutenção",
+          "hidden": true
+        }
+      ]
+    }
+  }
+}

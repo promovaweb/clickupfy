@@ -35,11 +35,33 @@ export interface ClickUpList {
   space?: { id?: string; name?: string };
 }
 
+/** Item de checklist retornado dentro de uma tarefa do ClickUp. */
+export interface ClickUpChecklistItem {
+  id: string;
+  name: string;
+  orderindex?: number | string;
+  assignee?: ClickUpUser | null;
+  resolved?: boolean;
+  parent?: string | null;
+}
+
+/** Checklist e seus itens conforme o payload de leitura de uma tarefa. */
+export interface ClickUpChecklist {
+  id: string;
+  task_id?: string;
+  name: string;
+  orderindex?: number | string;
+  resolved?: number;
+  unresolved?: number;
+  items?: ClickUpChecklistItem[];
+}
+
 export interface ClickUpTask {
   id: string;
   custom_id?: string | null;
   name: string;
   description?: string;
+  markdown_description?: string;
   text_content?: string;
   status?: { status?: string; color?: string; type?: string };
   priority?: { priority?: string; id?: string } | null;
@@ -48,9 +70,13 @@ export interface ClickUpTask {
   url?: string;
   due_date?: string | null;
   date_updated?: string;
+  orderindex?: number | string;
   list?: { id?: string; name?: string };
   folder?: { id?: string; name?: string };
   space?: { id?: string };
+  parent?: string | null;
+  subtasks?: ClickUpTask[];
+  checklists?: ClickUpChecklist[];
 }
 
 export interface ClickUpComment {
@@ -345,6 +371,26 @@ export class ClickUpClient {
     dados: Record<string, unknown>,
   ): Promise<ClickUpTask> {
     return this.request<ClickUpTask>("PUT", `/task/${taskId}`, { body: dados });
+  }
+
+  /**
+   * Atualiza um item individual de checklist pelo endpoint próprio do ClickUp.
+   */
+  public async atualizarItemChecklist(
+    checklistId: string,
+    checklistItemId: string,
+    dados: {
+      name?: string;
+      assignee?: string | null;
+      resolved?: boolean;
+      parent?: string | null;
+    },
+  ): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>(
+      "PUT",
+      `/checklist/${checklistId}/checklist_item/${checklistItemId}`,
+      { body: dados },
+    );
   }
 
   public async adicionarTarefaAList(

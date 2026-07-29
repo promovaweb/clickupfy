@@ -1,0 +1,4 @@
+interface:
+  display_name: "Release do ClickUpfy"
+  short_description: "Prepara e acompanha releases do ClickUpfy"
+  default_prompt: "Use $clickupfy-release para preparar e validar uma release do ClickUpfy."

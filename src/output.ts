@@ -3,6 +3,7 @@
  */
 
 import type { ClickUpComment, ClickUpTask } from "./clickup.js";
+import type { WorkItem } from "./work-items.js";
 
 /** Escreve JSON estável no stdout. */
 export function imprimirJson(valor: unknown): void {
@@ -58,6 +59,19 @@ export function resumirTarefa(tarefa: ClickUpTask): Record<string, unknown> {
     assignees: tarefa.assignees?.map((pessoa) => pessoa.username ?? pessoa.email ?? pessoa.id),
     due_date: tarefa.due_date ?? "",
     url: tarefa.url ?? "",
+  };
+}
+
+/** Exibe a fila executável preservando hierarquia, chave e estado de cada item. */
+export function resumirWorkItem(item: WorkItem): Record<string, unknown> {
+  return {
+    key: item.key,
+    type: item.type,
+    done: item.done ? "x" : "",
+    state: item.state,
+    name: `${"  ".repeat(item.depth)}${item.name}`,
+    task_id: item.taskId,
+    checklist_id: item.checklistId ?? "",
   };
 }
 

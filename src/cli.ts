@@ -5,6 +5,7 @@
 
 import { confirm } from "@inquirer/prompts";
 import { Command, Option } from "commander";
+import packageJson from "../package.json" with { type: "json" };
 import {
   configurarMcpProjeto,
   instalarSkills,
@@ -28,6 +29,7 @@ import {
   imprimirTabela,
   resumirComentario,
   resumirTarefa,
+  resumirWorkItem,
 } from "./output.js";
 import { executarSetup } from "./setup.js";
 import {
@@ -39,6 +41,11 @@ import {
   obterSprintAtual,
   removerTarefaDaSprint,
 } from "./sprints.js";
+import {
+  criarLeituraTarefa,
+  definirEstadoItemChecklist,
+  renderizarLeituraMarkdown,
+} from "./work-items.js";
 
 interface GlobalOptions {
   account?: string;
@@ -50,7 +57,7 @@ const program = new Command()
   .description(
     "Gerencie perfis e trabalho de desenvolvimento no ClickUp pelo terminal.",
   )
-  .version("0.1.0")
+  .version(packageJson.version)
   .option("--account <perfil>", "perfil configurado; usa o perfil ativo por padrão")
   .option("--json", "imprime a resposta completa em JSON");
 
@@ -426,13 +433,34 @@ task
 task
   .command("get")
   .argument("<task-id>")
-  .description("obtém os detalhes de uma tarefa")
-  .action(async function (this: Command, taskId: string) {
+  .option("--raw", "retorna somente a resposta original do ClickUp")
+  .option("--markdown", "concatena a tarefa e os itens em um único Markdown")
+  .description("obtém a tarefa e sua fila de subtarefas e checklists")
+  .action(async function (this: Command, taskId: string, options) {
     const globals = this.optsWithGlobals() as GlobalOptions;
+    const formatosSelecionados = [
+      Boolean(options.raw),
+      Boolean(options.markdown),
+      Boolean(globals.json),
+    ].filter(Boolean).length;
+    if (formatosSelecionados > 1) {
+      throw new CliError(
+        "Use somente uma saída entre --raw, --markdown e --json.",
+      );
+    }
     const tarefa = await (
       await criarContexto(globals.account)
     ).client.obterTarefa(taskId);
-    globals.json ? imprimirJson(tarefa) : imprimirTabela([resumirTarefa(tarefa)]);
+    const leitura = criarLeituraTarefa(tarefa);
+    if (options.raw) {
+      imprimirJson(tarefa);
+    } else if (options.markdown) {
+      process.stdout.write(renderizarLeituraMarkdown(leitura));
+    } else if (globals.json) {
+      imprimirJson(leitura);
+    } else {
+      imprimirTabela(leitura.execution.items.map(resumirWorkItem));
+    }
   });
 
 task
@@ -549,6 +577,39 @@ task
     process.stdout.write(`Tarefa excluída: ${taskId}\n`);
   });
 
+const checklist = program
+  .command("checklist")
+  .description("gerencia itens de checklist");
+
+checklist
+  .command("set")
+  .argument("<task-id>", "tarefa raiz usada para validar o item")
+  .argument("<checklist-id>", "ID do checklist")
+  .argument("<item-id>", "ID do checklist item")
+  .option("--resolved", "marca o item como concluído")
+  .option("--open", "reabre o item")
+  .description("altera e confirma o estado de um checklist item")
+  .action(async function (
+    this: Command,
+    taskId: string,
+    checklistId: string,
+    itemId: string,
+    options,
+  ) {
+    if (Boolean(options.resolved) === Boolean(options.open)) {
+      throw new CliError("Informe somente --resolved ou --open.");
+    }
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const item = await definirEstadoItemChecklist(
+      (await criarContexto(globals.account)).client,
+      taskId,
+      checklistId,
+      itemId,
+      Boolean(options.resolved),
+    );
+    globals.json ? imprimirJson(item) : imprimirTabela([resumirWorkItem(item)]);
+  });
+
 const comment = program.command("comment").description("gerencia comentários");
 comment
   .command("list")
@@ -631,7 +692,7 @@ mcp
   .option("--workspace <id>", "fixa o workspace esperado")
   .option("--space <id>", "fixa o Space do projeto")
   .option("--folder <id>", "fixa o Folder do projeto")
-  .option("--list <id>", "fixa a List do projeto")
+  .requiredOption("--list <id>", "fixa a List obrigatória do projeto")
   .option("--sprint-folder <id>", "fixa o Sprint Folder do projeto")
   .option("--read-only", "expõe somente ferramentas de leitura")
   .description("inicia o servidor MCP pelo transporte stdio")
@@ -644,7 +705,7 @@ mcp
       ...(options.workspace ? { workspaceId: options.workspace } : {}),
       ...(options.space ? { spaceId: options.space } : {}),
       ...(options.folder ? { folderId: options.folder } : {}),
-      ...(options.list ? { listId: options.list } : {}),
+      listId: options.list,
       ...(options.sprintFolder
         ? { sprintFolderId: options.sprintFolder }
         : {}),

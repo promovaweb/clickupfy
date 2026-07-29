@@ -16,6 +16,21 @@ import {
 const execFileAsync = promisify(execFile);
 
 describe("integração com agentes", () => {
+  it("exige uma List para iniciar o servidor MCP", async () => {
+    await expect(
+      execFileAsync(resolve("node_modules/.bin/tsx"), [
+        resolve("src/cli.ts"),
+        "mcp",
+        "serve",
+        "--read-only",
+      ]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(
+        "required option '--list <id>' not specified",
+      ),
+    });
+  });
+
   it("instala as skills e preserva servidores MCP existentes", async () => {
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-agent-"));
     const skills = join(pasta, "skills");
@@ -41,10 +56,13 @@ describe("integração com agentes", () => {
     });
     const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
 
-    expect(instaladas).toHaveLength(2);
+    expect(instaladas).toHaveLength(3);
     expect(
       await readFile(join(skills, "clickupfy-dev", "SKILL.md"), "utf8"),
-    ).toContain("clickupfy_tasks_list");
+    ).toContain("clickupfy_checklist_item_set");
+    expect(
+      await readFile(join(skills, "clickupfy-release", "SKILL.md"), "utf8"),
+    ).toContain("npm run release:check");
     expect(mcp.mcpServers.github).toEqual({ command: "github-mcp" });
     expect(mcp.mcpServers["promovaweb-clickupfy"]).toEqual({
       command: "clickupfy",

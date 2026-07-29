@@ -27,8 +27,9 @@ logs, commits ou respostas.
 ## Preservar o isolamento dos projetos
 
 Tratar o `.mcp.json` da pasta de trabalho como o destino do agente. Ele fixa o
-perfil, workspace, Space, Folder, List e Sprint Folder nos argumentos de
-`clickupfy mcp serve`, sem armazenar a API key.
+perfil, workspace, Space, Folder e a List obrigatória nos argumentos de
+`clickupfy mcp serve`, sem armazenar a API key. O Sprint Folder só aparece
+quando o projeto usa Sprints.
 
 Não executar `account use` para alternar entre projetos paralelos. Cada projeto
 deve manter seu próprio servidor. Conferir `clickupfy_mcp_context` antes da
@@ -78,6 +79,9 @@ Não adivinhar IDs de workspace, space, folder, list, tarefa ou usuário.
 
 ## Planejar com Sprints
 
+Aplicar esta seção somente quando `clickupfy_mcp_context` informar um Sprint
+Folder ou quando o usuário fornecer uma Sprint no escopo.
+
 Localizar o Sprint Folder pela hierarquia e consultar a Sprint ativa antes de
 alterar o planejamento:
 
@@ -111,11 +115,35 @@ tarefa depois de cada alteração.
 
 1. Obter a tarefa completa com `clickupfy task get <id> --json` ou
    `clickupfy_task_get`.
-2. Ler os comentários com `clickupfy comment list --task <id> --json` ou
+2. Ler `execution.summary` e percorrer `execution.items` na ordem retornada.
+3. Tratar cada `key` pendente como uma unidade individual de trabalho,
+   preservando `parentKey` e `depth`.
+4. Ler os comentários com `clickupfy comment list --task <id> --json` ou
    `clickupfy_comments_list`.
-3. Conferir status, descrição, responsáveis, datas, subtarefas e dependências
+5. Conferir status, descrição, responsáveis, datas, subtarefas e dependências
    relevantes.
-4. Confirmar que a tarefa e o perfil pertencem ao escopo pedido.
+6. Confirmar que a tarefa e o perfil pertencem ao escopo solicitado.
+
+`clickupfy_task_get` já reúne a tarefa principal, subtarefas aninhadas e itens
+de checklist. Não reconstruir essa hierarquia por nome. Usar a chave
+`task:<id>` para tarefas e `checklist:<checklist-id>:<item-id>` para checklist
+items.
+
+Quando o agente precisar da tarefa inteira como um único contexto textual,
+usar `clickupfy task get <id> --markdown` ou chamar `clickupfy_task_get` com
+`markdown: true`. Usar a resposta JSON sem essa opção quando a fila estruturada
+for necessária para selecionar e atualizar itens.
+
+Depois de concluir um checklist item, executar a ação `complete` fornecida no
+próprio item. Para marcar ou reabrir manualmente:
+
+```bash
+clickupfy checklist set <task-id> <checklist-id> <item-id> --resolved
+clickupfy checklist set <task-id> <checklist-id> <item-id> --open
+```
+
+No MCP, usar `clickupfy_checklist_item_set`. A ferramenta relê a tarefa depois
+da escrita e só retorna o item quando `done` corresponde ao estado solicitado.
 
 ## Atualizar tarefas
 

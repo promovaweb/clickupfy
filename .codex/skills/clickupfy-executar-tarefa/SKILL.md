@@ -12,7 +12,9 @@ comentário, status e time tracking.
 ## Regras
 
 - Identificar uma única tarefa antes de escrever no ClickUp.
-- Ler descrição, comentários, subtarefas, anexos e campos relevantes.
+- Ler descrição, comentários, fila executável, anexos e campos relevantes.
+- Executar cada chave pendente de `execution.items` individualmente.
+- Marcar checklist items logo depois de validar o trabalho correspondente.
 - Respeitar as instruções do repositório onde a implementação será feita.
 - Publicar o plano antes da primeira alteração de código.
 - Comentar escolhas que mudem arquitetura, escopo, dependência ou exposição.
@@ -34,6 +36,21 @@ Depois obter a tarefa:
 ```bash
 clickupfy_task_get taskId=<task-id>
 ```
+
+Para reunir metadados, descrição e árvore executável em um único contexto
+textual, chamar `clickupfy_task_get` com `markdown: true` ou usar
+`clickupfy task get <task-id> --markdown`. Manter a resposta JSON como fonte
+estruturada para selecionar chaves e registrar conclusões.
+
+Usar `execution.summary` para conhecer o volume e `execution.items` como fila
+canônica. Cada item possui uma chave estável:
+
+- `task:<task-id>` para a tarefa principal e cada subtarefa;
+- `checklist:<checklist-id>:<item-id>` para um checklist item.
+
+Preservar a ordem recebida, o `parentKey` e o `depth`. Não agrupar itens
+distintos em uma única etapa nem considerar a tarefa pai concluída enquanto
+existir um descendente com `done: false`.
 
 Se o MCP não estiver disponível, listar os perfis e usar o CLI global com
 parâmetros explícitos:
@@ -102,13 +119,26 @@ do ClickUp.
 
 ## 4. Executar
 
-Trabalhar em uma etapa por vez:
+Trabalhar em uma chave de `execution.items` por vez:
 
 1. Fazer a mudança no repositório.
 2. Rodar a validação proporcional à consequência possível da mudança.
 3. Conferir o diff e preservar alterações alheias.
-4. Publicar o resultado da etapa na tarefa.
-5. Reler comentários recentes antes de iniciar a próxima etapa.
+4. Se o item for um checklist item, executar `action.complete` somente depois
+   da validação.
+5. Reler a tarefa e confirmar `done: true` para a mesma chave.
+6. Publicar o resultado da etapa na tarefa.
+7. Reler comentários recentes antes de iniciar a próxima etapa.
+
+Para checklist items:
+
+```bash
+clickupfy checklist set <task-id> <checklist-id> <item-id> --resolved
+```
+
+No MCP, usar `clickupfy_checklist_item_set` com os argumentos presentes em
+`action.complete.mcp.arguments`. Para corrigir uma marcação indevida, usar
+`action.reopen`, registrar o motivo e confirmar `done: false`.
 
 Usar:
 

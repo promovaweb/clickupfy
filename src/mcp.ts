@@ -21,14 +21,24 @@ import {
   obterSprintAtual,
   removerTarefaDaSprint,
 } from "./sprints.js";
+import {
+  criarLeituraTarefa,
+  definirEstadoItemChecklist,
+  renderizarLeituraMarkdown,
+} from "./work-items.js";
 
-/** Hierarquia opcional fixada pelos argumentos do MCP de um projeto. */
+/**
+ * Escopo fixado pelo MCP do projeto.
+ *
+ * A List é obrigatória para definir o destino das consultas e criações de
+ * tarefas. O Sprint Folder permanece opcional para projetos sem Sprints.
+ */
 export interface McpServerOptions {
   accountId?: string;
   workspaceId?: string;
   spaceId?: string;
   folderId?: string;
-  listId?: string;
+  listId: string;
   sprintFolderId?: string;
   readOnly?: boolean;
 }
@@ -41,7 +51,15 @@ type McpResult = {
 /** Cria um resultado textual compacto aceito por qualquer cliente MCP. */
 function resultado(valor: unknown): McpResult {
   return {
-    content: [{ type: "text", text: JSON.stringify(valor, null, 2) }],
+    content: [
+      {
+        type: "text",
+        text:
+          typeof valor === "string"
+            ? valor
+            : JSON.stringify(valor, null, 2),
+      },
+    ],
   };
 }
 
@@ -68,7 +86,7 @@ async function executar(
  * Registra as ferramentas. Em modo somente leitura, ferramentas que alteram o
  * ClickUp ou o perfil ativo sequer aparecem em `tools/list`.
  */
-export function createMcpServer(options: McpServerOptions = {}): McpServer {
+export function createMcpServer(options: McpServerOptions): McpServer {
   const server = new McpServer({
     name: "promovaweb-clickupfy",
     version: "0.1.0",
@@ -387,22 +405,32 @@ export function createMcpServer(options: McpServerOptions = {}): McpServer {
     "clickupfy_task_get",
     {
       title: "Obter tarefa",
-      description: "Obtém os detalhes completos de uma tarefa pelo ID.",
+      description:
+        "Obtém a tarefa e uma fila endereçável de subtarefas e checklist items.",
       inputSchema: {
         ...accountSchema,
         taskId: z.string(),
+        raw: z.boolean().optional(),
+        markdown: z.boolean().optional(),
       },
     },
-    ({ account, taskId }) =>
-      executar(async () => (await contexto(account)).client.obterTarefa(taskId)),
+    ({ account, taskId, raw, markdown }) =>
+      executar(async () => {
+        if (raw && markdown) {
+          throw new Error("Use somente raw ou markdown.");
+        }
+        const tarefa = await (await contexto(account)).client.obterTarefa(taskId);
+        if (raw) return tarefa;
+        const leitura = criarLeituraTarefa(tarefa);
+        return markdown ? renderizarLeituraMarkdown(leitura) : leitura;
+      }),
   );
 
   server.registerTool(
     "clickupfy_tasks_search",
     {
       title: "Buscar tarefas",
-      description:
-        "Busca tarefas na List fixada pelo MCP ou, sem ela, no workspace.",
+      description: "Busca tarefas somente na List fixada pelo MCP.",
       inputSchema: {
         ...accountSchema,
         query: z.string().optional(),
@@ -422,12 +450,10 @@ export function createMcpServer(options: McpServerOptions = {}): McpServer {
             ...(includeClosed !== undefined ? { includeClosed } : {}),
             ...(maxPages !== undefined ? { maxPages } : {}),
         };
-        const tarefas = options.listId
-          ? await ctx.client.listarTodasTarefas(options.listId, filtros)
-          : await ctx.client.buscarTarefasWorkspace(
-              ctx.account.workspace.id,
-              filtros,
-            );
+        const tarefas = await ctx.client.listarTodasTarefas(
+          options.listId,
+          filtros,
+        );
         return tarefas.map(resumirTarefa);
       }),
   );
@@ -612,6 +638,34 @@ function registerWriteTools(
   );
 
   server.registerTool(
+    "clickupfy_checklist_item_set",
+    {
+      title: "Alterar checklist item",
+      description:
+        "Marca ou reabre um checklist item e confirma o estado em uma nova leitura.",
+      inputSchema: {
+        ...accountSchema,
+        taskId: z
+          .string()
+          .describe("Tarefa raiz retornada por clickupfy_task_get."),
+        checklistId: z.string(),
+        itemId: z.string(),
+        resolved: z.boolean(),
+      },
+    },
+    ({ account, taskId, checklistId, itemId, resolved }) =>
+      executar(async () =>
+        definirEstadoItemChecklist(
+          (await contexto(account)).client,
+          taskId,
+          checklistId,
+          itemId,
+          resolved,
+        ),
+      ),
+  );
+
+  server.registerTool(
     "clickupfy_sprint_add_task",
     {
       title: "Adicionar tarefa à Sprint",
@@ -756,8 +810,11 @@ function registerWriteTools(
   );
 }
 
-/** Inicia o transporte stdio; stdout fica reservado ao protocolo JSON-RPC. */
-export async function serveMcp(options: McpServerOptions = {}): Promise<void> {
+/**
+ * Inicia o transporte stdio com uma List fixa e Sprint Folder opcional.
+ * O stdout fica reservado ao protocolo JSON-RPC.
+ */
+export async function serveMcp(options: McpServerOptions): Promise<void> {
   const server = createMcpServer(options);
   const transport = new StdioServerTransport();
   await server.connect(transport);

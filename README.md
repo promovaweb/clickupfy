@@ -1,6 +1,6 @@
 # ClickUpfy da Promovaweb
 
-O ClickUpfy reúne o terminal, a configuração de múltiplos accounts, duas
+O ClickUpfy reúne o terminal, a configuração de múltiplos accounts, três
 skills para agentes e um servidor MCP no mesmo pacote. O recorte atual atende
 o trabalho de desenvolvimento de software: navegação pela hierarquia do
 ClickUp, Sprints existentes, tarefas, comentários e time tracking.
@@ -10,6 +10,24 @@ ClickUp, Sprints existentes, tarefas, comentários e time tracking.
 - Node.js `>=22.12.0`;
 - uma API key pessoal do ClickUp;
 - acesso da API key a pelo menos um workspace.
+
+## Instalação pelo executável
+
+Cada [GitHub Release](https://github.com/promovaweb/clickupfy/releases)
+distribui um executável standalone para Linux x64, macOS x64 e Windows x64.
+Baixe o archive da sua plataforma, extraia o arquivo `clickupfy` ou
+`clickupfy.exe` e coloque-o em uma pasta presente no `PATH`.
+
+No Linux ou macOS, confirme a permissão depois de extrair:
+
+```bash
+chmod +x clickupfy
+./clickupfy --version
+```
+
+O executável já contém o runtime Node.js e as skills. Node.js continua sendo
+necessário somente para desenvolver o ClickUpfy ou instalar o pacote npm
+disponível como artefato da release.
 
 ## Instalação para desenvolvimento
 
@@ -122,8 +140,7 @@ clickupfy agent init \
   --workspace 123 \
   --space 10 \
   --folder 20 \
-  --list 30 \
-  --sprint-folder 40
+  --list 30
 ```
 
 O comando instala as skills e mescla o servidor no `.mcp.json` existente:
@@ -145,9 +162,7 @@ O comando instala as skills e mescla o servidor no `.mcp.json` existente:
         "--folder",
         "20",
         "--list",
-        "30",
-        "--sprint-folder",
-        "40"
+        "30"
       ]
     }
   }
@@ -155,14 +170,16 @@ O comando instala as skills e mescla o servidor no `.mcp.json` existente:
 ```
 
 `space` e `list` são obrigatórios em `agent init`. O `--account` global escolhe
-o perfil; sem ele, o comando fixa o perfil ativo. Workspace, Folder e Sprint
-Folder são opcionais. Quando o workspace for informado, o servidor confirma
-que ele coincide com o workspace associado ao perfil.
+o perfil; sem ele, o comando fixa o perfil ativo. Workspace e Folder são
+opcionais. O Sprint Folder também é opcional: acrescente
+`--sprint-folder <id>` somente nos projetos que usam Sprints. Quando o
+workspace for informado, o servidor confirma que ele coincide com o workspace
+associado ao perfil.
 
 As ferramentas do agente podem omitir os IDs fixados. Uma tentativa de passar
-outro perfil, Space, Folder, List ou Sprint Folder é rejeitada pelo servidor.
-Assim, dois projetos podem manter MCPs ativos em paralelo sem compartilhar
-destino:
+outro perfil, Space, Folder ou List é rejeitada pelo servidor. Quando o Sprint
+Folder estiver configurado, o mesmo isolamento vale para ele. Assim, dois
+projetos podem manter MCPs ativos em paralelo sem compartilhar destino:
 
 ```text
 projeto-a/.mcp.json -> account dev-a, List 30
@@ -194,6 +211,7 @@ listas e tarefas usam uma tabela menor.
 
 ```bash
 clickupfy task get <task-id> --json
+clickupfy task get <task-id> --markdown
 
 clickupfy task create \
   --list <list-id> \
@@ -209,6 +227,66 @@ clickupfy comment create \
   --task <task-id> \
   --text "A implementação passou nos testes locais."
 ```
+
+`task get` inclui a resposta original do ClickUp e uma propriedade `execution`.
+Essa propriedade organiza a tarefa principal, as subtarefas de qualquer nível
+e cada item de checklist em uma fila plana. Cada entrada possui `key`, `type`,
+`parentKey`, `depth`, `done`, `state` e as ações equivalentes para CLI e MCP.
+Assim, um agente pode selecionar um item pendente pela chave, executar o
+trabalho e registrar a conclusão sem perder a hierarquia.
+
+```json
+{
+  "execution": {
+    "summary": {
+      "total": 4,
+      "done": 1,
+      "pending": 3,
+      "tasks": 1,
+      "subtasks": 1,
+      "checklistItems": 2
+    },
+    "items": [
+      {
+        "key": "checklist:check-1:item-1",
+        "type": "checklist_item",
+        "parentKey": "task:86abc123",
+        "done": false,
+        "state": "pendente",
+        "action": {
+          "complete": {
+            "cli": "clickupfy checklist set 86abc123 check-1 item-1 --resolved",
+            "mcp": {
+              "tool": "clickupfy_checklist_item_set"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+Para obter apenas a resposta original da API, use
+`clickupfy task get <task-id> --raw`. A saída compacta, sem `--json`, mostra a
+mesma fila em tabela e usa indentação no nome para representar os níveis.
+
+Use `clickupfy task get <task-id> --markdown` quando o contexto precisar ser
+consumido como um único texto. O documento concatena metadados, descrição,
+resumo e itens executáveis em checkboxes hierárquicos, mantendo as chaves e os
+comandos de conclusão. As opções `--raw`, `--markdown` e `--json` são
+mutuamente exclusivas.
+
+Marque ou reabra um item de checklist com:
+
+```bash
+clickupfy checklist set <task-id> <checklist-id> <item-id> --resolved
+clickupfy checklist set <task-id> <checklist-id> <item-id> --open
+```
+
+O ClickUpfy confirma primeiro que o item pertence à tarefa informada, grava o
+novo estado e relê toda a tarefa. O comando só comunica sucesso quando a nova
+leitura confirma o valor de `resolved`.
 
 As prioridades seguem a API do ClickUp: `1` urgente, `2` alta, `3` normal e
 `4` baixa. A exclusão exige confirmação:
@@ -264,13 +342,13 @@ Consulte o registro atual antes de iniciar outro time entry.
 O servidor usa o transporte stdio e lê a configuração global de perfis do CLI:
 
 ```bash
-clickupfy mcp serve
+clickupfy mcp serve --list 30
 ```
 
 Para um agente que só pode consultar o ClickUp:
 
 ```bash
-clickupfy mcp serve --read-only
+clickupfy mcp serve --list 30 --read-only
 ```
 
 O modo read-only remove as ferramentas de escrita de `tools/list` e rejeita
@@ -283,14 +361,21 @@ clickupfy mcp serve \
   --workspace 123 \
   --space 10 \
   --folder 20 \
-  --list 30 \
-  --sprint-folder 40
+  --list 30
 ```
 
+O servidor não inicia sem `--list`. O parâmetro `--sprint-folder` é opcional e
+pode ser acrescentado ao comando quando o projeto usar Sprints.
+
 As ferramentas cobrem accounts, workspaces, spaces, folders, lists, Sprints,
-tarefas, comentários e time tracking. Consultas de Sprint permanecem
-disponíveis em read-only; associação de tarefas e alteração de Points aparecem
-somente no servidor com escrita. As ferramentas de escrita exigem parâmetros
+tarefas, subtarefas, checklists, comentários e time tracking.
+`clickupfy_task_get` devolve a fila em `execution`. Com `markdown: true`, a
+mesma ferramenta retorna diretamente um único texto Markdown concatenado, sem
+codificação JSON. A ferramenta
+`clickupfy_checklist_item_set` marca ou reabre um item e confirma o estado
+persistido. Consultas de Sprint permanecem disponíveis em read-only;
+associação de tarefas, alteração de Points e checklist items aparecem somente
+no servidor com escrita. As ferramentas de escrita exigem parâmetros
 explícitos, e `clickupfy_task_delete` também exige `confirm: true`.
 
 `clickupfy_mcp_context` mostra o destino fixado sem expor a API key.
@@ -298,17 +383,18 @@ explícitos, e `clickupfy_task_delete` também exige `confirm: true`.
 `clickupfy_tasks_search`, `clickupfy_sprints_list`, `clickupfy_sprint_current` e
 `clickupfy_task_create` usam os IDs do MCP quando os argumentos correspondentes
 forem omitidos. Se a ferramenta receber um ID diferente, o servidor recusa a
-operação. A busca fica restrita à List quando ela estiver fixada.
+operação. A busca fica sempre restrita à List obrigatória do projeto.
 
 ## Skills para agentes
 
-O pacote distribui duas skills:
+O pacote distribui três skills:
 
 - `clickupfy-dev` orienta consultas e mudanças do trabalho diário de software;
 - `clickupfy-executar-tarefa` conduz uma tarefa da leitura até a revisão, com
-  plano, comentários e validação.
+  plano, comentários e validação;
+- `clickupfy-release` prepara e acompanha versões, changelog, tags e artefatos.
 
-Instale as duas no projeto atual:
+Instale as três no projeto atual:
 
 ```bash
 clickupfy agent skill install
@@ -328,12 +414,12 @@ clickupfy agent init \
   --account promovaweb \
   --space 10 \
   --folder 20 \
-  --list 30 \
-  --sprint-folder 40
+  --list 30
 ```
 
 Cada repositório mantém seu próprio `.mcp.json`, mesmo quando vários projetos
-usam o mesmo executável e o mesmo arquivo global de credenciais.
+usam o mesmo executável e o mesmo arquivo global de credenciais. Projetos que
+usam Sprints podem acrescentar `--sprint-folder <id>` ao comando.
 
 Use `--force` para atualizar uma skill já instalada. Os comandos
 `clickupfy agent skill list` e `clickupfy agent skill show <nome>` permitem
@@ -351,6 +437,7 @@ inspecionar o material empacotado.
 | `list` | `list`. |
 | `sprint` | `list`, `current`, `get`, `tasks`, `add-task`, `remove-task`, `set-points`. |
 | `task` | `list`, `search`, `get`, `create`, `update`, `delete`. |
+| `checklist` | `set` com `--resolved` ou `--open`. |
 | `comment` | `list`, `create`. |
 | `time` | `current`, `start`, `stop`. |
 | `mcp` | `serve`. |
@@ -364,14 +451,31 @@ Execute `clickupfy <grupo> --help` para conferir argumentos e opções.
 npm run typecheck
 npm test
 npm run build
+npm run release:check
+npm run build:executable
 npm run validar
 ```
 
 Os testes usam uma API HTTP local simulada. Eles não exigem credenciais reais
 e comprovam a permissão do arquivo, o setup não interativo, o cliente HTTP e o
 handshake MCP read-only, além da descoberta, paginação e medição de Sprints.
-Também comprovam a fixação da List por MCP e a recusa de IDs fora do destino
-configurado.
+Também comprovam que o MCP exige uma List, inicia sem Sprint Folder, mantém a
+busca dentro da List e recusa IDs fora do destino configurado. A fila
+executável possui testes para subtarefas aninhadas, checklist items, chaves
+individuais, renderização Markdown e confirmação do estado depois da escrita.
+
+## Releases
+
+O Release Please abre uma Release PR a partir dos Conventional Commits. O merge
+dessa PR atualiza versão e changelog, cria a tag `vMAJOR.MINOR.PATCH` e publica
+a GitHub Release. Na mesma execução, o GitHub Actions gera executáveis Linux,
+macOS e Windows, o pacote npm para download e `SHA256SUMS`. Em repositórios
+públicos, a execução também gera attestations de proveniência.
+
+Não crie tags nem edite a versão manualmente no fluxo normal. A configuração
+única do repositório, a convenção dos commits, os comandos de validação e a
+recuperação de falhas estão em [`RELEASING.md`](RELEASING.md). A skill
+`clickupfy-release` orienta agentes durante esse processo.
 
 ## Referência
 

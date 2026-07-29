@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Preparar ou publicar release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      sha: ${{ steps.release.outputs.sha }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Executar Release Please
+        id: release
+        uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  executaveis:
+    name: Executável ${{ matrix.nome }}
+    if: needs.release-please.outputs.release_created == 'true'
+    needs: release-please
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nome: Linux x64
+            os: ubuntu-latest
+          - nome: macOS x64
+            os: macos-15-intel
+          - nome: Windows x64
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Obter commit da release
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-please.outputs.sha }}
+
+      - name: Configurar Node.js x64
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.1
+          architecture: x64
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Validar projeto e tag
+        run: npm run validar && npm run release:check -- "${{ needs.release-please.outputs.tag_name }}"
+        shell: bash
+
+      - name: Gerar executável standalone
+        id: executavel
+        run: npm run build:executable
+
+      - name: Atestar proveniência
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest@v4
+        with:
+          subject-path: ${{ steps.executavel.outputs.archive_path }}
+
+      - name: Guardar archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ runner.os }}-x64
+          path: ${{ steps.executavel.outputs.archive_path }}
+          if-no-files-found: error
+          retention-days: 7
+
+  publicar-assets:
+    name: Publicar artefatos
+    if: needs.release-please.outputs.release_created == 'true'
+    needs:
+      - release-please
+      - executaveis
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+    steps:
+      - name: Obter commit da release
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-please.outputs.sha }}
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Baixar executáveis
+        uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Empacotar distribuição npm
+        run: npm pack --pack-destination release-assets
+
+      - name: Gerar checksums
+        run: node scripts/generate-checksums.mjs release-assets
+
+      - name: Atestar conjunto publicado
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest@v4
+        with:
+          subject-path: release-assets/*
+
+      - name: Anexar arquivos à GitHub Release
+        run: gh release upload "${{ needs.release-please.outputs.tag_name }}" release-assets/* --clobber

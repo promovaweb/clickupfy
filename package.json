@@ -8,18 +8,22 @@
   },
   "files": [
     ".codex/skills",
+    "CHANGELOG.md",
     "dist",
-    "README.md"
+    "README.md",
+    "RELEASING.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "build:executable": "node scripts/build-executable.mjs",
     "dev": "tsx src/cli.ts",
     "prepack": "npm run build",
+    "release:check": "node scripts/validate-release.mjs",
     "start": "node dist/cli.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "validar": "npm run typecheck && npm run test && npm run build"
+    "validar": "npm run typecheck && npm run test && npm run build && npm run release:check"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -44,6 +48,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
+    "esbuild": "0.28.1",
+    "postject": "1.0.0-alpha.6",
     "tsx": "^4.20.6",
     "typescript": "^7.0.2",
     "vitest": "^4.1.0"

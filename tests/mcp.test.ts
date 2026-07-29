@@ -52,7 +52,14 @@ describe("servidor MCP", () => {
 
     const transport = new StdioClientTransport({
       command: resolve("node_modules/.bin/tsx"),
-      args: ["src/cli.ts", "mcp", "serve", "--read-only"],
+      args: [
+        "src/cli.ts",
+        "mcp",
+        "serve",
+        "--list",
+        "list-project",
+        "--read-only",
+      ],
       cwd: resolve("."),
       env: {
         ...process.env,
@@ -79,6 +86,7 @@ describe("servidor MCP", () => {
     expect(names).not.toContain("clickupfy_sprint_add_task");
     expect(names).not.toContain("clickupfy_sprint_remove_task");
     expect(names).not.toContain("clickupfy_sprint_set_points");
+    expect(names).not.toContain("clickupfy_checklist_item_set");
 
     const resposta = await client.callTool({
       name: "clickupfy_accounts_list",
@@ -89,7 +97,13 @@ describe("servidor MCP", () => {
 
     const writableTransport = new StdioClientTransport({
       command: resolve("node_modules/.bin/tsx"),
-      args: ["src/cli.ts", "mcp", "serve"],
+      args: [
+        "src/cli.ts",
+        "mcp",
+        "serve",
+        "--list",
+        "list-project",
+      ],
       cwd: resolve("."),
       env: {
         ...process.env,
@@ -107,6 +121,7 @@ describe("servidor MCP", () => {
     expect(writableNames).toContain("clickupfy_sprint_add_task");
     expect(writableNames).toContain("clickupfy_sprint_remove_task");
     expect(writableNames).toContain("clickupfy_sprint_set_points");
+    expect(writableNames).toContain("clickupfy_checklist_item_set");
   });
 
   it("usa a List do projeto quando o agente omite o ID", async () => {
@@ -126,12 +141,53 @@ describe("servidor MCP", () => {
     process.env.PROMOVAWEB_CLICKUPFY_CONFIG = configPath;
     await salvarConfiguracao(config);
     const requisicoes: string[] = [];
+    let checklistResolvido = false;
     const servidor = createServer((request, response) => {
       requisicoes.push(request.url ?? "");
       response.setHeader("Content-Type", "application/json");
       if (request.url?.startsWith("/api/v2/list/list-project/task")) {
         response.end(
           JSON.stringify({ tasks: [{ id: "task-1", name: "Implementar API" }] }),
+        );
+        return;
+      }
+      if (
+        request.method === "PUT" &&
+        request.url ===
+          "/api/v2/checklist/check-1/checklist_item/check-item-1"
+      ) {
+        checklistResolvido = true;
+        response.end("{}");
+        return;
+      }
+      if (request.url?.startsWith("/api/v2/task/task-root")) {
+        response.end(
+          JSON.stringify({
+            id: "task-root",
+            name: "Implementar API",
+            status: { status: "em andamento", type: "custom" },
+            checklists: [
+              {
+                id: "check-1",
+                name: "Entrega",
+                items: [
+                  {
+                    id: "check-item-1",
+                    name: "Validar endpoint",
+                    resolved: checklistResolvido,
+                  },
+                ],
+              },
+            ],
+            subtasks: [
+              {
+                id: "sub-1",
+                parent: "task-root",
+                name: "Escrever testes",
+                status: { status: "aberta", type: "custom" },
+              },
+            ],
+          }),
         );
         return;
       }
@@ -191,10 +247,42 @@ describe("servidor MCP", () => {
       name: "clickupfy_tasks_search",
       arguments: { query: "API" },
     });
+    const leitura = await client.callTool({
+      name: "clickupfy_task_get",
+      arguments: { taskId: "task-root" },
+    });
+    const checklist = await client.callTool({
+      name: "clickupfy_checklist_item_set",
+      arguments: {
+        taskId: "task-root",
+        checklistId: "check-1",
+        itemId: "check-item-1",
+        resolved: true,
+      },
+    });
+    const markdown = await client.callTool({
+      name: "clickupfy_task_get",
+      arguments: { taskId: "task-root", markdown: true },
+    });
 
     expect(JSON.stringify(contexto.content)).toContain("list-project");
+    expect(JSON.stringify(contexto.content)).not.toContain("sprintFolderId");
     expect(JSON.stringify(tarefas.content)).toContain("Implementar API");
     expect(JSON.stringify(busca.content)).toContain("Implementar API");
+    expect(JSON.stringify(leitura.content)).toContain("task:sub-1");
+    expect(JSON.stringify(leitura.content)).toContain(
+      "checklist:check-1:check-item-1",
+    );
+    expect(
+      checklist.content
+        .map((bloco) => ("text" in bloco ? bloco.text : ""))
+        .join(""),
+    ).toContain('"done": true');
+    expect(
+      markdown.content
+        .map((bloco) => ("text" in bloco ? bloco.text : ""))
+        .join(""),
+    ).toContain("- [x] **Checklist · Entrega:** Validar endpoint");
     expect(requisicoes.some((url) => url.includes("/list/list-project/task"))).toBe(
       true,
     );

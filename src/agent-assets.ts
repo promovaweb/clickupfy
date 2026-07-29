@@ -5,14 +5,35 @@
 import { access, cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { getAsset, isSea } from "node:sea";
 import { fileURLToPath } from "node:url";
 import { CliError } from "./errors.js";
 
-export const SKILL_NAMES = ["clickupfy-dev", "clickupfy-executar-tarefa"] as const;
+export const SKILL_NAMES = [
+  "clickupfy-dev",
+  "clickupfy-executar-tarefa",
+  "clickupfy-release",
+] as const;
 export type SkillName = (typeof SKILL_NAMES)[number];
 
-/** Localiza as skills tanto no código-fonte quanto no pacote compilado. */
+const SKILL_FILES: Record<SkillName, readonly string[]> = {
+  "clickupfy-dev": ["SKILL.md", "agents/openai.yaml"],
+  "clickupfy-executar-tarefa": ["SKILL.md", "agents/openai.yaml"],
+  "clickupfy-release": ["SKILL.md", "agents/openai.yaml"],
+};
+
+/**
+ * Localiza as skills no código-fonte ou no pacote npm.
+ *
+ * O executável standalone lê esses arquivos dos assets incorporados e não usa
+ * um caminho no sistema de arquivos.
+ */
 export function caminhoSkillsEmpacotadas(): string {
+  if (isSea()) {
+    throw new CliError(
+      "As skills estão incorporadas ao executável standalone.",
+    );
+  }
   return fileURLToPath(new URL("../.codex/skills", import.meta.url));
 }
 
@@ -36,7 +57,6 @@ export async function instalarSkills(options: {
 
   await mkdir(baseDestino, { recursive: true });
   for (const name of names) {
-    const origem = join(caminhoSkillsEmpacotadas(), name);
     const destino = join(baseDestino, name);
 
     if ((await existe(destino)) && !options.force) {
@@ -45,11 +65,15 @@ export async function instalarSkills(options: {
       );
     }
 
-    await cp(origem, destino, {
-      recursive: true,
-      force: Boolean(options.force),
-      errorOnExist: !options.force,
-    });
+    if (isSea()) {
+      await instalarSkillIncorporada(name, destino);
+    } else {
+      await cp(join(caminhoSkillsEmpacotadas(), name), destino, {
+        recursive: true,
+        force: Boolean(options.force),
+        errorOnExist: !options.force,
+      });
+    }
     instaladas.push(destino);
   }
 
@@ -58,7 +82,30 @@ export async function instalarSkills(options: {
 
 /** Retorna o conteúdo da skill para inspeção sem instalá-la. */
 export async function lerSkill(name: SkillName): Promise<string> {
+  if (isSea()) {
+    return getAsset(chaveAssetSkill(name, "SKILL.md"), "utf8");
+  }
   return readFile(join(caminhoSkillsEmpacotadas(), name, "SKILL.md"), "utf8");
+}
+
+/** Grava no destino todos os arquivos de uma skill incorporada ao SEA. */
+async function instalarSkillIncorporada(
+  name: SkillName,
+  destino: string,
+): Promise<void> {
+  for (const arquivo of SKILL_FILES[name]) {
+    const caminho = join(destino, arquivo);
+    await mkdir(dirname(caminho), { recursive: true });
+    await writeFile(
+      caminho,
+      Buffer.from(getAsset(chaveAssetSkill(name, arquivo))),
+    );
+  }
+}
+
+/** Mantém a mesma chave usada pelo build ao incorporar uma skill. */
+function chaveAssetSkill(name: SkillName, arquivo: string): string {
+  return `skills/${name}/${arquivo}`;
 }
 
 /**
