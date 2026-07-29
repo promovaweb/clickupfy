@@ -1,6 +1,7 @@
 dist/
 artifacts/
 build/
+vendor/
 node_modules/
 coverage/
 *.log

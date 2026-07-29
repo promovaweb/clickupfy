@@ -7,16 +7,30 @@ ClickUp, Sprints existentes, tarefas, comentários e time tracking.
 
 ## Requisitos
 
-- Node.js `>=22.12.0`;
+- Node.js `>=22.12.0` para instalar pelo npm ou desenvolver;
 - uma API key pessoal do ClickUp;
 - acesso da API key a pelo menos um workspace.
+
+## Instalação pelo npm
+
+O pacote npm instala um launcher global e seleciona automaticamente o
+executável compilado para Linux x64, macOS Intel ou macOS Apple Silicon:
+
+```bash
+npm install --global @promovaweb/clickupfy
+clickupfy --version
+```
+
+Os três executáveis nativos pertencem ao mesmo pacote e à mesma versão. Em
+outras plataformas, inclusive Windows, o launcher usa o build JavaScript
+incluído no pacote.
 
 ## Instalação pelo executável
 
 Cada [GitHub Release](https://github.com/promovaweb/clickupfy/releases)
-distribui um executável standalone para Linux x64, macOS x64 e Windows x64.
-Baixe o archive da sua plataforma, extraia o arquivo `clickupfy` ou
-`clickupfy.exe` e coloque-o em uma pasta presente no `PATH`.
+distribui executáveis standalone para Linux x64, macOS Intel, macOS Apple
+Silicon e Windows x64. Baixe o archive da sua plataforma, extraia o arquivo
+`clickupfy` ou `clickupfy.exe` e coloque-o em uma pasta presente no `PATH`.
 
 No Linux ou macOS, confirme a permissão depois de extrair:
 
@@ -26,8 +40,8 @@ chmod +x clickupfy
 ```
 
 O executável já contém o runtime Node.js e as skills. Node.js continua sendo
-necessário somente para desenvolver o ClickUpfy ou instalar o pacote npm
-disponível como artefato da release.
+necessário somente para desenvolver o ClickUpfy ou usar o fluxo de instalação
+do npm.
 
 ## Instalação para desenvolvimento
 
@@ -453,6 +467,8 @@ npm test
 npm run build
 npm run release:check
 npm run build:executable
+npm run npm:stage -- release-assets
+npm run npm:validate-package -- release-assets/promovaweb-clickupfy-X.Y.Z.tgz
 npm run validar
 ```
 
@@ -469,7 +485,8 @@ individuais, renderização Markdown e confirmação do estado depois da escrita
 O Release Please abre uma Release PR a partir dos Conventional Commits. O merge
 dessa PR atualiza versão e changelog, cria a tag `vMAJOR.MINOR.PATCH` e publica
 a GitHub Release. Na mesma execução, o GitHub Actions gera executáveis Linux,
-macOS e Windows, o pacote npm para download e `SHA256SUMS`. Em repositórios
+macOS e Windows, empacota os binários Linux e macOS, publica
+`@promovaweb/clickupfy` no registry npm e gera `SHA256SUMS`. Em repositórios
 públicos, a execução também gera attestations de proveniência.
 
 Não crie tags nem edite a versão manualmente no fluxo normal. A configuração

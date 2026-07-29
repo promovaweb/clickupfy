@@ -41,11 +41,21 @@ jobs:
       matrix:
         include:
           - nome: Linux x64
+            id: linux-x64
             os: ubuntu-latest
+            arquitetura: x64
           - nome: macOS x64
+            id: macos-x64
             os: macos-15-intel
+            arquitetura: x64
+          - nome: macOS arm64
+            id: macos-arm64
+            os: macos-15
+            arquitetura: arm64
           - nome: Windows x64
+            id: windows-x64
             os: windows-latest
+            arquitetura: x64
     runs-on: ${{ matrix.os }}
     permissions:
       attestations: write
@@ -57,18 +67,18 @@ jobs:
         with:
           ref: ${{ needs.release-please.outputs.sha }}
 
-      - name: Configurar Node.js x64
+      - name: Configurar Node.js nativo
         uses: actions/setup-node@v7
         with:
           node-version: 22.23.1
-          architecture: x64
+          architecture: ${{ matrix.arquitetura }}
           cache: npm
 
       - name: Instalar dependências
         run: npm ci
 
       - name: Validar projeto e tag
-        run: npm run validar && npm run release:check -- "${{ needs.release-please.outputs.tag_name }}"
+        run: npm run typecheck && npm run build && npm run release:check -- "${{ needs.release-please.outputs.tag_name }}"
         shell: bash
 
       - name: Gerar executável standalone
@@ -84,7 +94,7 @@ jobs:
       - name: Guardar archive
         uses: actions/upload-artifact@v7
         with:
-          name: release-${{ runner.os }}-x64
+          name: release-${{ matrix.id }}
           path: ${{ steps.executavel.outputs.archive_path }}
           if-no-files-found: error
           retention-days: 7
@@ -113,6 +123,7 @@ jobs:
         with:
           node-version: 22.23.1
           cache: npm
+          registry-url: https://registry.npmjs.org
 
       - name: Instalar dependências
         run: npm ci
@@ -124,8 +135,14 @@ jobs:
           path: release-assets
           merge-multiple: true
 
+      - name: Preparar binários do pacote npm
+        run: npm run npm:stage -- release-assets
+
       - name: Empacotar distribuição npm
         run: npm pack --pack-destination release-assets
+
+      - name: Validar instalação npm nativa
+        run: npm run npm:validate-package -- "release-assets/promovaweb-clickupfy-${{ needs.release-please.outputs.version }}.tgz"
 
       - name: Gerar checksums
         run: node scripts/generate-checksums.mjs release-assets
@@ -138,3 +155,9 @@ jobs:
 
       - name: Anexar arquivos à GitHub Release
         run: gh release upload "${{ needs.release-please.outputs.tag_name }}" release-assets/* --clobber
+
+      - name: Publicar pacote no npm
+        env:
+          GITHUB_REPOSITORY_VISIBILITY: ${{ github.event.repository.visibility }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm run publish:npm -- "release-assets/promovaweb-clickupfy-${{ needs.release-please.outputs.version }}.tgz"

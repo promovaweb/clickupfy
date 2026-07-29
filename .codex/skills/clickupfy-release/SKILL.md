@@ -48,8 +48,9 @@ presença do workflow.
 5. Acompanhe a mesma execução do workflow até estes resultados:
    - tag imutável `vMAJOR.MINOR.PATCH`;
    - GitHub Release;
-   - executáveis Linux, macOS e Windows;
-   - pacote npm em arquivo `.tgz`, sem publicação no registry;
+   - executáveis Linux x64, macOS x64, macOS arm64 e Windows x64;
+   - pacote `@promovaweb/clickupfy` publicado no registry npm;
+   - o mesmo pacote npm em arquivo `.tgz` na GitHub Release;
    - `SHA256SUMS`;
    - attestations de proveniência quando o repositório for público.
 
@@ -82,6 +83,8 @@ script.
 - CI não executou na Release PR: configure o secret opcional
   `RELEASE_PLEASE_TOKEN`, conforme `RELEASING.md`.
 - Release criada sem binários: reexecute os jobs falhos da mesma execução.
+- Publicação npm falhou: confirme o secret `NPM_TOKEN` e reexecute o job; o
+  script ignora uma versão que já exista no registry.
 - Artefato inválido: reproduza com `npm ci`, `npm run validar` e
   `npm run build:executable` na plataforma afetada.
 - Versão divergente: não corrija somente um arquivo. Inspecione

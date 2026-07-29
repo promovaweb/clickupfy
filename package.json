@@ -4,20 +4,25 @@
   "description": "CLI e servidor MCP para gerenciar Sprints e trabalho de desenvolvimento no ClickUp.",
   "type": "module",
   "bin": {
-    "clickupfy": "dist/cli.js"
+    "clickupfy": "bin/clickupfy.cjs"
   },
   "files": [
     ".codex/skills",
+    "bin",
     "CHANGELOG.md",
     "dist",
     "README.md",
-    "RELEASING.md"
+    "RELEASING.md",
+    "vendor"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "build:executable": "node scripts/build-executable.mjs",
     "dev": "tsx src/cli.ts",
+    "npm:stage": "node scripts/stage-npm-binaries.mjs",
+    "npm:validate-package": "node scripts/validate-npm-package.mjs",
     "prepack": "npm run build",
+    "publish:npm": "node scripts/publish-npm-package.mjs",
     "release:check": "node scripts/validate-release.mjs",
     "start": "node dist/cli.js",
     "test": "vitest run",

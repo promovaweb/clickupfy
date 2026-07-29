@@ -17,7 +17,10 @@ const packageLock = await lerJson("package-lock.json");
 const manifesto = await lerJson(".release-please-manifest.json");
 const configuracao = await lerJson("release-please-config.json");
 const changelog = await readFile(join(raiz, "CHANGELOG.md"), "utf8");
-const workflow = join(raiz, ".github", "workflows", "release.yml");
+const workflow = await readFile(
+  join(raiz, ".github", "workflows", "release.yml"),
+  "utf8",
+);
 
 validarSemver(packageJson.version, "package.json");
 igual(
@@ -40,13 +43,41 @@ igual(
   "node",
   "O pacote raiz precisa usar o release-type node.",
 );
+igual(
+  packageJson.bin?.clickupfy,
+  "bin/clickupfy.cjs",
+  "O pacote npm precisa usar o launcher de executáveis nativos.",
+);
+igual(
+  packageLock.packages?.[""]?.bin?.clickupfy,
+  packageJson.bin.clickupfy,
+  "O bin do package-lock.json diverge do package.json.",
+);
 
 const versaoEscapada = packageJson.version.replaceAll(".", String.raw`\.`);
 if (!new RegExp(`^## (?:\\[)?${versaoEscapada}(?:\\])?\\b`, "m").test(changelog)) {
   throw new Error(`CHANGELOG.md não possui uma seção para ${packageJson.version}.`);
 }
 
-await access(workflow);
+for (const caminho of [
+  "bin/clickupfy.cjs",
+  "scripts/build-executable.mjs",
+  "scripts/stage-npm-binaries.mjs",
+  "scripts/validate-npm-package.mjs",
+  "scripts/publish-npm-package.mjs",
+]) {
+  await access(join(raiz, caminho));
+}
+for (const trecho of [
+  "macos-15-intel",
+  "macos-15",
+  "npm run npm:stage",
+  "npm run publish:npm",
+]) {
+  if (!workflow.includes(trecho)) {
+    throw new Error(`O workflow de release não contém: ${trecho}.`);
+  }
+}
 
 if (tagInformada) {
   if (!/^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(tagInformada)) {

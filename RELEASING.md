@@ -12,8 +12,9 @@ Cada release concluída possui:
 - notas geradas a partir do `CHANGELOG.md`;
 - executável Linux x64 em `.tar.gz`;
 - executável macOS x64 em `.tar.gz`;
+- executável macOS arm64 em `.tar.gz`;
 - executável Windows x64 em `.zip`;
-- pacote npm em `.tgz`, disponível como download e não publicado no registry;
+- pacote `@promovaweb/clickupfy` publicado no registry npm e anexado em `.tgz`;
 - arquivo `SHA256SUMS`;
 - attestations de proveniência geradas pelo GitHub quando o repositório for
   público.
@@ -21,6 +22,11 @@ Cada release concluída possui:
 O executável é produzido com Node.js Single Executable Applications. As três
 skills distribuídas pelo projeto são incorporadas ao binário e continuam
 disponíveis por `clickupfy agent skill install`.
+
+O pacote npm contém os executáveis Linux x64, macOS x64 e macOS arm64. O
+launcher `bin/clickupfy.cjs` escolhe o arquivo nativo conforme
+`process.platform` e `process.arch`; plataformas sem binário usam o build
+JavaScript.
 
 ## Configuração única do repositório
 
@@ -39,6 +45,12 @@ fine-grained personal access token limitado ao repositório e com acesso de
 escrita a contents e pull requests. A automação usa esse secret para o Release
 Please e para anexar os arquivos à release; nos demais casos, recorre ao
 `GITHUB_TOKEN`.
+
+Para publicar no registry npm, crie no mesmo repositório o secret `NPM_TOKEN`
+com um token granular autorizado a publicar o pacote
+`@promovaweb/clickupfy`. Como o repositório GitHub é privado, o npm não permite
+proveniência pública; a automação acrescenta `--provenance` somente quando a
+visibilidade mudar para pública.
 
 Proteja `main` exigindo a verificação `Validar Node.js` do workflow `CI`. A
 Release PR deve passar por revisão e merge como qualquer outra mudança.
@@ -71,8 +83,11 @@ Como o projeto ainda está antes da versão `1.0.0`,
 4. Revise as notas adicionadas ao `CHANGELOG.md`.
 5. Faça merge da Release PR.
 6. O Release Please cria a tag e a GitHub Release.
-7. A matrix compila e testa os executáveis em Linux, macOS e Windows.
-8. O job final adiciona executáveis, pacote npm e checksums à release.
+7. A matrix compila Linux x64, macOS x64, macOS arm64 e Windows x64.
+8. O job final incorpora os três binários Unix ao pacote npm.
+9. O pacote instalado é validado exigindo o executável nativo Linux.
+10. Executáveis, pacote npm e checksums são anexados à release.
+11. O mesmo `.tgz` validado é publicado no registry npm.
 
 Não crie a tag antes da Release PR. O merge dessa PR é o evento que publica a
 versão.
@@ -108,8 +123,20 @@ O script:
 6. gera o archive em `artifacts/`.
 
 Use no desenvolvimento uma versão de Node.js compatível com `engines`. O
-workflow oficial fixa Node.js `22.23.1` x64 para tornar os builds
-reproduzíveis.
+workflow oficial fixa Node.js `22.23.1` para tornar os builds reproduzíveis.
+
+Para reproduzir o pacote npm, reúna em `release-assets/` os archives de Linux
+x64, macOS x64 e macOS arm64 da mesma versão:
+
+```bash
+npm run npm:stage -- release-assets
+npm pack --pack-destination release-assets
+npm run npm:validate-package -- \
+  release-assets/promovaweb-clickupfy-X.Y.Z.tgz
+```
+
+O teste do pacote define `CLICKUPFY_REQUIRE_NATIVE=1`, instala o tarball em uma
+pasta temporária e recusa um fallback JavaScript acidental.
 
 ## Verificação dos downloads
 
@@ -143,7 +170,7 @@ Quando somente um job ou upload falhar:
 
 1. abra a execução do workflow `Release` associada à tag;
 2. reexecute os jobs com falha;
-3. confirme os três archives, o `.tgz` e `SHA256SUMS` na GitHub Release;
+3. confirme os quatro archives, o `.tgz` e `SHA256SUMS` na GitHub Release;
 4. valide ao menos o checksum e a versão do executável afetado.
 
 O upload final usa `--clobber`, portanto uma reexecução da mesma tag substitui
@@ -161,6 +188,9 @@ publicar conteúdo produzido por outro commit.
 | `CHANGELOG.md` | Histórico público mantido pela Release PR. |
 | `scripts/validate-release.mjs` | Coerência local de versão e configuração. |
 | `scripts/build-executable.mjs` | Build e teste do Node.js SEA. |
+| `scripts/stage-npm-binaries.mjs` | Incorporação dos executáveis Unix ao pacote npm. |
+| `scripts/validate-npm-package.mjs` | Instalação isolada e validação do binário nativo. |
+| `scripts/publish-npm-package.mjs` | Publicação npm idempotente. |
 | `scripts/generate-checksums.mjs` | Geração determinística de `SHA256SUMS`. |
 
 Referências técnicas:
