@@ -56,4 +56,3 @@ describe("configuração", () => {
     expect(resolverAccount(config, "consultoria").account.workspace.id).toBe("456");
   });
 });
-
