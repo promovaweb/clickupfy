@@ -1,0 +1,4 @@
+interface:
+  display_name: "ClickUpfy para Desenvolvimento"
+  short_description: "Use o MCP do projeto e o ClickUpfy global"
+  default_prompt: "Use $clickupfy-dev para operar o MCP específico deste projeto e atualizar o trabalho no ClickUp."
