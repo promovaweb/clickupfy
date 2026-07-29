@@ -28,12 +28,17 @@ if (!forcarJavaScript && executavelNativo && existsSync(executavelNativo)) {
   );
 } else {
   const fallback = join(raiz, "dist", "cli.js");
-  if (!existsSync(fallback)) {
-    falhar(
-      `Não há executável nativo nem fallback JavaScript para ${process.platform}/${process.arch}.`,
-    );
+  if (existsSync(fallback)) {
+    executar(process.execPath, [fallback, ...process.argv.slice(2)]);
   }
-  executar(process.execPath, [fallback, ...process.argv.slice(2)]);
+  const tsx = join(raiz, "node_modules", "tsx", "dist", "cli.mjs");
+  const fonte = join(raiz, "src", "cli.ts");
+  if (existsSync(tsx) && existsSync(fonte)) {
+    executar(process.execPath, [tsx, fonte, ...process.argv.slice(2)]);
+  }
+  falhar(
+    `Não há executável nativo nem fallback JavaScript para ${process.platform}/${process.arch}.`,
+  );
 }
 
 /** Executa o CLI com stdio herdado e devolve seu status ao processo do npm. */
