@@ -1,6 +1,6 @@
 {
   "name": "@promovaweb/clickupfy",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "CLI e servidor MCP para gerenciar Sprints e trabalho de desenvolvimento no ClickUp.",
   "type": "module",
   "bin": {
