@@ -6,20 +6,17 @@ as próximas versões.
 
 ## [0.3.0](https://github.com/promovaweb/clickupfy/compare/v0.2.0...v0.3.0) (2026-07-29)
 
-
 ### Funcionalidades
 
-* distribui binários nativos pelo npm ([8206a5a](https://github.com/promovaweb/clickupfy/commit/8206a5aa3105d83c4b9aad9e66b09e747b21630e))
-
+- distribui binários nativos pelo npm ([8206a5a](https://github.com/promovaweb/clickupfy/commit/8206a5aa3105d83c4b9aad9e66b09e747b21630e))
 
 ### Correções
 
-* inicia launcher antes do build local ([b68b96c](https://github.com/promovaweb/clickupfy/commit/b68b96cafe27fc050c40cc125af2e4aa9d046ea1))
-
+- inicia launcher antes do build local ([b68b96c](https://github.com/promovaweb/clickupfy/commit/b68b96cafe27fc050c40cc125af2e4aa9d046ea1))
 
 ### Integração contínua
 
-* normaliza changelog da release automaticamente ([bec42c3](https://github.com/promovaweb/clickupfy/commit/bec42c3390675dfd446058279b255c941655b55f))
+- normaliza changelog da release automaticamente ([bec42c3](https://github.com/promovaweb/clickupfy/commit/bec42c3390675dfd446058279b255c941655b55f))
 
 ## [0.2.0](https://github.com/promovaweb/clickupfy/compare/v0.1.0...v0.2.0) (2026-07-29)
 
