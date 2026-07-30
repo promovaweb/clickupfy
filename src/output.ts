@@ -57,6 +57,7 @@ export function resumirTarefa(tarefa: ClickUpTask): Record<string, unknown> {
     priority: tarefa.priority?.priority ?? "",
     points: tarefa.points ?? "",
     assignees: tarefa.assignees?.map((pessoa) => pessoa.username ?? pessoa.email ?? pessoa.id),
+    start_date: tarefa.start_date ?? "",
     due_date: tarefa.due_date ?? "",
     url: tarefa.url ?? "",
   };

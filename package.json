@@ -21,6 +21,8 @@
     "changelog:check": "node scripts/normalize-changelog.mjs --check",
     "changelog:format": "node scripts/normalize-changelog.mjs",
     "dev": "tsx src/cli.ts",
+    "ebook": "bash .ebook/build-ebook.sh",
+    "ebook:verify": "bash .ebook/build-ebook.sh --check",
     "npm:stage": "node scripts/stage-npm-binaries.mjs",
     "npm:validate-package": "node scripts/validate-npm-package.mjs",
     "prepack": "npm run build",

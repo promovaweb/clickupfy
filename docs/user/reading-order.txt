@@ -1,0 +1,13 @@
+docs/user/README.md
+docs/user/conceitos.md
+docs/user/instalacao.md
+docs/user/configuracao.md
+docs/user/primeiro-projeto.md
+docs/user/hierarquia.md
+docs/user/tarefas.md
+docs/user/sprints.md
+docs/user/time-tracking.md
+docs/user/agentes.md
+docs/user/mcp.md
+docs/user/cli.md
+docs/user/solucao-de-problemas.md

@@ -159,4 +159,51 @@ describe("ClickUpClient", () => {
     );
     expect(fetchFn.mock.calls[3]?.[1]?.method).toBe("DELETE");
   });
+
+  it("cria subtarefas Markdown, checklists e itens com datas", async () => {
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockImplementation(
+        async () =>
+          new Response(JSON.stringify({ id: "criado" }), { status: 200 }),
+      );
+    const client = new ClickUpClient("pk_teste", {
+      baseUrl: "https://clickup.test/api/v2",
+      fetchFn,
+    });
+
+    await client.criarTarefa("list-1", {
+      name: "Subtarefa",
+      markdown_content: "# Escopo",
+      parent: "task-pai",
+      start_date: 1_700_000_000_000,
+      due_date: 1_700_086_399_999,
+    });
+    await client.criarChecklist("task-pai", "Testes");
+    await client.criarItemChecklist("check-1", {
+      name: "Executar testes unitários",
+      assignee: 42,
+    });
+
+    expect(String(fetchFn.mock.calls[0]?.[0])).toContain("/list/list-1/task");
+    expect(JSON.parse(String(fetchFn.mock.calls[0]?.[1]?.body))).toMatchObject({
+      markdown_content: "# Escopo",
+      parent: "task-pai",
+      start_date: 1_700_000_000_000,
+      due_date: 1_700_086_399_999,
+    });
+    expect(String(fetchFn.mock.calls[1]?.[0])).toContain(
+      "/task/task-pai/checklist",
+    );
+    expect(JSON.parse(String(fetchFn.mock.calls[1]?.[1]?.body))).toEqual({
+      name: "Testes",
+    });
+    expect(String(fetchFn.mock.calls[2]?.[0])).toContain(
+      "/checklist/check-1/checklist_item",
+    );
+    expect(JSON.parse(String(fetchFn.mock.calls[2]?.[1]?.body))).toEqual({
+      name: "Executar testes unitários",
+      assignee: 42,
+    });
+  });
 });

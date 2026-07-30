@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "version": "1.1.0",
+  "edition": "v1.1.0",
+  "generated_at": "2026-07-30T10:38:41Z",
+  "source_sha256": "21042ea1b6cc1b88c86b4f7d2a5b02d654319e08a34f7eba0df14b4dc1517ab5",
+  "sources": [
+    ".ebook/build-ebook.sh",
+    ".ebook/epub.css",
+    ".ebook/external-links.lua",
+    ".ebook/extract-document-metadata.py",
+    ".ebook/metadata.yaml",
+    ".ebook/pdf.css",
+    ".ebook/prune-editions.py",
+    ".ebook/strip-document-metadata.lua",
+    ".ebook/template.html",
+    "brand/logo/icon.png",
+    "brand/logo/icon.svg",
+    "brand/style-guide.html",
+    "docs/user/README.md",
+    "docs/user/agentes.md",
+    "docs/user/cli.md",
+    "docs/user/conceitos.md",
+    "docs/user/configuracao.md",
+    "docs/user/hierarquia.md",
+    "docs/user/instalacao.md",
+    "docs/user/mcp.md",
+    "docs/user/primeiro-projeto.md",
+    "docs/user/reading-order.txt",
+    "docs/user/solucao-de-problemas.md",
+    "docs/user/sprints.md",
+    "docs/user/tarefas.md",
+    "docs/user/time-tracking.md",
+    "ebook/VERSION"
+  ],
+  "document_metadata": {
+    "docs/user/README.md": {
+      "autoridade": "interfaces públicas do CLI, servidor MCP e skills distribuídas",
+      "escopo": "percurso completo do usuário do ClickUpfy",
+      "natureza": "normativo"
+    },
+    "docs/user/agentes.md": {
+      "autoridade": "assets empacotados e contrato de agent init",
+      "escopo": "instalação e responsabilidades das skills distribuídas",
+      "natureza": "normativo"
+    },
+    "docs/user/cli.md": {
+      "autoridade": "definições Commander em src/cli.ts",
+      "escopo": "grupos públicos, opções globais e formatos de saída",
+      "natureza": "referência"
+    },
+    "docs/user/conceitos.md": {
+      "autoridade": "README, CLI, servidor MCP e cliente HTTP do ClickUpfy",
+      "escopo": "conceitos, responsabilidades e limites do produto",
+      "natureza": "normativo"
+    },
+    "docs/user/configuracao.md": {
+      "autoridade": "setup, schema de configuração e resolução de accounts",
+      "escopo": "autenticação, accounts e armazenamento local",
+      "natureza": "normativo"
+    },
+    "docs/user/hierarquia.md": {
+      "autoridade": "comandos workspace, space, folder, list e task",
+      "escopo": "descoberta de IDs e navegação entre recursos do ClickUp",
+      "natureza": "normativo"
+    },
+    "docs/user/instalacao.md": {
+      "autoridade": "package.json, launcher npm e pipeline de executáveis",
+      "escopo": "instalação do CLI para uso e desenvolvimento",
+      "natureza": "normativo"
+    },
+    "docs/user/mcp.md": {
+      "autoridade": "implementação do servidor MCP e schemas das ferramentas",
+      "escopo": "configuração, isolamento e uso do servidor MCP",
+      "natureza": "normativo"
+    },
+    "docs/user/primeiro-projeto.md": {
+      "autoridade": "agent init, escopo MCP e ferramentas públicas",
+      "escopo": "primeira integração de um repositório com ClickUpfy e MCP",
+      "natureza": "normativo"
+    },
+    "docs/user/solucao-de-problemas.md": {
+      "autoridade": "mensagens de erro e contratos públicos do ClickUpfy",
+      "escopo": "diagnóstico de instalação, autenticação, escopo e API",
+      "natureza": "referência"
+    },
+    "docs/user/sprints.md": {
+      "autoridade": "módulo de Sprints e endpoints públicos do ClickUp",
+      "escopo": "consulta e planejamento de Sprints existentes",
+      "natureza": "normativo"
+    },
+    "docs/user/tarefas.md": {
+      "autoridade": "comandos task, checklist e comment e fila execution",
+      "escopo": "ciclo de leitura, criação, atualização e conclusão do trabalho",
+      "natureza": "normativo"
+    },
+    "docs/user/time-tracking.md": {
+      "autoridade": "comandos e ferramentas de time tracking",
+      "escopo": "início, consulta e encerramento de time entries",
+      "natureza": "normativo"
+    }
+  },
+  "artifacts": {
+    "pdf": {
+      "file": "ClickUpfy-Guia-do-Usuario-v1.1.0.pdf",
+      "sha256": "1592f38ddcc28ff9b3d109ff8b693d6b309b114b72b2a34418c4021014c96d92"
+    },
+    "epub": {
+      "file": "ClickUpfy-Guia-do-Usuario-v1.1.0.epub",
+      "sha256": "44800c29701f4e0a433cd78d519073f44be46f413a338c3390830449ce3cc574"
+    }
+  }
+}

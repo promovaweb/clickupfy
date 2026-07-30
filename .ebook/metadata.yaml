@@ -1,0 +1,18 @@
+---
+title: "ClickUpfy — Guia completo do usuário"
+subtitle: "Do ClickUp ao terminal e ao agente"
+author:
+  - "ClickUpfy"
+publisher: "Promovaweb"
+lang: "pt-BR"
+rights: "Documentação oficial do projeto ClickUpfy"
+description: "Edição portátil da documentação oficial para usuários do ClickUpfy."
+subject:
+  - "ClickUp"
+  - "interface de linha de comando"
+  - "Model Context Protocol"
+  - "agentes de código"
+identifier: "https://github.com/promovaweb/clickupfy"
+tagline: "Planeje. Execute. Comprove."
+# Identidade canônica: brand/logo/icon.svg
+---

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Executar Tarefa do ClickUp"
+  short_description: "Execute tarefas com progresso rastreável"
+  default_prompt: "Use $clickup-issue-implement para executar esta tarefa do ClickUp com plano e atualizações em tempo real."

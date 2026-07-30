@@ -287,6 +287,18 @@ list
     imprimir(dados, globals.json);
   });
 
+list
+  .command("get")
+  .argument("<list-id>", "ID da List")
+  .description("obtém a List e os status disponíveis para tarefas")
+  .action(async function (this: Command, listId: string) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const dados = await (
+      await criarContexto(globals.account)
+    ).client.obterList(listId);
+    globals.json ? imprimirJson(dados) : imprimirTabela([{ ...dados }]);
+  });
+
 const sprint = program
   .command("sprint")
   .description("consulta e planeja Sprints existentes");
@@ -494,12 +506,15 @@ task
   .requiredOption("--list <id>", "ID da list")
   .requiredOption("--name <nome>", "nome da tarefa")
   .option("--description <texto>", "descrição")
+  .option("--markdown-content <markdown>", "descrição preservada como Markdown")
   .option("--status <status>", "status inicial")
   .addOption(
     new Option("--priority <n>", "1 urgente, 2 alta, 3 normal, 4 baixa")
       .argParser(prioridade),
   )
   .option("--assignee <ids...>", "IDs numéricos dos responsáveis")
+  .option("--parent <task-id>", "cria a tarefa como subtarefa")
+  .option("--start-date <AAAA-MM-DD>", "data de início")
   .option("--due-date <AAAA-MM-DD>", "data de entrega")
   .option("--points <n>", "Sprint Points", numeroNaoNegativo)
   .description("cria uma tarefa de desenvolvimento")
@@ -512,9 +527,14 @@ task
       limparIndefinidos({
         name: options.name,
         description: options.description,
+        markdown_content: options.markdownContent,
         status: options.status,
         priority: options.priority,
         assignees: options.assignee?.map(inteiro),
+        parent: options.parent,
+        start_date: options.startDate
+          ? dataParaTimestamp(options.startDate, false)
+          : undefined,
         due_date: options.dueDate ? dataParaTimestamp(options.dueDate) : undefined,
         points: options.points,
       }),
@@ -527,8 +547,11 @@ task
   .argument("<task-id>")
   .option("--name <nome>", "novo nome")
   .option("--description <texto>", "nova descrição")
+  .option("--markdown-content <markdown>", "nova descrição em Markdown")
   .option("--status <status>", "novo status")
   .option("--priority <n>", "1 urgente, 2 alta, 3 normal, 4 baixa", inteiro)
+  .option("--start-date <AAAA-MM-DD>", "nova data de início")
+  .option("--clear-start-date", "remove a data de início")
   .option("--due-date <AAAA-MM-DD>", "nova data de entrega")
   .option("--clear-due-date", "remove a data de entrega")
   .option("--points <n>", "Sprint Points", numeroNaoNegativo)
@@ -538,8 +561,14 @@ task
     const dados = limparIndefinidos({
       name: options.name,
       description: options.description,
+      markdown_content: options.markdownContent,
       status: options.status,
       priority: options.priority,
+      start_date: options.clearStartDate
+        ? null
+        : options.startDate
+          ? dataParaTimestamp(options.startDate, false)
+          : undefined,
       due_date: options.clearDueDate
         ? null
         : options.dueDate
@@ -580,6 +609,39 @@ task
 const checklist = program
   .command("checklist")
   .description("gerencia itens de checklist");
+
+checklist
+  .command("create")
+  .argument("<task-id>", "ID da tarefa")
+  .requiredOption("--name <nome>", "nome do checklist")
+  .description("cria um checklist em uma tarefa")
+  .action(async function (this: Command, taskId: string, options) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const dados = await (
+      await criarContexto(globals.account)
+    ).client.criarChecklist(taskId, options.name);
+    imprimir(dados, globals.json);
+  });
+
+checklist
+  .command("item-create")
+  .argument("<checklist-id>", "ID do checklist")
+  .requiredOption("--name <nome>", "nome do item")
+  .option("--assignee <id>", "ID numérico do responsável", inteiro)
+  .description("cria um item em um checklist")
+  .action(async function (this: Command, checklistId: string, options) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const dados = await (
+      await criarContexto(globals.account)
+    ).client.criarItemChecklist(
+      checklistId,
+      limparIndefinidos({
+        name: options.name,
+        assignee: options.assignee,
+      }) as { name: string; assignee?: number },
+    );
+    imprimir(dados, globals.json);
+  });
 
 checklist
   .command("set")
@@ -829,11 +891,12 @@ function numeroNaoNegativo(valor: string): number {
   return numero;
 }
 
-function dataParaTimestamp(valor: string): number {
+function dataParaTimestamp(valor: string, fimDoDia = true): number {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
     throw new CliError(`Data inválida: ${valor}. Use AAAA-MM-DD.`);
   }
-  const timestamp = new Date(`${valor}T23:59:59.999Z`).getTime();
+  const horario = fimDoDia ? "T23:59:59.999Z" : "T00:00:00.000Z";
+  const timestamp = new Date(`${valor}${horario}`).getTime();
   if (Number.isNaN(timestamp)) throw new CliError(`Data inválida: ${valor}.`);
   return timestamp;
 }

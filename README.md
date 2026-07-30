@@ -1,9 +1,28 @@
 # ClickUpfy da Promovaweb
 
-O ClickUpfy reúne o terminal, a configuração de múltiplos accounts, três
+O ClickUpfy reúne o terminal, a configuração de múltiplos accounts, quatro
 skills para agentes e um servidor MCP no mesmo pacote. O recorte atual atende
 o trabalho de desenvolvimento de software: navegação pela hierarquia do
 ClickUp, Sprints existentes, tarefas, comentários e time tracking.
+
+## Documentação completa e ebook
+
+O percurso sequencial do usuário começa em
+[`docs/user/README.md`](docs/user/README.md). Ele cobre instalação,
+configuração segura, primeiro projeto, hierarquia, tarefas, Sprints, tempo,
+skills, MCP, referência do CLI e solução de problemas.
+
+As mesmas páginas geram o **ClickUpfy — Guia completo do usuário** em PDF e
+EPUB. O pipeline reutiliza o design do ebook do Specsfy e registra digest das
+fontes e hashes dos artefatos:
+
+```bash
+npm run ebook
+npm run ebook:verify
+```
+
+Versão, formatos e regras de atualização ficam em
+[`ebook/README.md`](ebook/README.md).
 
 ## Requisitos
 
@@ -226,14 +245,24 @@ listas e tarefas usam uma tabela menor.
 ```bash
 clickupfy task get <task-id> --json
 clickupfy task get <task-id> --markdown
+clickupfy list get <list-id>
 
 clickupfy task create \
   --list <list-id> \
   --name "Implementar autenticação" \
-  --description "Adicionar o fluxo de login e os testes."
+  --markdown-content "Adicionar o fluxo de login e os testes." \
+  --start-date 2026-08-01 \
+  --due-date 2026-08-05
+
+clickupfy task create \
+  --list <list-id> \
+  --name "Criar testes" \
+  --parent <task-id> \
+  --markdown-content "Cobrir o fluxo principal."
 
 clickupfy task update <task-id> --status "em andamento"
 clickupfy task update <task-id> --priority 2
+clickupfy task update <task-id> --start-date 2026-08-01
 clickupfy task update <task-id> --due-date 2026-08-05
 
 clickupfy comment list --task <task-id>
@@ -294,9 +323,15 @@ mutuamente exclusivas.
 Marque ou reabra um item de checklist com:
 
 ```bash
+clickupfy checklist create <task-id> --name "Testes"
+clickupfy checklist item-create <checklist-id> --name "Executar testes unitários"
 clickupfy checklist set <task-id> <checklist-id> <item-id> --resolved
 clickupfy checklist set <task-id> <checklist-id> <item-id> --open
 ```
+
+Os dois primeiros comandos criam o checklist e seus itens ainda abertos. As
+skills usam esse contrato para registrar os testes no momento da criação e
+deixam a conclusão para o checkpoint real da implementação.
 
 O ClickUpfy confirma primeiro que o item pertence à tarefa informada, grava o
 novo estado e relê toda a tarefa. O comando só comunica sucesso quando a nova
@@ -383,11 +418,16 @@ pode ser acrescentado ao comando quando o projeto usar Sprints.
 
 As ferramentas cobrem accounts, workspaces, spaces, folders, lists, Sprints,
 tarefas, subtarefas, checklists, comentários e time tracking.
+`clickupfy_list_get` retorna os status configurados na List e permite escolher
+um status terminal sem adivinhar sua grafia.
 `clickupfy_task_get` devolve a fila em `execution`. Com `markdown: true`, a
 mesma ferramenta retorna diretamente um único texto Markdown concatenado, sem
 codificação JSON. A ferramenta
 `clickupfy_checklist_item_set` marca ou reabre um item e confirma o estado
-persistido. Consultas de Sprint permanecem disponíveis em read-only;
+persistido. `clickupfy_checklist_create` e
+`clickupfy_checklist_item_create` montam checklists item por item. A criação e
+a atualização de tarefas aceitam Markdown, tarefa pai, data de início e data
+de entrega. Consultas de Sprint permanecem disponíveis em read-only;
 associação de tarefas, alteração de Points e checklist items aparecem somente
 no servidor com escrita. As ferramentas de escrita exigem parâmetros
 explícitos, e `clickupfy_task_delete` também exige `confirm: true`.
@@ -401,14 +441,18 @@ operação. A busca fica sempre restrita à List obrigatória do projeto.
 
 ## Skills para agentes
 
-O pacote distribui três skills:
+O pacote distribui quatro skills:
 
 - `clickupfy-dev` orienta consultas e mudanças do trabalho diário de software;
-- `clickupfy-executar-tarefa` conduz uma tarefa da leitura até a revisão, com
-  plano, comentários e validação;
+- `clickup-issue-create` transforma uma solicitação ou histórico em tarefa
+  Markdown, subtarefas recursivas e checklists de testes sem executar o
+  trabalho;
+- `clickup-issue-implement` conduz cada tarefa e subtarefa por leitura, plano
+  visível, comentários em tempo real, datas, time tracking, checklists,
+  validação e status terminal;
 - `clickupfy-release` prepara e acompanha versões, changelog, tags e artefatos.
 
-Instale as três no projeto atual:
+Instale as quatro no projeto atual:
 
 ```bash
 clickupfy agent skill install
@@ -448,10 +492,10 @@ inspecionar o material empacotado.
 | `workspace` | `list`, `use`. |
 | `space` | `list`. |
 | `folder` | `list`. |
-| `list` | `list`. |
+| `list` | `list`, `get`. |
 | `sprint` | `list`, `current`, `get`, `tasks`, `add-task`, `remove-task`, `set-points`. |
 | `task` | `list`, `search`, `get`, `create`, `update`, `delete`. |
-| `checklist` | `set` com `--resolved` ou `--open`. |
+| `checklist` | `create`, `item-create`, `set` com `--resolved` ou `--open`. |
 | `comment` | `list`, `create`. |
 | `time` | `current`, `start`, `stop`. |
 | `mcp` | `serve`. |
@@ -479,6 +523,9 @@ Também comprovam que o MCP exige uma List, inicia sem Sprint Folder, mantém a
 busca dentro da List e recusa IDs fora do destino configurado. A fila
 executável possui testes para subtarefas aninhadas, checklist items, chaves
 individuais, renderização Markdown e confirmação do estado depois da escrita.
+O cliente HTTP também valida a criação de subtarefas Markdown, datas,
+checklists e itens, enquanto o handshake confirma a descoberta das novas
+ferramentas no perfil correto.
 
 ## Releases
 

@@ -61,6 +61,7 @@ clickupfy workspace list
 clickupfy space list
 clickupfy folder list --space <space-id>
 clickupfy list list --folder <folder-id>
+clickupfy list get <list-id>
 clickupfy task list --list <list-id>
 ```
 
@@ -73,6 +74,7 @@ No MCP, seguir a mesma ordem com:
 - `clickupfy_spaces_list`;
 - `clickupfy_folders_list`;
 - `clickupfy_lists_list`;
+- `clickupfy_list_get`;
 - `clickupfy_tasks_list`.
 
 Não adivinhar IDs de workspace, space, folder, list, tarefa ou usuário.
@@ -145,6 +147,16 @@ clickupfy checklist set <task-id> <checklist-id> <item-id> --open
 No MCP, usar `clickupfy_checklist_item_set`. A ferramenta relê a tarefa depois
 da escrita e só retorna o item quando `done` corresponde ao estado solicitado.
 
+Para criar checklists e seus itens:
+
+```bash
+clickupfy checklist create <task-id> --name "Testes"
+clickupfy checklist item-create <checklist-id> --name "<teste>"
+```
+
+No MCP, usar `clickupfy_checklist_create` e
+`clickupfy_checklist_item_create`. Manter cada item aberto durante a criação.
+
 ## Atualizar tarefas
 
 Usar apenas os campos autorizados pelo pedido:
@@ -153,17 +165,22 @@ Usar apenas os campos autorizados pelo pedido:
 clickupfy task create \
   --list <list-id> \
   --name "<nome>" \
-  --description "<descrição>"
+  --markdown-content "<markdown>" \
+  --parent "<task-id>" \
+  --start-date <AAAA-MM-DD> \
+  --due-date <AAAA-MM-DD>
 
 clickupfy task update <task-id> --status "<status exato>"
+clickupfy task update <task-id> --start-date <AAAA-MM-DD>
 clickupfy task update <task-id> --priority 2
 clickupfy task update <task-id> --points 5
 clickupfy comment create --task <task-id> --text "<progresso>"
 ```
 
 No MCP, usar `clickupfy_task_create`, `clickupfy_task_update` e
-`clickupfy_comment_create`. Status são nomes configurados pelo workspace; ler a
-tarefa e usar a grafia real.
+`clickupfy_comment_create`. Usar `markdownContent`, `parent`, `startDate` e
+`dueDate` para os campos equivalentes. Status são nomes configurados pela List;
+ler `clickupfy_list_get` e usar a grafia real.
 
 Antes de `task delete` ou `clickupfy_task_delete`, obter autorização explícita e
 confirmar o ID. A ferramenta MCP exige `confirm: true`; o CLI exige `--yes`.

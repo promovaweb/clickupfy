@@ -1,0 +1,4 @@
+interface:
+  display_name: "Criar Tarefa no ClickUp"
+  short_description: "Estruture tarefas sem executar o trabalho"
+  default_prompt: "Use $clickup-issue-create para transformar este histórico em uma tarefa Markdown no ClickUp."

@@ -56,13 +56,22 @@ describe("integração com agentes", () => {
     });
     const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
 
-    expect(instaladas).toHaveLength(3);
+    expect(instaladas).toHaveLength(4);
     expect(
       await readFile(join(skills, "clickupfy-dev", "SKILL.md"), "utf8"),
     ).toContain("clickupfy_checklist_item_set");
     expect(
       await readFile(join(skills, "clickupfy-release", "SKILL.md"), "utf8"),
     ).toContain("npm run release:check");
+    expect(
+      await readFile(join(skills, "clickup-issue-create", "SKILL.md"), "utf8"),
+    ).toContain("name: clickup-issue-create");
+    expect(
+      await readFile(
+        join(skills, "clickup-issue-implement", "SKILL.md"),
+        "utf8",
+      ),
+    ).toContain("name: clickup-issue-implement");
     expect(mcp.mcpServers.github).toEqual({ command: "github-mcp" });
     expect(mcp.mcpServers["promovaweb-clickupfy"]).toEqual({
       command: "clickupfy",

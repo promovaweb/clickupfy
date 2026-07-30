@@ -257,6 +257,28 @@ export function createMcpServer(options: McpServerOptions): McpServer {
   );
 
   server.registerTool(
+    "clickupfy_list_get",
+    {
+      title: "Obter List",
+      description:
+        "Obtém a List fixada pelo projeto e os status disponíveis para tarefas.",
+      inputSchema: {
+        ...accountSchema,
+        listId: z
+          .string()
+          .optional()
+          .describe("ID da List; omita para usar o projeto."),
+      },
+    },
+    ({ account, listId }) =>
+      executar(async () =>
+        (await contexto(account)).client.obterList(
+          resolverIdFixo(options.listId, listId, "List"),
+        ),
+      ),
+  );
+
+  server.registerTool(
     "clickupfy_tasks_list",
     {
       title: "Listar tarefas",
@@ -575,9 +597,12 @@ function registerWriteTools(
           .describe("ID da List; omita para usar o projeto."),
         name: z.string(),
         description: z.string().optional(),
+        markdownContent: z.string().optional(),
         status: z.string().optional(),
         priority: z.number().int().min(1).max(4).optional(),
         assignees: z.array(z.number()).optional(),
+        parent: z.string().optional(),
+        startDate: z.number().int().optional(),
         dueDate: z.number().int().optional(),
         points: z.number().min(0).optional(),
       },
@@ -590,9 +615,12 @@ function registerWriteTools(
           limparIndefinidos({
             name: dados.name,
             description: dados.description,
+            markdown_content: dados.markdownContent,
             status: dados.status,
             priority: dados.priority,
             assignees: dados.assignees,
+            parent: dados.parent,
+            start_date: dados.startDate,
             due_date: dados.dueDate,
             points: dados.points,
           }),
@@ -611,8 +639,10 @@ function registerWriteTools(
         taskId: z.string(),
         name: z.string().optional(),
         description: z.string().optional(),
+        markdownContent: z.string().optional(),
         status: z.string().optional(),
         priority: z.number().int().min(1).max(4).optional(),
+        startDate: z.number().int().nullable().optional(),
         dueDate: z.number().int().nullable().optional(),
         points: z.number().min(0).optional(),
       },
@@ -622,8 +652,10 @@ function registerWriteTools(
         const atualizacoes = limparIndefinidos({
           name: dados.name,
           description: dados.description,
+          markdown_content: dados.markdownContent,
           status: dados.status,
           priority: dados.priority,
+          start_date: dados.startDate,
           due_date: dados.dueDate,
           points: dados.points,
         });
@@ -635,6 +667,47 @@ function registerWriteTools(
           atualizacoes,
         );
       }),
+  );
+
+  server.registerTool(
+    "clickupfy_checklist_create",
+    {
+      title: "Criar checklist",
+      description: "Cria um checklist em uma tarefa.",
+      inputSchema: {
+        ...accountSchema,
+        taskId: z.string(),
+        name: z.string(),
+      },
+    },
+    ({ account, taskId, name }) =>
+      executar(async () =>
+        (await contexto(account)).client.criarChecklist(taskId, name),
+      ),
+  );
+
+  server.registerTool(
+    "clickupfy_checklist_item_create",
+    {
+      title: "Criar checklist item",
+      description: "Acrescenta um item a um checklist existente.",
+      inputSchema: {
+        ...accountSchema,
+        checklistId: z.string(),
+        name: z.string(),
+        assignee: z.number().int().optional(),
+      },
+    },
+    ({ account, checklistId, name, assignee }) =>
+      executar(async () =>
+        (await contexto(account)).client.criarItemChecklist(
+          checklistId,
+          limparIndefinidos({ name, assignee }) as {
+            name: string;
+            assignee?: number;
+          },
+        ),
+      ),
   );
 
   server.registerTool(

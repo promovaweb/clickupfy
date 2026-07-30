@@ -11,14 +11,16 @@ import { CliError } from "./errors.js";
 
 export const SKILL_NAMES = [
   "clickupfy-dev",
-  "clickupfy-executar-tarefa",
+  "clickup-issue-create",
+  "clickup-issue-implement",
   "clickupfy-release",
 ] as const;
 export type SkillName = (typeof SKILL_NAMES)[number];
 
 const SKILL_FILES: Record<SkillName, readonly string[]> = {
   "clickupfy-dev": ["SKILL.md", "agents/openai.yaml"],
-  "clickupfy-executar-tarefa": ["SKILL.md", "agents/openai.yaml"],
+  "clickup-issue-create": ["SKILL.md", "agents/openai.yaml"],
+  "clickup-issue-implement": ["SKILL.md", "agents/openai.yaml"],
   "clickupfy-release": ["SKILL.md", "agents/openai.yaml"],
 };
 

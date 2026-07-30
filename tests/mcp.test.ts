@@ -75,6 +75,7 @@ describe("servidor MCP", () => {
     const names = tools.map((tool) => tool.name);
     expect(names).toContain("clickupfy_mcp_context");
     expect(names).toContain("clickupfy_accounts_list");
+    expect(names).toContain("clickupfy_list_get");
     expect(names).toContain("clickupfy_task_get");
     expect(names).toContain("clickupfy_tasks_search");
     expect(names).toContain("clickupfy_sprints_list");
@@ -87,6 +88,8 @@ describe("servidor MCP", () => {
     expect(names).not.toContain("clickupfy_sprint_remove_task");
     expect(names).not.toContain("clickupfy_sprint_set_points");
     expect(names).not.toContain("clickupfy_checklist_item_set");
+    expect(names).not.toContain("clickupfy_checklist_create");
+    expect(names).not.toContain("clickupfy_checklist_item_create");
 
     const resposta = await client.callTool({
       name: "clickupfy_accounts_list",
@@ -121,6 +124,8 @@ describe("servidor MCP", () => {
     expect(writableNames).toContain("clickupfy_sprint_add_task");
     expect(writableNames).toContain("clickupfy_sprint_remove_task");
     expect(writableNames).toContain("clickupfy_sprint_set_points");
+    expect(writableNames).toContain("clickupfy_checklist_create");
+    expect(writableNames).toContain("clickupfy_checklist_item_create");
     expect(writableNames).toContain("clickupfy_checklist_item_set");
   });
 
@@ -148,6 +153,19 @@ describe("servidor MCP", () => {
       if (request.url?.startsWith("/api/v2/list/list-project/task")) {
         response.end(
           JSON.stringify({ tasks: [{ id: "task-1", name: "Implementar API" }] }),
+        );
+        return;
+      }
+      if (request.url === "/api/v2/list/list-project") {
+        response.end(
+          JSON.stringify({
+            id: "list-project",
+            name: "Desenvolvimento",
+            statuses: [
+              { status: "em revisão", type: "custom" },
+              { status: "concluída", type: "closed" },
+            ],
+          }),
         );
         return;
       }
@@ -243,6 +261,10 @@ describe("servidor MCP", () => {
       name: "clickupfy_tasks_list",
       arguments: {},
     });
+    const list = await client.callTool({
+      name: "clickupfy_list_get",
+      arguments: {},
+    });
     const busca = await client.callTool({
       name: "clickupfy_tasks_search",
       arguments: { query: "API" },
@@ -268,6 +290,7 @@ describe("servidor MCP", () => {
     expect(JSON.stringify(contexto.content)).toContain("list-project");
     expect(JSON.stringify(contexto.content)).not.toContain("sprintFolderId");
     expect(JSON.stringify(tarefas.content)).toContain("Implementar API");
+    expect(JSON.stringify(list.content)).toContain("em revisão");
     expect(JSON.stringify(busca.content)).toContain("Implementar API");
     expect(JSON.stringify(leitura.content)).toContain("task:sub-1");
     expect(JSON.stringify(leitura.content)).toContain(
@@ -294,5 +317,136 @@ describe("servidor MCP", () => {
     expect(JSON.stringify(foraDoEscopo.content)).toContain(
       "fixado em List list-project",
     );
+  });
+
+  it("encaminha Markdown, subtarefa, datas e checklists pelas ferramentas", async () => {
+    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-write-mcp-"));
+    const configPath = join(pasta, "config.json");
+    const agora = new Date().toISOString();
+    const config = criarConfiguracaoVazia();
+    config.activeAccount = "dev";
+    config.accounts.dev = {
+      name: "Desenvolvimento",
+      apiKey: "pk_teste",
+      user: { id: 1, username: "dev" },
+      workspace: { id: "123", name: "Engenharia" },
+      createdAt: agora,
+      updatedAt: agora,
+    };
+    process.env.PROMOVAWEB_CLICKUPFY_CONFIG = configPath;
+    await salvarConfiguracao(config);
+
+    const requisicoes: Array<{
+      method?: string;
+      url?: string;
+      body?: unknown;
+    }> = [];
+    const servidor = createServer(async (request, response) => {
+      const partes: Buffer[] = [];
+      for await (const parte of request) partes.push(Buffer.from(parte));
+      const texto = Buffer.concat(partes).toString("utf8");
+      requisicoes.push({
+        method: request.method,
+        url: request.url,
+        ...(texto ? { body: JSON.parse(texto) } : {}),
+      });
+      response.setHeader("Content-Type", "application/json");
+      response.end(JSON.stringify({ id: `resultado-${requisicoes.length}` }));
+    });
+    servidores.push(servidor);
+    await new Promise<void>((resolveListen) =>
+      servidor.listen(0, "127.0.0.1", resolveListen),
+    );
+    const endereco = servidor.address();
+    if (!endereco || typeof endereco === "string") {
+      throw new Error("Porta ausente.");
+    }
+
+    const transport = new StdioClientTransport({
+      command: resolve("node_modules/.bin/tsx"),
+      args: [
+        "src/cli.ts",
+        "mcp",
+        "serve",
+        "--account",
+        "dev",
+        "--list",
+        "list-project",
+      ],
+      cwd: resolve("."),
+      env: {
+        ...process.env,
+        PROMOVAWEB_CLICKUPFY_CONFIG: configPath,
+        PROMOVAWEB_CLICKUPFY_API_URL: `http://127.0.0.1:${endereco.port}/api/v2`,
+      } as Record<string, string>,
+      stderr: "pipe",
+    });
+    const client = new Client({ name: "teste-write", version: "1.0.0" });
+    clientes.push(client);
+    await client.connect(transport);
+
+    await client.callTool({
+      name: "clickupfy_task_create",
+      arguments: {
+        name: "Subtarefa",
+        markdownContent: "# Escopo",
+        parent: "task-pai",
+        startDate: 1_700_000_000_000,
+        dueDate: 1_700_086_399_999,
+      },
+    });
+    await client.callTool({
+      name: "clickupfy_task_update",
+      arguments: {
+        taskId: "task-pai",
+        status: "em revisão",
+        startDate: 1_700_000_000_000,
+        dueDate: 1_700_086_399_999,
+      },
+    });
+    await client.callTool({
+      name: "clickupfy_checklist_create",
+      arguments: { taskId: "task-pai", name: "Testes" },
+    });
+    await client.callTool({
+      name: "clickupfy_checklist_item_create",
+      arguments: {
+        checklistId: "check-1",
+        name: "Executar testes unitários",
+      },
+    });
+
+    expect(requisicoes).toEqual([
+      {
+        method: "POST",
+        url: "/api/v2/list/list-project/task",
+        body: {
+          name: "Subtarefa",
+          markdown_content: "# Escopo",
+          parent: "task-pai",
+          start_date: 1_700_000_000_000,
+          due_date: 1_700_086_399_999,
+        },
+      },
+      {
+        method: "PUT",
+        url: "/api/v2/task/task-pai",
+        body: {
+          status: "em revisão",
+          start_date: 1_700_000_000_000,
+          due_date: 1_700_086_399_999,
+        },
+      },
+      {
+        method: "POST",
+        url: "/api/v2/task/task-pai/checklist",
+        body: { name: "Testes" },
+      },
+      {
+        method: "POST",
+        url: "/api/v2/checklist/check-1/checklist_item",
+        body: { name: "Executar testes unitários" },
+      },
+    ]);
   });
 });

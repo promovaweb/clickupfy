@@ -244,6 +244,7 @@ export function renderizarLeituraMarkdown(leitura: TaskReading): string {
         .join(", ")}`,
     );
   }
+  if (task.start_date) linhas.push(`- **Data de início:** ${task.start_date}`);
   if (task.due_date) linhas.push(`- **Data de entrega:** ${task.due_date}`);
   if (task.url) linhas.push(`- **ClickUp:** [Abrir tarefa](${task.url})`);
 

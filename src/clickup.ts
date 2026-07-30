@@ -33,6 +33,16 @@ export interface ClickUpList {
   priority?: { priority?: string; color?: string } | null;
   folder?: { id?: string; name?: string };
   space?: { id?: string; name?: string };
+  statuses?: ClickUpStatus[];
+}
+
+/** Status configurado na List, inclusive o tipo usado no encerramento. */
+export interface ClickUpStatus {
+  id?: string;
+  status: string;
+  type?: string;
+  orderindex?: number | string;
+  color?: string;
 }
 
 /** Item de checklist retornado dentro de uma tarefa do ClickUp. */
@@ -68,6 +78,7 @@ export interface ClickUpTask {
   points?: number | null;
   assignees?: ClickUpUser[];
   url?: string;
+  start_date?: string | null;
   due_date?: string | null;
   date_updated?: string;
   orderindex?: number | string;
@@ -364,6 +375,30 @@ export class ClickUpClient {
     return this.request<ClickUpTask>("POST", `/list/${listId}/task`, {
       body: dados,
     });
+  }
+
+  /** Cria um checklist dentro de uma tarefa. */
+  public async criarChecklist(
+    taskId: string,
+    name: string,
+  ): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>(
+      "POST",
+      `/task/${taskId}/checklist`,
+      { body: { name } },
+    );
+  }
+
+  /** Acrescenta um item a um checklist existente. */
+  public async criarItemChecklist(
+    checklistId: string,
+    dados: { name: string; assignee?: number },
+  ): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>(
+      "POST",
+      `/checklist/${checklistId}/checklist_item`,
+      { body: dados },
+    );
   }
 
   public async atualizarTarefa(

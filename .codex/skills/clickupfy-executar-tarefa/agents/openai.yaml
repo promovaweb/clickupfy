@@ -1,4 +1,0 @@
-interface:
-  display_name: "Executar Tarefa com ClickUpfy"
-  short_description: "Execute tarefas de software com rastreabilidade"
-  default_prompt: "Use $clickupfy-executar-tarefa para implementar esta tarefa do ClickUp e registrar o progresso."
