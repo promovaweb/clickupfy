@@ -1,27 +1,44 @@
-# Identidade do ClickUpfy
+# Marca ClickUpfy
 
-## Assinatura verbal
+O ClickUpfy organiza execução rastreável no ClickUp. Sua identidade combina o
+petróleo e o turquesa da Promovaweb com azul, cor funcional associada a
+tarefas, progresso e confirmação.
 
-O slogan canônico do ClickUpfy é:
+## Conceito visual
 
-> Planeje. Execute. Comprove.
+O símbolo reúne um **prompt de terminal** e uma **marca de conclusão**. A
+composição comunica trabalho iniciado por comando, executado com método e
+registrado como concluído.
 
-Ele descreve o ciclo próprio da ferramenta: preparar o destino e o trabalho,
-executar pela interface humana ou agêntica e registrar evidências no ClickUp.
-Não reutilize a assinatura verbal do Specsfy.
+## Arquivos oficiais
 
-## Identidade visual
+| Arquivo | Uso |
+| --- | --- |
+| `logo/icon.svg` | ícone principal com placa petróleo |
+| `logo/icon-light.svg` | ícone transparente sobre fundo claro |
+| `logo/icon-dark.svg` | ícone transparente sobre fundo escuro |
+| `logo/logo-light.svg` | assinatura horizontal sobre fundo claro |
+| `logo/logo-dark.svg` | assinatura horizontal sobre fundo escuro |
+| `logo/icon.png` | fallback raster de 512 × 512 px |
 
-O ícone combina um prompt de terminal com uma marca de conclusão. As fontes
-canônicas são:
+Use a variante correspondente ao fundo. Preserve 12,5% de área livre ao redor
+do ativo. O tamanho mínimo é 24 px para o ícone e 140 px para a assinatura.
 
-- `logo/icon.svg`, para interfaces e escala vetorial;
-- `logo/icon.png`, para PDF, EPUB e consumidores que não renderizam SVG.
+## Sistema digital
 
-O PNG deve manter fundo transparente, placa preta e traços brancos opacos. O
-build do ebook interrompe a geração quando qualquer uma dessas duas cores
-estruturais estiver ausente.
+- `colors/palette.json`: fonte editável da paleta;
+- `tokens.json`: tokens agnósticos;
+- `global.css`: webfontes, variáveis CSS e troca de tema;
+- `tailwind-theme.js`: extensão para Tailwind CSS;
+- `accessibility.md`: relatório de contraste;
+- `typography/README.md`: hierarquia tipográfica.
 
-O ebook compartilha grid, tipografia IBM Plex, escala, estilos de código e
-composição monocromática com o guia do Specsfy. A identidade, o slogan e o
-conteúdo permanecem próprios do ClickUpfy.
+## Regras para agentes
+
+1. Use os ativos desta pasta sem redesenhá-los.
+2. Azul indica ação, progresso ou conclusão; turquesa identifica a família.
+3. Estado nunca depende apenas de cor: inclua texto, ícone ou posição.
+4. Use tokens semânticos e a variante correta para light ou dark mode.
+5. Não aplique filtros, gradientes, sombras, rotações ou deformações.
+
+A assinatura verbal canônica continua sendo **Planeje. Execute. Comprove.**

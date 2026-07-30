@@ -1,8 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title description">
   <title id="title">Logo do ClickUpfy</title>
-  <desc id="description">Terminal preto com um prompt e uma marca de conclusão.</desc>
-  <rect width="256" height="256" rx="56" fill="#000000"/>
-  <path d="M62 78L102 118L62 158" fill="none" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M118 160H157" fill="none" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round"/>
-  <path d="M150 96L173 119L205 78" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <desc id="description">Terminal em petróleo com um prompt turquesa e uma marca azul de conclusão.</desc>
+  <rect width="256" height="256" rx="56" fill="#00161E"/>
+  <path d="M48 62l40 40-40 40M102 170h54" fill="none" stroke="#2AD5BE" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M146 80l24 24 36-44" fill="none" stroke="#3B82F6" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

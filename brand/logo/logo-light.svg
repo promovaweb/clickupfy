@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 320" role="img" aria-labelledby="title desc">
+  <title id="title">Logo do ClickUpfy para fundo claro</title>
+  <desc id="desc">Ícone de terminal e nome ClickUpfy em assinatura horizontal.</desc>
+  <g transform="translate(48 32)">
+    <path d="M48 62l40 40-40 40M102 170h54" fill="none" stroke="#00161E" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M146 80l24 24 36-44" fill="none" stroke="#1D4ED8" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="350" y="213" fill="#00161E" font-family="Manrope, Inter, Arial, sans-serif" font-size="146" font-weight="750" letter-spacing="-5">ClickUpfy</text>
+</svg>
