@@ -386,6 +386,61 @@ clickupfy time stop
 
 Consulte o registro atual antes de iniciar outro time entry.
 
+## Docs
+
+O ClickUpfy gerencia Docs do ClickUp pela API v3 (`/api/v3`), separada da API
+de tarefas (`/api/v2`). Todos os comandos operam no workspace do perfil ativo.
+
+```bash
+clickupfy doc list --query "runbook"
+clickupfy doc get <doc-id>
+
+clickupfy doc create \
+  --name "Runbook de deploy" \
+  --parent-id <list-id> \
+  --parent-type 6 \
+  --create-page
+```
+
+`--parent-type` segue os tipos de local da API do ClickUp: `4` Space, `5`
+Folder, `6` List, `7` Everything (o próprio workspace) e `12` tarefa. Informe
+`--parent-id` e `--parent-type` juntos, ou omita ambos para criar um Doc solto
+no workspace.
+
+Páginas ficam sob `doc page`:
+
+```bash
+clickupfy doc page tree <doc-id>
+clickupfy doc page list <doc-id>
+clickupfy doc page get <doc-id> <page-id>
+
+clickupfy doc page create <doc-id> \
+  --name "Introdução" \
+  --content "# Introdução\n\nContexto do runbook."
+
+clickupfy doc page create <doc-id> \
+  --name "Rollback" \
+  --parent-page <page-id> \
+  --content "## Passos de rollback"
+
+clickupfy doc page update <doc-id> <page-id> \
+  --content "Parágrafo adicional." \
+  --content-edit-mode append
+```
+
+`doc page tree` retorna a hierarquia de páginas sem conteúdo, útil para
+localizar um `page-id` antes de ler ou editar. `doc page list` e `doc page
+get` retornam o conteúdo em Markdown por padrão (`--content-format` aceita
+`text/md` ou `text/plain`). `doc page create` sem `--parent-page` cria uma
+página de primeiro nível; com `--parent-page`, cria uma sub-página.
+`doc page update` exige ao menos um campo e usa `--content-edit-mode` para
+decidir entre substituir (`replace`, padrão), acrescentar (`append`) ou
+anteceder (`prepend`) o conteúdo salvo.
+
+A API pública do ClickUp não oferece endpoints para excluir Docs ou páginas,
+reordenar páginas na árvore, nem gerenciar permissões de compartilhamento.
+Essas ações continuam exclusivas da interface do ClickUp.
+
 ## Servidor MCP
 
 O servidor usa o transporte stdio e lê a configuração global de perfis do CLI:
@@ -417,7 +472,7 @@ O servidor não inicia sem `--list`. O parâmetro `--sprint-folder` é opcional 
 pode ser acrescentado ao comando quando o projeto usar Sprints.
 
 As ferramentas cobrem accounts, workspaces, spaces, folders, lists, Sprints,
-tarefas, subtarefas, checklists, comentários e time tracking.
+tarefas, subtarefas, checklists, comentários, time tracking e Docs.
 `clickupfy_list_get` retorna os status configurados na List e permite escolher
 um status terminal sem adivinhar sua grafia.
 `clickupfy_task_get` devolve a fila em `execution`. Com `markdown: true`, a
@@ -431,6 +486,14 @@ de entrega. Consultas de Sprint permanecem disponíveis em read-only;
 associação de tarefas, alteração de Points e checklist items aparecem somente
 no servidor com escrita. As ferramentas de escrita exigem parâmetros
 explícitos, e `clickupfy_task_delete` também exige `confirm: true`.
+
+As ferramentas de Docs seguem o mesmo padrão: `clickupfy_docs_list`,
+`clickupfy_doc_get`, `clickupfy_doc_page_tree`, `clickupfy_doc_pages_list` e
+`clickupfy_doc_page_get` permanecem disponíveis em read-only, porque só
+consultam o ClickUp. `clickupfy_doc_create`, `clickupfy_doc_page_create` e
+`clickupfy_doc_page_update` aparecem somente no servidor com escrita e usam a
+API v3 do ClickUp por baixo. Como Docs não têm List própria, essas ferramentas
+sempre operam no workspace do perfil ativo, sem a fixação usada por tarefas.
 
 `clickupfy_mcp_context` mostra o destino fixado sem expor a API key.
 `clickupfy_folders_list`, `clickupfy_lists_list`, `clickupfy_tasks_list`,
@@ -498,6 +561,8 @@ inspecionar o material empacotado.
 | `checklist` | `create`, `item-create`, `set` com `--resolved` ou `--open`. |
 | `comment` | `list`, `create`. |
 | `time` | `current`, `start`, `stop`. |
+| `doc` | `list`, `get`, `create`. |
+| `doc page` | `tree`, `list`, `get`, `create`, `update`. |
 | `mcp` | `serve`. |
 | `agent` | Instala skills e configura o MCP. |
 

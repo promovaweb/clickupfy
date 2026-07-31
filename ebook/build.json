@@ -2,24 +2,14 @@
   "schema_version": 1,
   "version": "1.1.1",
   "edition": "v1.1.1",
-  "generated_at": "2026-07-30T23:06:16Z",
-  "source_sha256": "7c9bec876bc4d6430efe18e36f47262d7a94b1b582625d8d164f2ed8b902c08a",
+  "generated_at": "2026-07-31T19:02:09Z",
+  "source_sha256": "3c03db17b24d62eb1fb7fd2e07b003df2ba3be235b97cd23ab104fa5023e65cc",
   "sources": [
-    ".ebook/build-ebook.sh",
-    ".ebook/epub.css",
-    ".ebook/external-links.lua",
-    ".ebook/extract-document-metadata.py",
-    ".ebook/metadata.yaml",
-    ".ebook/pdf.css",
-    ".ebook/prune-editions.py",
-    ".ebook/strip-document-metadata.lua",
-    ".ebook/template.html",
     "brand/fonts/fonts.css",
     "brand/fonts/inter-latin.woff2",
     "brand/fonts/manrope-latin.woff2",
     "brand/logo/icon.png",
     "brand/logo/icon.svg",
-    "docs/user/README.md",
     "docs/user/agentes.md",
     "docs/user/cli.md",
     "docs/user/conceitos.md",
@@ -29,10 +19,20 @@
     "docs/user/mcp.md",
     "docs/user/primeiro-projeto.md",
     "docs/user/reading-order.txt",
+    "docs/user/README.md",
     "docs/user/solucao-de-problemas.md",
     "docs/user/sprints.md",
     "docs/user/tarefas.md",
     "docs/user/time-tracking.md",
+    ".ebook/build-ebook.sh",
+    ".ebook/epub.css",
+    ".ebook/external-links.lua",
+    ".ebook/extract-document-metadata.py",
+    ".ebook/metadata.yaml",
+    ".ebook/pdf.css",
+    ".ebook/prune-editions.py",
+    ".ebook/strip-document-metadata.lua",
+    ".ebook/template.html",
     "ebook/VERSION"
   ],
   "document_metadata": {
@@ -105,11 +105,11 @@
   "artifacts": {
     "pdf": {
       "file": "ClickUpfy-Guia-do-Usuario-v1.1.1.pdf",
-      "sha256": "5eb659d3cb07218bafe3aa07c946d0f0a741168f96d31f44ca7f18503e4a2092"
+      "sha256": "e779bf2678f151aeb6b7e565edb48af8f51d7a2c9a723c63d84777cae58a1f14"
     },
     "epub": {
       "file": "ClickUpfy-Guia-do-Usuario-v1.1.1.epub",
-      "sha256": "2c2bd846d82df74d73f08b11cb2dde0100683a8046fd2fa7132b654f3dc2fa97"
+      "sha256": "007a0c91ffcd0c98c6efa9f557f5b34f2ce26d5c072f54efaaf096453349dd12"
     }
   }
 }

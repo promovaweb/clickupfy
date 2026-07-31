@@ -499,6 +499,120 @@ export function createMcpServer(options: McpServerOptions): McpServer {
   );
 
   server.registerTool(
+    "clickupfy_docs_list",
+    {
+      title: "Buscar Docs",
+      description: "Busca Docs do workspace associado ao perfil.",
+      inputSchema: {
+        ...accountSchema,
+        query: z.string().optional(),
+        parentId: z.string().optional(),
+        parentType: z.number().int().optional(),
+        deleted: z.boolean().optional(),
+        archived: z.boolean().optional(),
+        creator: z.number().int().optional(),
+        maxPages: z.number().int().min(1).max(50).optional(),
+      },
+    },
+    ({ account, query, parentId, parentType, deleted, archived, creator, maxPages }) =>
+      executar(async () => {
+        const ctx = await contexto(account);
+        return ctx.client.listarDocs(ctx.account.workspace.id, {
+          ...(query ? { query } : {}),
+          ...(parentId ? { parentId } : {}),
+          ...(parentType !== undefined ? { parentType } : {}),
+          ...(deleted !== undefined ? { deleted } : {}),
+          ...(archived !== undefined ? { archived } : {}),
+          ...(creator !== undefined ? { creator } : {}),
+          ...(maxPages !== undefined ? { maxPages } : {}),
+        });
+      }),
+  );
+
+  server.registerTool(
+    "clickupfy_doc_get",
+    {
+      title: "Obter Doc",
+      description: "Obtém metadados de um Doc do workspace associado.",
+      inputSchema: {
+        ...accountSchema,
+        docId: z.string(),
+      },
+    },
+    ({ account, docId }) =>
+      executar(async () => {
+        const ctx = await contexto(account);
+        return ctx.client.obterDoc(ctx.account.workspace.id, docId);
+      }),
+  );
+
+  server.registerTool(
+    "clickupfy_doc_page_tree",
+    {
+      title: "Obter árvore de páginas do Doc",
+      description: "Mostra a hierarquia de páginas do Doc, sem conteúdo.",
+      inputSchema: {
+        ...accountSchema,
+        docId: z.string(),
+      },
+    },
+    ({ account, docId }) =>
+      executar(async () => {
+        const ctx = await contexto(account);
+        return ctx.client.obterEstruturaPaginasDoc(
+          ctx.account.workspace.id,
+          docId,
+        );
+      }),
+  );
+
+  server.registerTool(
+    "clickupfy_doc_pages_list",
+    {
+      title: "Listar páginas do Doc",
+      description: "Lista as páginas do Doc com conteúdo em Markdown.",
+      inputSchema: {
+        ...accountSchema,
+        docId: z.string(),
+        maxPageDepth: z.number().int().optional(),
+        contentFormat: z.string().optional(),
+      },
+    },
+    ({ account, docId, maxPageDepth, contentFormat }) =>
+      executar(async () => {
+        const ctx = await contexto(account);
+        return ctx.client.listarPaginasDoc(ctx.account.workspace.id, docId, {
+          ...(maxPageDepth !== undefined ? { maxPageDepth } : {}),
+          ...(contentFormat ? { contentFormat } : {}),
+        });
+      }),
+  );
+
+  server.registerTool(
+    "clickupfy_doc_page_get",
+    {
+      title: "Obter página do Doc",
+      description: "Obtém uma página específica de um Doc, com conteúdo.",
+      inputSchema: {
+        ...accountSchema,
+        docId: z.string(),
+        pageId: z.string(),
+        contentFormat: z.string().optional(),
+      },
+    },
+    ({ account, docId, pageId, contentFormat }) =>
+      executar(async () => {
+        const ctx = await contexto(account);
+        return ctx.client.obterPaginaDoc(
+          ctx.account.workspace.id,
+          docId,
+          pageId,
+          contentFormat ? { contentFormat } : {},
+        );
+      }),
+  );
+
+  server.registerTool(
     "clickupfy_time_current",
     {
       title: "Consultar time tracking atual",
@@ -736,6 +850,112 @@ function registerWriteTools(
           resolved,
         ),
       ),
+  );
+
+  server.registerTool(
+    "clickupfy_doc_create",
+    {
+      title: "Criar Doc",
+      description:
+        "Cria um Doc no workspace associado, opcionalmente vinculado a um Space, Folder, List ou tarefa.",
+      inputSchema: {
+        ...accountSchema,
+        name: z.string(),
+        parentId: z
+          .string()
+          .optional()
+          .describe("ID do local onde o Doc nasce."),
+        parentType: z
+          .number()
+          .int()
+          .optional()
+          .describe("4 Space, 5 Folder, 6 List, 7 Everything, 12 Task."),
+        visibility: z.string().optional().describe("PRIVATE ou PUBLIC."),
+        createPage: z
+          .boolean()
+          .optional()
+          .describe("Cria também a primeira página em branco."),
+      },
+    },
+    ({ account, name, parentId, parentType, visibility, createPage }) =>
+      executar(async () => {
+        if (parentId && parentType === undefined) {
+          throw new Error("Informe parentType junto de parentId.");
+        }
+        const ctx = await contexto(account);
+        return ctx.client.criarDoc(ctx.account.workspace.id, {
+          name,
+          ...(parentId ? { parent: { id: parentId, type: parentType! } } : {}),
+          ...(visibility ? { visibility } : {}),
+          ...(createPage !== undefined ? { createPage } : {}),
+        });
+      }),
+  );
+
+  server.registerTool(
+    "clickupfy_doc_page_create",
+    {
+      title: "Criar página em um Doc",
+      description: "Cria uma página, ou sub-página, em um Doc existente.",
+      inputSchema: {
+        ...accountSchema,
+        docId: z.string(),
+        name: z.string(),
+        content: z.string().optional(),
+        subTitle: z.string().optional(),
+        parentPageId: z
+          .string()
+          .optional()
+          .describe("Cria como sub-página deste ID."),
+        orderindex: z.number().optional(),
+        contentFormat: z.string().optional(),
+      },
+    },
+    ({ account, docId, ...dados }) =>
+      executar(async () => {
+        const ctx = await contexto(account);
+        return ctx.client.criarPaginaDoc(
+          ctx.account.workspace.id,
+          docId,
+          limparIndefinidos(dados) as { name: string },
+        );
+      }),
+  );
+
+  server.registerTool(
+    "clickupfy_doc_page_update",
+    {
+      title: "Atualizar página de um Doc",
+      description:
+        "Atualiza título, subtítulo e/ou conteúdo de uma página existente.",
+      inputSchema: {
+        ...accountSchema,
+        docId: z.string(),
+        pageId: z.string(),
+        name: z.string().optional(),
+        subTitle: z.string().optional(),
+        content: z.string().optional(),
+        contentEditMode: z
+          .enum(["replace", "append", "prepend"])
+          .optional()
+          .describe("replace (padrão), append ou prepend."),
+        contentFormat: z.string().optional(),
+      },
+    },
+    ({ account, docId, pageId, ...dados }) =>
+      executar(async () => {
+        const atualizacoes = limparIndefinidos(dados);
+        if (Object.keys(atualizacoes).length === 0) {
+          throw new Error("Informe ao menos um campo para atualizar.");
+        }
+        const ctx = await contexto(account);
+        return ctx.client.atualizarPaginaDoc(
+          ctx.account.workspace.id,
+          docId,
+          pageId,
+          atualizacoes as { contentEditMode?: "replace" | "append" | "prepend" },
+        );
+      }),
   );
 
   server.registerTool(

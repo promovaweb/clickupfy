@@ -206,4 +206,85 @@ describe("ClickUpClient", () => {
       assignee: 42,
     });
   });
+
+  it("busca Docs na base v3, pagina por cursor e filtra o texto localmente", async () => {
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            docs: [{ id: "doc-1", name: "Guia de onboarding" }],
+            next_cursor: "cursor-2",
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            docs: [{ id: "doc-2", name: "Notas de reunião" }],
+            next_cursor: null,
+          }),
+          { status: 200 },
+        ),
+      );
+    const client = new ClickUpClient("pk_teste", {
+      baseUrl: "https://clickup.test/api/v2",
+      baseUrlV3: "https://clickup.test/api/v3",
+      fetchFn,
+    });
+
+    const docs = await client.listarDocs("workspace-1", { query: "onboarding" });
+
+    expect(String(fetchFn.mock.calls[0]?.[0])).toContain(
+      "https://clickup.test/api/v3/workspaces/workspace-1/docs",
+    );
+    expect(String(fetchFn.mock.calls[1]?.[0])).toContain("cursor=cursor-2");
+    expect(docs.map((doc) => doc.id)).toEqual(["doc-1"]);
+  });
+
+  it("cria Doc e página, e edita conteúdo de uma página existente", async () => {
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockImplementation(
+        async () =>
+          new Response(JSON.stringify({ id: "criado" }), { status: 200 }),
+      );
+    const client = new ClickUpClient("pk_teste", {
+      baseUrlV3: "https://clickup.test/api/v3",
+      fetchFn,
+    });
+
+    await client.criarDoc("workspace-1", {
+      name: "Runbook",
+      parent: { id: "list-1", type: 6 },
+    });
+    await client.criarPaginaDoc("workspace-1", "doc-1", {
+      name: "Introdução",
+      content: "# Introdução",
+    });
+    await client.atualizarPaginaDoc("workspace-1", "doc-1", "page-1", {
+      content: "Novo parágrafo",
+      contentEditMode: "append",
+    });
+
+    expect(String(fetchFn.mock.calls[0]?.[0])).toBe(
+      "https://clickup.test/api/v3/workspaces/workspace-1/docs",
+    );
+    expect(JSON.parse(String(fetchFn.mock.calls[0]?.[1]?.body))).toMatchObject({
+      name: "Runbook",
+      parent: { id: "list-1", type: 6 },
+    });
+    expect(String(fetchFn.mock.calls[1]?.[0])).toBe(
+      "https://clickup.test/api/v3/workspaces/workspace-1/docs/doc-1/pages",
+    );
+    expect(fetchFn.mock.calls[2]?.[1]?.method).toBe("PUT");
+    expect(String(fetchFn.mock.calls[2]?.[0])).toBe(
+      "https://clickup.test/api/v3/workspaces/workspace-1/docs/doc-1/pages/page-1",
+    );
+    expect(JSON.parse(String(fetchFn.mock.calls[2]?.[1]?.body))).toEqual({
+      content: "Novo parágrafo",
+      content_edit_mode: "append",
+    });
+  });
 });

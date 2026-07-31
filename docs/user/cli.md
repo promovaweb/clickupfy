@@ -211,6 +211,50 @@ clickupfy time start --task <task-id> [--description <texto>]
 clickupfy time stop
 ```
 
+## Docs
+
+```bash
+clickupfy doc list [--query <texto>] [options]
+clickupfy doc get <doc-id>
+clickupfy doc create --name <nome> [options]
+clickupfy doc page tree <doc-id>
+clickupfy doc page list <doc-id> [options]
+clickupfy doc page get <doc-id> <page-id> [--content-format <valor>]
+clickupfy doc page create <doc-id> --name <nome> [options]
+clickupfy doc page update <doc-id> <page-id> [options]
+```
+
+Docs usam a API v3 do ClickUp e sempre operam no workspace do account ativo,
+sem depender de Space, Folder ou List.
+
+| Comando | Opção | Efeito |
+| --- | --- | --- |
+| `doc list` | `--query <texto>` | Filtra pelo nome ou ID localmente. |
+| `doc list` | `--parent-id <id>` | Restringe aos Docs criados sob este local. |
+| `doc list` | `--parent-type <n>` | Tipo do local: `4` Space, `5` Folder, `6` List, `7` Everything, `12` tarefa. |
+| `doc list` | `--deleted` | Inclui Docs excluídos. |
+| `doc list` | `--archived` | Inclui Docs arquivados. |
+| `doc list` | `--creator <id>` | Restringe ao ID numérico do criador. |
+| `doc list` | `--max-pages <n>` | Limita a paginação por cursor, entre uma e 50 páginas. |
+| `doc create` | `--parent-id <id>` | Local onde o Doc nasce; exige `--parent-type`. |
+| `doc create` | `--parent-type <n>` | Tipo do local; exige `--parent-id`. |
+| `doc create` | `--visibility <valor>` | `PRIVATE` ou `PUBLIC`. |
+| `doc create` | `--create-page` | Cria também a primeira página em branco. |
+| `doc page list` | `--max-page-depth <n>` | Limita a profundidade de sub-páginas retornadas. |
+| `doc page list` / `doc page get` | `--content-format <valor>` | `text/md` (padrão) ou `text/plain`. |
+| `doc page create` | `--content <texto>` | Conteúdo inicial da página. |
+| `doc page create` | `--sub-title <texto>` | Subtítulo da página. |
+| `doc page create` | `--parent-page <id>` | Cria como sub-página deste ID. |
+| `doc page create` | `--orderindex <n>` | Posição entre as páginas irmãs. |
+| `doc page update` | `--content-edit-mode <modo>` | `replace` (padrão), `append` ou `prepend`. |
+
+`doc page tree` mostra a hierarquia de páginas sem conteúdo, o caminho mais
+rápido para localizar um `page-id`. `doc page update` exige pelo menos um
+campo entre `--name`, `--sub-title` e `--content`.
+
+A API pública do ClickUp não oferece endpoints para excluir Docs ou páginas,
+reordenar páginas na árvore, nem gerenciar permissões de compartilhamento.
+
 ## Agentes e MCP
 
 ```bash

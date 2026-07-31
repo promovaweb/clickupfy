@@ -702,6 +702,188 @@ comment
     globals.json ? imprimirJson(dados) : imprimirTabela([dados]);
   });
 
+const doc = program.command("doc").description("gerencia Docs do ClickUp");
+doc
+  .command("list")
+  .alias("ls")
+  .option("--query <texto>", "texto no nome ou ID do Doc")
+  .option("--parent-id <id>", "filtra Docs criados sob este local")
+  .option("--parent-type <n>", "tipo do local (4 Space, 5 Folder, 6 List, 7 Everything, 12 Task)", inteiro)
+  .option("--deleted", "inclui Docs excluídos")
+  .option("--archived", "inclui Docs arquivados")
+  .option("--creator <id>", "ID numérico do criador", inteiro)
+  .option("--max-pages <n>", "limite de páginas de cursor consultadas", inteiro, 50)
+  .description("busca Docs do workspace associado")
+  .action(async function (this: Command, options) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const docs = await ctx.client.listarDocs(ctx.account.workspace.id, {
+      ...(options.query ? { query: options.query } : {}),
+      ...(options.parentId ? { parentId: options.parentId } : {}),
+      ...(options.parentType !== undefined ? { parentType: options.parentType } : {}),
+      ...(options.deleted ? { deleted: true } : {}),
+      ...(options.archived ? { archived: true } : {}),
+      ...(options.creator !== undefined ? { creator: options.creator } : {}),
+      ...(options.maxPages ? { maxPages: options.maxPages } : {}),
+    });
+    imprimir(docs, globals.json);
+  });
+
+doc
+  .command("get")
+  .argument("<doc-id>")
+  .description("obtém metadados de um Doc")
+  .action(async function (this: Command, docId: string) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const dados = await ctx.client.obterDoc(ctx.account.workspace.id, docId);
+    globals.json ? imprimirJson(dados) : imprimirTabela([{ ...dados }]);
+  });
+
+doc
+  .command("create")
+  .requiredOption("--name <nome>", "nome do Doc")
+  .option("--parent-id <id>", "ID do local onde o Doc nasce (Space, Folder, List ou tarefa)")
+  .option("--parent-type <n>", "tipo do local (4 Space, 5 Folder, 6 List, 7 Everything, 12 Task)", inteiro)
+  .option("--visibility <valor>", "visibilidade do Doc (PRIVATE ou PUBLIC)")
+  .option("--create-page", "cria também a primeira página em branco")
+  .description("cria um Doc no workspace associado")
+  .action(async function (this: Command, options) {
+    if (options.parentId && options.parentType === undefined) {
+      throw new CliError("Informe --parent-type junto de --parent-id.");
+    }
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const doc = await ctx.client.criarDoc(ctx.account.workspace.id, {
+      name: options.name,
+      ...(options.parentId
+        ? { parent: { id: options.parentId, type: options.parentType } }
+        : {}),
+      ...(options.visibility ? { visibility: options.visibility } : {}),
+      ...(options.createPage ? { createPage: true } : {}),
+    });
+    globals.json ? imprimirJson(doc) : imprimirTabela([{ ...doc }]);
+  });
+
+const docPage = doc.command("page").description("gerencia páginas de um Doc");
+docPage
+  .command("tree")
+  .argument("<doc-id>")
+  .description("mostra a árvore de páginas do Doc, sem conteúdo")
+  .action(async function (this: Command, docId: string) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const estrutura = await ctx.client.obterEstruturaPaginasDoc(
+      ctx.account.workspace.id,
+      docId,
+    );
+    imprimirJson(estrutura);
+  });
+
+docPage
+  .command("list")
+  .alias("ls")
+  .argument("<doc-id>")
+  .option("--max-page-depth <n>", "profundidade máxima de sub-páginas", inteiro)
+  .option("--content-format <valor>", "text/md (padrão) ou text/plain")
+  .description("lista as páginas do Doc com conteúdo")
+  .action(async function (this: Command, docId: string, options) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const paginas = await ctx.client.listarPaginasDoc(
+      ctx.account.workspace.id,
+      docId,
+      {
+        ...(options.maxPageDepth !== undefined
+          ? { maxPageDepth: options.maxPageDepth }
+          : {}),
+        ...(options.contentFormat ? { contentFormat: options.contentFormat } : {}),
+      },
+    );
+    imprimirJson(paginas);
+  });
+
+docPage
+  .command("get")
+  .argument("<doc-id>")
+  .argument("<page-id>")
+  .option("--content-format <valor>", "text/md (padrão) ou text/plain")
+  .description("obtém uma página do Doc com conteúdo")
+  .action(async function (this: Command, docId: string, pageId: string, options) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const pagina = await ctx.client.obterPaginaDoc(
+      ctx.account.workspace.id,
+      docId,
+      pageId,
+      options.contentFormat ? { contentFormat: options.contentFormat } : {},
+    );
+    globals.json ? imprimirJson(pagina) : process.stdout.write(`${pagina.content ?? ""}\n`);
+  });
+
+docPage
+  .command("create")
+  .argument("<doc-id>")
+  .requiredOption("--name <nome>", "título da página")
+  .option("--content <texto>", "conteúdo inicial")
+  .option("--sub-title <texto>", "subtítulo da página")
+  .option("--parent-page <id>", "cria como sub-página deste ID")
+  .option("--orderindex <n>", "posição entre as páginas irmãs", inteiro)
+  .option("--content-format <valor>", "text/md (padrão) ou text/plain")
+  .description("cria uma página, ou sub-página, em um Doc")
+  .action(async function (this: Command, docId: string, options) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const pagina = await ctx.client.criarPaginaDoc(
+      ctx.account.workspace.id,
+      docId,
+      limparIndefinidos({
+        name: options.name,
+        content: options.content,
+        subTitle: options.subTitle,
+        parentPageId: options.parentPage,
+        orderindex: options.orderindex,
+        contentFormat: options.contentFormat,
+      }) as { name: string },
+    );
+    globals.json ? imprimirJson(pagina) : imprimirTabela([{ ...pagina }]);
+  });
+
+docPage
+  .command("update")
+  .argument("<doc-id>")
+  .argument("<page-id>")
+  .option("--name <nome>", "novo título")
+  .option("--sub-title <texto>", "novo subtítulo")
+  .option("--content <texto>", "novo conteúdo")
+  .addOption(
+    new Option("--content-edit-mode <modo>", "replace (padrão), append ou prepend")
+      .choices(["replace", "append", "prepend"]),
+  )
+  .option("--content-format <valor>", "text/md (padrão) ou text/plain")
+  .description("atualiza título, subtítulo e/ou conteúdo de uma página")
+  .action(async function (this: Command, docId: string, pageId: string, options) {
+    const dados = limparIndefinidos({
+      name: options.name,
+      subTitle: options.subTitle,
+      content: options.content,
+      contentEditMode: options.contentEditMode,
+      contentFormat: options.contentFormat,
+    });
+    if (Object.keys(dados).length === 0) {
+      throw new CliError("Informe ao menos um campo para atualizar.");
+    }
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    const pagina = await ctx.client.atualizarPaginaDoc(
+      ctx.account.workspace.id,
+      docId,
+      pageId,
+      dados as { contentEditMode?: "replace" | "append" | "prepend" },
+    );
+    globals.json ? imprimirJson(pagina) : imprimirTabela([{ ...pagina }]);
+  });
+
 const time = program.command("time").description("gerencia time tracking");
 time
   .command("current")

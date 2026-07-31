@@ -98,11 +98,47 @@ export interface ClickUpComment {
   date?: string;
 }
 
+/** Doc do ClickUp (v3), com o local onde foi criado. */
+export interface ClickUpDoc {
+  id: string;
+  name?: string;
+  date_created?: string | number;
+  date_updated?: string | number;
+  creator?: number | string;
+  workspace_id?: number | string;
+  public?: boolean;
+  parent?: { id?: string; type?: number };
+}
+
+/** Nó da árvore de páginas de um Doc, sem o conteúdo de cada página. */
+export interface ClickUpDocPageListingItem {
+  id: string;
+  doc_id?: string;
+  name?: string;
+  orderindex?: number | string;
+  pages?: ClickUpDocPageListingItem[];
+}
+
+/** Página de um Doc com conteúdo, no formato solicitado (markdown por padrão). */
+export interface ClickUpDocPage {
+  id: string;
+  doc_id?: string;
+  parent_page_id?: string | null;
+  name?: string;
+  sub_title?: string;
+  content?: string;
+  orderindex?: number | string;
+  date_created?: string | number;
+  date_updated?: string | number;
+  pages?: ClickUpDocPage[];
+}
+
 type QueryValue = string | number | boolean | undefined;
 type FetchLike = typeof fetch;
 
 export interface ClickUpClientOptions {
   baseUrl?: string;
+  baseUrlV3?: string;
   fetchFn?: FetchLike;
   timeoutMs?: number;
 }
@@ -112,6 +148,7 @@ export interface ClickUpClientOptions {
  */
 export class ClickUpClient {
   readonly #baseUrl: string;
+  readonly #baseUrlV3: string;
   readonly #fetch: FetchLike;
   readonly #timeoutMs: number;
 
@@ -123,6 +160,10 @@ export class ClickUpClient {
       options.baseUrl ??
       process.env.PROMOVAWEB_CLICKUPFY_API_URL ??
       "https://api.clickup.com/api/v2";
+    this.#baseUrlV3 =
+      options.baseUrlV3 ??
+      process.env.PROMOVAWEB_CLICKUPFY_API_URL_V3 ??
+      "https://api.clickup.com/api/v3";
     this.#fetch = options.fetchFn ?? fetch;
     this.#timeoutMs = options.timeoutMs ?? 30_000;
   }
@@ -139,7 +180,34 @@ export class ClickUpClient {
       body?: unknown;
     } = {},
   ): Promise<T> {
-    const url = new URL(`${this.#baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`);
+    return this.#executar(this.#baseUrl, method, path, options);
+  }
+
+  /**
+   * Igual a `request`, mas contra a base `/api/v3`, usada pelos endpoints de
+   * Docs, que ainda não têm equivalente na v2.
+   */
+  public async requestV3<T>(
+    method: string,
+    path: string,
+    options: {
+      query?: Record<string, QueryValue | QueryValue[]>;
+      body?: unknown;
+    } = {},
+  ): Promise<T> {
+    return this.#executar(this.#baseUrlV3, method, path, options);
+  }
+
+  async #executar<T>(
+    baseUrl: string,
+    method: string,
+    path: string,
+    options: {
+      query?: Record<string, QueryValue | QueryValue[]>;
+      body?: unknown;
+    },
+  ): Promise<T> {
+    const url = new URL(`${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`);
 
     for (const [chave, valor] of Object.entries(options.query ?? {})) {
       const valores = Array.isArray(valor) ? valor : [valor];
@@ -514,6 +582,190 @@ export class ClickUpClient {
 
   public async pararTimeEntry(workspaceId: string): Promise<unknown> {
     return this.request("POST", `/team/${workspaceId}/time_entries/stop`);
+  }
+
+  /**
+   * Busca Docs do workspace. Percorre o cursor de paginação até o teto de
+   * páginas, pelo mesmo motivo aplicado às buscas de tarefas.
+   */
+  public async listarDocs(
+    workspaceId: string,
+    filtros: {
+      query?: string;
+      parentId?: string;
+      parentType?: number;
+      deleted?: boolean;
+      archived?: boolean;
+      creator?: number;
+      maxPages?: number;
+    } = {},
+  ): Promise<ClickUpDoc[]> {
+    const docs: ClickUpDoc[] = [];
+    const maxPages = Math.min(Math.max(filtros.maxPages ?? 50, 1), 50);
+    let cursor: string | undefined;
+
+    for (let pagina = 0; pagina < maxPages; pagina += 1) {
+      const resposta = await this.requestV3<{
+        docs: ClickUpDoc[];
+        next_cursor?: string | null;
+      }>("GET", `/workspaces/${workspaceId}/docs`, {
+        query: {
+          cursor,
+          deleted: filtros.deleted,
+          archived: filtros.archived,
+          parent_id: filtros.parentId,
+          parent_type: filtros.parentType,
+          creator: filtros.creator,
+        },
+      });
+      docs.push(...resposta.docs);
+      if (!resposta.next_cursor) break;
+      cursor = resposta.next_cursor;
+    }
+
+    const query = filtros.query?.trim().toLocaleLowerCase("pt-BR");
+    if (!query) return docs;
+    return docs.filter((doc) =>
+      [doc.id, doc.name].some((valor) =>
+        valor?.toString().toLocaleLowerCase("pt-BR").includes(query),
+      ),
+    );
+  }
+
+  /** Cria um Doc no workspace, opcionalmente associado a um local (Space, Folder, List ou tarefa). */
+  public async criarDoc(
+    workspaceId: string,
+    dados: {
+      name: string;
+      parent?: { id: string; type: number };
+      visibility?: string;
+      createPage?: boolean;
+    },
+  ): Promise<ClickUpDoc> {
+    return this.requestV3<ClickUpDoc>(
+      "POST",
+      `/workspaces/${workspaceId}/docs`,
+      {
+        body: {
+          name: dados.name,
+          parent: dados.parent,
+          visibility: dados.visibility,
+          create_page: dados.createPage,
+        },
+      },
+    );
+  }
+
+  public async obterDoc(
+    workspaceId: string,
+    docId: string,
+  ): Promise<ClickUpDoc> {
+    return this.requestV3<ClickUpDoc>(
+      "GET",
+      `/workspaces/${workspaceId}/docs/${docId}`,
+    );
+  }
+
+  /** Retorna a árvore de páginas do Doc, sem o conteúdo de cada uma. */
+  public async obterEstruturaPaginasDoc(
+    workspaceId: string,
+    docId: string,
+  ): Promise<ClickUpDocPageListingItem[]> {
+    return this.requestV3<ClickUpDocPageListingItem[]>(
+      "GET",
+      `/workspaces/${workspaceId}/docs/${docId}/pageListing`,
+    );
+  }
+
+  /** Retorna as páginas do Doc com conteúdo, no formato solicitado. */
+  public async listarPaginasDoc(
+    workspaceId: string,
+    docId: string,
+    opcoes: { maxPageDepth?: number; contentFormat?: string } = {},
+  ): Promise<ClickUpDocPage[]> {
+    return this.requestV3<ClickUpDocPage[]>(
+      "GET",
+      `/workspaces/${workspaceId}/docs/${docId}/pages`,
+      {
+        query: {
+          max_page_depth: opcoes.maxPageDepth,
+          content_format: opcoes.contentFormat,
+        },
+      },
+    );
+  }
+
+  public async obterPaginaDoc(
+    workspaceId: string,
+    docId: string,
+    pageId: string,
+    opcoes: { contentFormat?: string } = {},
+  ): Promise<ClickUpDocPage> {
+    return this.requestV3<ClickUpDocPage>(
+      "GET",
+      `/workspaces/${workspaceId}/docs/${docId}/pages/${pageId}`,
+      { query: { content_format: opcoes.contentFormat } },
+    );
+  }
+
+  /** Cria uma página, ou sub-página quando `parentPageId` é informado. */
+  public async criarPaginaDoc(
+    workspaceId: string,
+    docId: string,
+    dados: {
+      name: string;
+      content?: string;
+      subTitle?: string;
+      parentPageId?: string;
+      orderindex?: number;
+      contentFormat?: string;
+    },
+  ): Promise<ClickUpDocPage> {
+    return this.requestV3<ClickUpDocPage>(
+      "POST",
+      `/workspaces/${workspaceId}/docs/${docId}/pages`,
+      {
+        body: {
+          name: dados.name,
+          content: dados.content,
+          sub_title: dados.subTitle,
+          parent_page_id: dados.parentPageId,
+          orderindex: dados.orderindex,
+          content_format: dados.contentFormat,
+        },
+      },
+    );
+  }
+
+  /**
+   * Atualiza título e/ou conteúdo de uma página. `contentEditMode` decide se
+   * o conteúdo enviado substitui, acrescenta ou antecede o conteúdo salvo.
+   */
+  public async atualizarPaginaDoc(
+    workspaceId: string,
+    docId: string,
+    pageId: string,
+    dados: {
+      name?: string;
+      subTitle?: string;
+      content?: string;
+      contentEditMode?: "replace" | "append" | "prepend";
+      contentFormat?: string;
+    },
+  ): Promise<ClickUpDocPage> {
+    return this.requestV3<ClickUpDocPage>(
+      "PUT",
+      `/workspaces/${workspaceId}/docs/${docId}/pages/${pageId}`,
+      {
+        body: {
+          name: dados.name,
+          sub_title: dados.subTitle,
+          content: dados.content,
+          content_edit_mode: dados.contentEditMode,
+          content_format: dados.contentFormat,
+        },
+      },
+    );
   }
 
   #parseJson(texto: string): unknown {

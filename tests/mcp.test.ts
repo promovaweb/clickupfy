@@ -82,6 +82,14 @@ describe("servidor MCP", () => {
     expect(names).toContain("clickupfy_sprint_current");
     expect(names).toContain("clickupfy_sprint_get");
     expect(names).toContain("clickupfy_sprint_tasks");
+    expect(names).toContain("clickupfy_docs_list");
+    expect(names).toContain("clickupfy_doc_get");
+    expect(names).toContain("clickupfy_doc_page_tree");
+    expect(names).toContain("clickupfy_doc_pages_list");
+    expect(names).toContain("clickupfy_doc_page_get");
+    expect(names).not.toContain("clickupfy_doc_create");
+    expect(names).not.toContain("clickupfy_doc_page_create");
+    expect(names).not.toContain("clickupfy_doc_page_update");
     expect(names).not.toContain("clickupfy_task_create");
     expect(names).not.toContain("clickupfy_task_delete");
     expect(names).not.toContain("clickupfy_sprint_add_task");
@@ -127,6 +135,9 @@ describe("servidor MCP", () => {
     expect(writableNames).toContain("clickupfy_checklist_create");
     expect(writableNames).toContain("clickupfy_checklist_item_create");
     expect(writableNames).toContain("clickupfy_checklist_item_set");
+    expect(writableNames).toContain("clickupfy_doc_create");
+    expect(writableNames).toContain("clickupfy_doc_page_create");
+    expect(writableNames).toContain("clickupfy_doc_page_update");
   });
 
   it("usa a List do projeto quando o agente omite o ID", async () => {
@@ -446,6 +457,118 @@ describe("servidor MCP", () => {
         method: "POST",
         url: "/api/v2/checklist/check-1/checklist_item",
         body: { name: "Executar testes unitários" },
+      },
+    ]);
+  });
+
+  it("consulta e gerencia Docs pela base v3", async () => {
+    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-docs-mcp-"));
+    const configPath = join(pasta, "config.json");
+    const agora = new Date().toISOString();
+    const config = criarConfiguracaoVazia();
+    config.activeAccount = "dev";
+    config.accounts.dev = {
+      name: "Desenvolvimento",
+      apiKey: "pk_teste",
+      user: { id: 1, username: "dev" },
+      workspace: { id: "123", name: "Engenharia" },
+      createdAt: agora,
+      updatedAt: agora,
+    };
+    process.env.PROMOVAWEB_CLICKUPFY_CONFIG = configPath;
+    await salvarConfiguracao(config);
+
+    const requisicoes: Array<{
+      method?: string;
+      url?: string;
+      body?: unknown;
+    }> = [];
+    const servidor = createServer(async (request, response) => {
+      const partes: Buffer[] = [];
+      for await (const parte of request) partes.push(Buffer.from(parte));
+      const texto = Buffer.concat(partes).toString("utf8");
+      requisicoes.push({
+        method: request.method,
+        url: request.url,
+        ...(texto ? { body: JSON.parse(texto) } : {}),
+      });
+      response.setHeader("Content-Type", "application/json");
+      if (request.method === "GET" && request.url?.startsWith("/api/v3/workspaces/123/docs")) {
+        response.end(
+          JSON.stringify({
+            docs: [{ id: "doc-1", name: "Runbook" }],
+            next_cursor: null,
+          }),
+        );
+        return;
+      }
+      response.end(JSON.stringify({ id: "doc-1" }));
+    });
+    servidores.push(servidor);
+    await new Promise<void>((resolveListen) =>
+      servidor.listen(0, "127.0.0.1", resolveListen),
+    );
+    const endereco = servidor.address();
+    if (!endereco || typeof endereco === "string") {
+      throw new Error("Porta ausente.");
+    }
+    const baseUrl = `http://127.0.0.1:${endereco.port}`;
+
+    const transport = new StdioClientTransport({
+      command: resolve("node_modules/.bin/tsx"),
+      args: ["src/cli.ts", "mcp", "serve", "--account", "dev", "--list", "list-project"],
+      cwd: resolve("."),
+      env: {
+        ...process.env,
+        PROMOVAWEB_CLICKUPFY_CONFIG: configPath,
+        PROMOVAWEB_CLICKUPFY_API_URL: `${baseUrl}/api/v2`,
+        PROMOVAWEB_CLICKUPFY_API_URL_V3: `${baseUrl}/api/v3`,
+      } as Record<string, string>,
+      stderr: "pipe",
+    });
+    const client = new Client({ name: "teste-docs", version: "1.0.0" });
+    clientes.push(client);
+    await client.connect(transport);
+
+    const docs = await client.callTool({
+      name: "clickupfy_docs_list",
+      arguments: {},
+    });
+    await client.callTool({
+      name: "clickupfy_doc_create",
+      arguments: { name: "Runbook", parentId: "list-1", parentType: 6 },
+    });
+    await client.callTool({
+      name: "clickupfy_doc_page_create",
+      arguments: { docId: "doc-1", name: "Introdução", content: "# Introdução" },
+    });
+    await client.callTool({
+      name: "clickupfy_doc_page_update",
+      arguments: {
+        docId: "doc-1",
+        pageId: "page-1",
+        content: "Novo parágrafo",
+        contentEditMode: "append",
+      },
+    });
+
+    expect(JSON.stringify(docs.content)).toContain("Runbook");
+    expect(requisicoes).toEqual([
+      { method: "GET", url: expect.stringContaining("/api/v3/workspaces/123/docs") },
+      {
+        method: "POST",
+        url: "/api/v3/workspaces/123/docs",
+        body: { name: "Runbook", parent: { id: "list-1", type: 6 } },
+      },
+      {
+        method: "POST",
+        url: "/api/v3/workspaces/123/docs/doc-1/pages",
+        body: { name: "Introdução", content: "# Introdução" },
+      },
+      {
+        method: "PUT",
+        url: "/api/v3/workspaces/123/docs/doc-1/pages/page-1",
+        body: { content: "Novo parágrafo", content_edit_mode: "append" },
       },
     ]);
   });
