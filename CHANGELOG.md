@@ -4,6 +4,18 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico e usa commits convencionais para preparar
 as próximas versões.
 
+## [0.4.0](https://github.com/promovaweb/clickupfy/compare/v0.3.0...v0.4.0) (2026-07-31)
+
+### Funcionalidades
+
+- adiciona gestao completa de Docs do ClickUp ([7095e15](https://github.com/promovaweb/clickupfy/commit/7095e15dd357d72dfea635417434102d6e0c03bd))
+- amplia fluxos de issues e documentação ([41c1f27](https://github.com/promovaweb/clickupfy/commit/41c1f2712b1c4ff1b0fc688474164a815f9eee15))
+- **brand:** atualiza identidade visual ([5f642b8](https://github.com/promovaweb/clickupfy/commit/5f642b81333ea236642e70867a2046ac64914f93))
+
+### Documentação
+
+- publica guia do usuário v1.1.1 ([ffaf61e](https://github.com/promovaweb/clickupfy/commit/ffaf61e8602afcf19863b23a2754060f4c2bae25))
+
 ## [0.3.0](https://github.com/promovaweb/clickupfy/compare/v0.2.0...v0.3.0) (2026-07-29)
 
 ### Funcionalidades
