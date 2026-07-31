@@ -20,7 +20,7 @@ METADATA_EXTRACTOR="$SCRIPT_DIR/extract-document-metadata.py"
 RETENTION_SCRIPT="$SCRIPT_DIR/prune-editions.py"
 LOGO_SVG="$ROOT/brand/logo/icon.svg"
 LOGO_PNG="$ROOT/brand/logo/icon.png"
-STYLE_GUIDE="$ROOT/brand/style-guide.html"
+FONT_STYLE="$ROOT/brand/fonts/fonts.css"
 
 fail() {
   echo "Erro: $*" >&2
@@ -54,7 +54,9 @@ required_sources=(
   "$SCRIPT_DIR/build-ebook.sh"
   "$LOGO_SVG"
   "$LOGO_PNG"
-  "$STYLE_GUIDE"
+  "$FONT_STYLE"
+  "$ROOT/brand/fonts/inter-latin.woff2"
+  "$ROOT/brand/fonts/manrope-latin.woff2"
 )
 for source in "${required_sources[@]}"; do
   [ -f "$source" ] || fail "fonte obrigatória ausente: $(relative_path "$source")"
@@ -245,10 +247,12 @@ done
 LOGO_HISTOGRAM="$(
   magick "$LOGO_PNG" -depth 8 -format %c histogram:info:
 )"
-grep -Fq '#000000FF' <<<"$LOGO_HISTOGRAM" \
-  || fail "brand/logo/icon.png precisa conter pixels pretos opacos."
-grep -Fq '#FFFFFFFF' <<<"$LOGO_HISTOGRAM" \
-  || fail "brand/logo/icon.png precisa conter os traços brancos opacos."
+grep -Fq '#00161EFF' <<<"$LOGO_HISTOGRAM" \
+  || fail "brand/logo/icon.png precisa conter a placa petróleo oficial."
+grep -Fq '#2AD5BEFF' <<<"$LOGO_HISTOGRAM" \
+  || fail "brand/logo/icon.png precisa conter o turquesa oficial."
+grep -Fq '#3B82F6FF' <<<"$LOGO_HISTOGRAM" \
+  || fail "brand/logo/icon.png precisa conter o azul funcional oficial."
 
 mkdir -p "$BUILD_ROOT"
 
@@ -260,12 +264,11 @@ jq -e 'type == "object"' "$DOCUMENT_METADATA_JSON" >/dev/null \
   || fail "metadados documentais inválidos."
 
 FONT_FACES="$BUILD_ROOT/fontfaces.css"
-awk '
-  /@font-face/ { p = 1 }
-  /:root[ \t]*\{/ { exit }
-  p { print }
-' "$STYLE_GUIDE" > "$FONT_FACES"
-[ -s "$FONT_FACES" ] || fail "fontes IBM Plex ausentes em brand/style-guide.html."
+sed \
+  -e '/:root[[:space:]]*{/,$d' \
+  -e 's#url("./#url("../../brand/fonts/#g' \
+  "$FONT_STYLE" > "$FONT_FACES"
+[ -s "$FONT_FACES" ] || fail "fontes Inter e Manrope ausentes em brand/fonts/fonts.css."
 
 FILLED_TEMPLATE="$BUILD_ROOT/template.filled.html"
 awk -v ff="$FONT_FACES" '
@@ -284,26 +287,26 @@ YEAR="$(date +%Y)"
 PT_DATE="$DAY de ${MESES[$((MONTH_NUM - 1))]} de $YEAR"
 HTML_OUT="$BUILD_ROOT/$STEM.html"
 COVER_PNG="$BUILD_ROOT/$STEM-cover.png"
-SANS_FONT="$(fc-match -f '%{file}\n' 'IBM Plex Sans:style=SemiBold' | head -1)"
-MONO_FONT="$(fc-match -f '%{file}\n' 'IBM Plex Mono:style=Regular' | head -1)"
-[ -f "$SANS_FONT" ] || fail "IBM Plex Sans não encontrada."
-[ -f "$MONO_FONT" ] || fail "IBM Plex Mono não encontrada."
+SANS_FONT="$(fc-match -f '%{file}\n' 'Manrope:style=SemiBold' | head -1)"
+BODY_FONT="$(fc-match -f '%{file}\n' 'Inter:style=Regular' | head -1)"
+[ -f "$SANS_FONT" ] || fail "Manrope não encontrada."
+[ -f "$BODY_FONT" ] || fail "Inter não encontrada."
 
 magick \
   -size 1600x2560 xc:'#FFFFFF' \
   \( "$LOGO_PNG" -resize 300x300 \) -geometry +150+170 -composite \
-  -font "$MONO_FONT" -fill '#171717' -pointsize 34 \
+  -font "$BODY_FONT" -fill '#171717' -pointsize 34 \
   -annotate +150+850 'CLICKUPFY' \
   -font "$SANS_FONT" -fill '#000000' -pointsize 116 \
   -annotate +150+1050 'Guia completo' \
   -annotate +150+1190 'do usuário' \
-  -font "$MONO_FONT" -fill '#171717' -pointsize 42 \
+  -font "$BODY_FONT" -fill '#171717' -pointsize 42 \
   -annotate +150+1400 'Planeje. Execute. Comprove.' \
   -font "$SANS_FONT" -fill '#737373' -pointsize 38 \
   -annotate +150+1540 'Do ClickUp ao terminal e ao agente,' \
   -annotate +150+1600 'com escopo, contexto e evidência.' \
   -stroke '#D4D4D4' -strokewidth 2 -draw 'line 150,2260 1450,2260' \
-  -stroke none -font "$MONO_FONT" -fill '#737373' -pointsize 30 \
+  -stroke none -font "$BODY_FONT" -fill '#737373' -pointsize 30 \
   -annotate +150+2340 "EDIÇÃO V$VERSION" \
   "$COVER_PNG"
 

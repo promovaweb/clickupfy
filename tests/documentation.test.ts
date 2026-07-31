@@ -63,18 +63,19 @@ describe("documentação do usuário", () => {
       "utf8",
     );
     const pdfCss = await readFile(join(root, ".ebook", "pdf.css"), "utf8");
-    const styleGuide = await readFile(
-      join(root, "brand", "style-guide.html"),
+    const fontStyles = await readFile(
+      join(root, "brand", "fonts", "fonts.css"),
       "utf8",
     );
 
     expect(metadata).toContain('lang: "pt-BR"');
     expect(template).toContain('<html lang="pt-BR">');
     expect(template).toContain("$fontfaces$");
-    expect(styleGuide).toContain("IBM Plex Sans");
-    expect(styleGuide).toContain("IBM Plex Mono");
-    expect(pdfCss).toContain("IBM Plex Sans");
-    expect(pdfCss).toContain("IBM Plex Mono");
+    expect(fontStyles).toContain('font-family: "Inter"');
+    expect(fontStyles).toContain('font-family: "Manrope"');
+    expect(pdfCss).toContain("pdf-design-system: 1.0.0");
+    expect(pdfCss).toContain("--sans: 'Inter'");
+    expect(pdfCss).toContain("--title: 'Manrope'");
     expect(pdfCss).toContain("--brand-black: #000000");
     expect(pdfCss).toContain("--brand-white: #FFFFFF");
   });

@@ -12,7 +12,8 @@
 Esta pasta publica o conteúdo completo de `docs/user/` em PDF e EPUB. Os
 arquivos Markdown são a única fonte editorial; não edite os artefatos gerados.
 
-O sistema visual, a tipografia IBM Plex, a composição da capa, o sumário e os
+O sistema visual, Inter no corpo, Manrope nos títulos, a composição da capa, o
+sumário e os
 tratamentos de código, tabela e navegação reutilizam o mesmo design do ebook do
 Specsfy.
 
