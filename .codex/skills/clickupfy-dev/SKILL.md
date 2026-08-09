@@ -9,6 +9,20 @@ Usar o ClickUpfy da Promovaweb ou suas ferramentas MCP para consultar e
 atualizar trabalho de engenharia. Manter as respostas compactas e preservar a
 rastreabilidade das mudanças.
 
+## Documentação contínua
+
+Quando o trabalho alterar o ClickUpfy, confira `docs/user/`, `ebook/README.md`,
+`docs/user/reading-order.txt`, `README.md` e os testes documentais. Cada comando
+novo, flag, argumento, ferramenta MCP, formato de saída, limitação da API ou
+mudança de comportamento precisa receber explicação, parâmetros, efeitos,
+limites e cinco exemplos distintos de uso no capítulo de referência adequado.
+
+Inclua também o comando ou a ferramenta no percurso indicado pelo caso de uso,
+sem substituir a referência detalhada por um link. Atualize a versão do ebook,
+regenere PDF e EPUB e execute a verificação do ebook quando a documentação
+mudar. Não afirme que uma interface está documentada apenas porque aparece no
+texto de ajuda ou em uma tabela de nomes.
+
 ## Escolher a interface
 
 1. Usar ferramentas `clickupfy_*` quando o servidor MCP estiver disponível.

@@ -9,6 +9,22 @@ Executar integralmente uma tarefa recebida por ID, URL ou nome e manter o
 ClickUp como registro cronológico do trabalho. Aplicar o mesmo ciclo a cada
 subtarefa, em qualquer profundidade.
 
+## Documentação contínua
+
+Quando a implementação alterar interface pública, mantenha o manual do usuário
+no mesmo trabalho. Leia a implementação e compare cada mudança com
+`docs/user/`, `docs/user/reading-order.txt`, `ebook/README.md`, `README.md` e
+os testes de documentação. Documente comando, parâmetro, ferramenta MCP,
+entrada, saída, permissão, erro esperado, limite da API e relação com as demais
+interfaces. Cada comando ou ferramenta citado recebe cinco exemplos diferentes
+e executáveis com valores fictícios.
+
+Atualize o percurso e a referência detalhada. Depois ajuste `ebook/VERSION`,
+gere PDF e EPUB com `npm run ebook` e confirme ambos com
+`npm run ebook:verify`. Trate uma alteração de documentação como item próprio
+do plano, comentário de progresso e validação final; ela não pode ficar para
+uma tarefa posterior.
+
 ## Regras de execução
 
 - Usar primeiro o MCP do projeto e chamar `clickupfy_mcp_context`.

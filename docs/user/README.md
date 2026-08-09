@@ -46,21 +46,35 @@ Siga esta ordem na primeira leitura:
 2. [Instale o CLI](instalacao.md) pelo npm ou por um executável standalone.
 3. [Configure perfis e credenciais](configuracao.md) sem colocar a API key no
    repositório.
-4. [Prepare o primeiro projeto](primeiro-projeto.md) e confira o escopo antes
+4. Consulte a [referência de perfis e hierarquia](referencia-cli-perfis-hierarquia.md)
+   sempre que precisar de parâmetro, efeito persistente ou variação de comando.
+5. [Prepare o primeiro projeto](primeiro-projeto.md) e confira o escopo antes
    de permitir escrita.
-5. [Navegue pela hierarquia](hierarquia.md) até encontrar Space, Folder, List
+6. [Navegue pela hierarquia](hierarquia.md) até encontrar Space, Folder, List
    e Sprint Folder.
-6. [Trabalhe com tarefas e checklists](tarefas.md), incluindo subtarefas,
+7. [Trabalhe com tarefas e checklists](tarefas.md), incluindo subtarefas,
    Markdown, datas e comentários.
-7. [Planeje Sprints](sprints.md) e acompanhe avanço por tarefas e Sprint
+8. Consulte a [referência de tarefas, checklists, comentários e tempo](referencia-cli-tarefas.md)
+   para parâmetros, formatos e confirmações de escrita.
+9. [Planeje Sprints](sprints.md) e acompanhe avanço por tarefas e Sprint
    Points.
-8. [Registre tempo](time-tracking.md) no item em execução.
-9. [Instale e use as skills](agentes.md) que acompanham criação,
+10. Consulte a [referência de Sprints](referencia-cli-sprints.md) para os
+   parâmetros de relatório, associação e Sprint Points.
+11. [Registre tempo](time-tracking.md) no item em execução.
+12. [Instale e use as skills](agentes.md) que acompanham criação,
    implementação e release.
-10. [Conecte um agente por MCP](mcp.md) com IDs fixos e opção read-only.
-11. [Consulte a referência do CLI](cli.md) para comandos, argumentos e
+13. [Conecte um agente por MCP](mcp.md) com IDs fixos e opção read-only.
+14. Consulte a [referência de Docs, skills e servidor MCP](referencia-cli-docs-agentes.md)
+   para os recursos de documentação dentro do ClickUp e a integração no projeto.
+15. Use a [referência MCP de contexto e hierarquia](referencia-mcp-contexto-hierarquia.md)
+   para conhecer cada argumento aceito pelas ferramentas de navegação.
+16. Consulte a [referência MCP de Docs e administração](referencia-mcp-docs-administracao.md)
+   para o workspace, Docs, páginas e ferramentas condicionais do servidor.
+17. Consulte a [referência MCP de trabalho](referencia-mcp-trabalho.md) para
+   operações de tarefas, Sprints, checklists, comentários e tempo.
+18. [Consulte a referência do CLI](cli.md) para comandos, argumentos e
     formatos de saída.
-12. [Resolva falhas comuns](solucao-de-problemas.md) de autenticação, escopo,
+19. [Resolva falhas comuns](solucao-de-problemas.md) de autenticação, escopo,
     status e integração.
 
 ## O modelo mental em uma frase

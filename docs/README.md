@@ -12,3 +12,10 @@ responsabilidade.
 O conteúdo de `docs/user/` é a fonte editorial do
 [guia portátil](../ebook/README.md). PDF e EPUB são gerados na ordem declarada
 em `docs/user/reading-order.txt`.
+
+As referências em `user/referencia-*.md` detalham todos os comandos públicos e
+todas as ferramentas MCP, incluindo parâmetros, efeitos, limites e cinco
+exemplos por interface. O teste
+[`tests/documentation-coverage.test.ts`](../tests/documentation-coverage.test.ts)
+confere essa obrigação contra a lista de comandos e contra as ferramentas
+registradas em `src/mcp.ts`.

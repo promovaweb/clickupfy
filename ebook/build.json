@@ -1,29 +1,10 @@
 {
   "schema_version": 1,
-  "version": "1.1.1",
-  "edition": "v1.1.1",
-  "generated_at": "2026-07-31T19:02:09Z",
-  "source_sha256": "3c03db17b24d62eb1fb7fd2e07b003df2ba3be235b97cd23ab104fa5023e65cc",
+  "version": "1.2.0",
+  "edition": "v1.2.0",
+  "generated_at": "2026-08-08T16:30:00Z",
+  "source_sha256": "903b9d5f45d663ff4de99816e9a698bf7ebd8b2d993194408364732be5146144",
   "sources": [
-    "brand/fonts/fonts.css",
-    "brand/fonts/inter-latin.woff2",
-    "brand/fonts/manrope-latin.woff2",
-    "brand/logo/icon.png",
-    "brand/logo/icon.svg",
-    "docs/user/agentes.md",
-    "docs/user/cli.md",
-    "docs/user/conceitos.md",
-    "docs/user/configuracao.md",
-    "docs/user/hierarquia.md",
-    "docs/user/instalacao.md",
-    "docs/user/mcp.md",
-    "docs/user/primeiro-projeto.md",
-    "docs/user/reading-order.txt",
-    "docs/user/README.md",
-    "docs/user/solucao-de-problemas.md",
-    "docs/user/sprints.md",
-    "docs/user/tarefas.md",
-    "docs/user/time-tracking.md",
     ".ebook/build-ebook.sh",
     ".ebook/epub.css",
     ".ebook/external-links.lua",
@@ -33,6 +14,32 @@
     ".ebook/prune-editions.py",
     ".ebook/strip-document-metadata.lua",
     ".ebook/template.html",
+    "brand/fonts/fonts.css",
+    "brand/fonts/inter-latin.woff2",
+    "brand/fonts/manrope-latin.woff2",
+    "brand/logo/icon.png",
+    "brand/logo/icon.svg",
+    "docs/user/README.md",
+    "docs/user/agentes.md",
+    "docs/user/cli.md",
+    "docs/user/conceitos.md",
+    "docs/user/configuracao.md",
+    "docs/user/hierarquia.md",
+    "docs/user/instalacao.md",
+    "docs/user/mcp.md",
+    "docs/user/primeiro-projeto.md",
+    "docs/user/reading-order.txt",
+    "docs/user/referencia-cli-docs-agentes.md",
+    "docs/user/referencia-cli-perfis-hierarquia.md",
+    "docs/user/referencia-cli-sprints.md",
+    "docs/user/referencia-cli-tarefas.md",
+    "docs/user/referencia-mcp-contexto-hierarquia.md",
+    "docs/user/referencia-mcp-docs-administracao.md",
+    "docs/user/referencia-mcp-trabalho.md",
+    "docs/user/solucao-de-problemas.md",
+    "docs/user/sprints.md",
+    "docs/user/tarefas.md",
+    "docs/user/time-tracking.md",
     "ebook/VERSION"
   ],
   "document_metadata": {
@@ -81,6 +88,41 @@
       "escopo": "primeira integração de um repositório com ClickUpfy e MCP",
       "natureza": "normativo"
     },
+    "docs/user/referencia-cli-docs-agentes.md": {
+      "autoridade": "`src/cli.ts`, `src/agent-assets.ts`, `src/mcp.ts` e ajuda da versão instalada",
+      "escopo": "comandos de Docs do ClickUp, skills distribuídas, inicialização de projeto e servidor MCP",
+      "natureza": "referência"
+    },
+    "docs/user/referencia-cli-perfis-hierarquia.md": {
+      "autoridade": "`src/cli.ts`, `src/config.ts`, `src/context.ts` e ajuda da versão instalada",
+      "escopo": "comandos globais, perfis locais, autenticação e descoberta da hierarquia do ClickUp",
+      "natureza": "referência"
+    },
+    "docs/user/referencia-cli-sprints.md": {
+      "autoridade": "`src/cli.ts`, `src/sprints.ts` e endpoints públicos do ClickUp usados pelo ClickUpfy",
+      "escopo": "consulta, relatório, associação de tarefas e Sprint Points no terminal",
+      "natureza": "referência"
+    },
+    "docs/user/referencia-cli-tarefas.md": {
+      "autoridade": "`src/cli.ts`, `src/work-items.ts`, `src/clickup.ts` e ajuda da versão instalada",
+      "escopo": "comandos de consulta e alteração de tarefas, checklists, comentários e time tracking",
+      "natureza": "referência"
+    },
+    "docs/user/referencia-mcp-contexto-hierarquia.md": {
+      "autoridade": "schemas e handlers de `src/mcp.ts`",
+      "escopo": "ferramentas MCP de identificação do projeto, perfis e navegação na hierarquia do ClickUp",
+      "natureza": "referência"
+    },
+    "docs/user/referencia-mcp-docs-administracao.md": {
+      "autoridade": "schemas e handlers de `src/mcp.ts` e cliente de Docs em `src/clickup.ts`",
+      "escopo": "ferramentas MCP de Docs do ClickUp, seleção de perfil e seleção de workspace",
+      "natureza": "referência"
+    },
+    "docs/user/referencia-mcp-trabalho.md": {
+      "autoridade": "schemas e handlers de `src/mcp.ts`, `src/work-items.ts` e `src/sprints.ts`",
+      "escopo": "ferramentas MCP de trabalho em tarefas, Sprints, checklists, comentários e time tracking",
+      "natureza": "referência"
+    },
     "docs/user/solucao-de-problemas.md": {
       "autoridade": "mensagens de erro e contratos públicos do ClickUpfy",
       "escopo": "diagnóstico de instalação, autenticação, escopo e API",
@@ -104,12 +146,12 @@
   },
   "artifacts": {
     "pdf": {
-      "file": "ClickUpfy-Guia-do-Usuario-v1.1.1.pdf",
-      "sha256": "e779bf2678f151aeb6b7e565edb48af8f51d7a2c9a723c63d84777cae58a1f14"
+      "file": "ClickUpfy-Guia-do-Usuario-v1.2.0.pdf",
+      "sha256": "2ab5185afeced2cbd3c1c6c6a7197e1666db95a24ea4b881ca4cca780e51df35"
     },
     "epub": {
-      "file": "ClickUpfy-Guia-do-Usuario-v1.1.1.epub",
-      "sha256": "007a0c91ffcd0c98c6efa9f557f5b34f2ce26d5c072f54efaaf096453349dd12"
+      "file": "ClickUpfy-Guia-do-Usuario-v1.2.0.epub",
+      "sha256": "6ee6be564c900496615184ab4c032efc1233ced08e205ccf631147124c9210dd"
     }
   }
 }

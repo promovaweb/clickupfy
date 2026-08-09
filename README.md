@@ -8,9 +8,12 @@ ClickUp, Sprints existentes, tarefas, comentários e time tracking.
 ## Documentação completa e ebook
 
 O percurso sequencial do usuário começa em
-[`docs/user/README.md`](docs/user/README.md). Ele cobre instalação,
-configuração segura, primeiro projeto, hierarquia, tarefas, Sprints, tempo,
-skills, MCP, referência do CLI e solução de problemas.
+[`docs/user/README.md`](docs/user/README.md). Além dos capítulos de instalação
+e operação, o manual inclui referências de perfis, hierarquia, tarefas,
+checklists, comentários, tempo, Sprints, Docs, skills e servidor MCP. Cada
+comando público e cada ferramenta MCP têm parâmetros, efeitos, limites e cinco
+exemplos de uso; `tests/documentation-coverage.test.ts` mantém essa cobertura
+como parte da suíte do pacote.
 
 As mesmas páginas geram o **ClickUpfy — Guia completo do usuário** em PDF e
 EPUB. O pipeline reutiliza o design do ebook do Specsfy e registra digest das

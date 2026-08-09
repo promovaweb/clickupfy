@@ -9,6 +9,19 @@ Transformar o input atual ou o histórico indicado pelo usuário em uma tarefa
 do ClickUp. Criar a estrutura solicitada sem implementar a solução, alterar
 arquivos do projeto, iniciar time tracking ou avançar status.
 
+## Documentação contínua
+
+Se a tarefa criada pedir mudança no ClickUpfy, inclua no corpo uma seção de
+documentação com os capítulos de `docs/user/` afetados, a referência de CLI ou
+MCP afetada, a atualização de `docs/user/reading-order.txt`, a versão do ebook
+e os comandos `npm run ebook` e `npm run ebook:verify`. Para cada comando ou
+ferramenta MCP acrescentado ou alterado, registre a exigência de explicar todos
+os parâmetros, retorno, permissões, limites e cinco exemplos diferentes.
+
+Não trate README, texto de ajuda, changelog ou teste como substituto do manual
+do usuário. Quando a alteração não mudar a interface pública, declare esse
+limite na tarefa para não gerar documentação especulativa.
+
 ## Limites
 
 - Usar somente fatos e requisitos presentes na fonte.

@@ -10,6 +10,19 @@ O Release Please é a fonte da versão, do changelog, da tag e da GitHub
 Release. O GitHub Actions compila e publica os artefatos após a criação da
 release.
 
+## Cobertura documental da release
+
+Confira se todo comando, parâmetro, ferramenta MCP e comportamento público da
+versão está explicado em `docs/user/`. O manual precisa detalhar entradas,
+saídas, permissões, efeitos persistentes, limitações da API e cinco exemplos
+diferentes por comando ou ferramenta. Leia também `docs/user/reading-order.txt`
+para confirmar que cada capítulo aparece uma vez no PDF e no EPUB.
+
+Quando houver mudança documental, confirme `ebook/VERSION`, execute
+`npm run ebook`, execute `npm run ebook:verify` e publique os artefatos que o
+manifesto resultante declarar. Não libere versão cujo texto de ajuda tenha
+mudado sem a referência correspondente no manual.
+
 ## Antes de começar
 
 1. Trabalhe dentro do repositório independente `clickupfy/`.
