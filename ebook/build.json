@@ -2,8 +2,8 @@
   "schema_version": 1,
   "version": "1.2.3",
   "edition": "v1.2.3",
-  "generated_at": "2026-08-14T20:24:17Z",
-  "source_sha256": "4f3a5044f85ef53000c5d8c411559d2fe3a336bd74cf5c64850b2e55f2fc1995",
+  "generated_at": "2026-08-14T23:47:46Z",
+  "source_sha256": "8d4d4a8a4cb73e11c0dba1ad67e1033258e217c8d15665e7a35a4c9be6be1eec",
   "sources": [
     ".ebook/build-ebook.sh",
     ".ebook/epub.css",
@@ -147,11 +147,11 @@
   "artifacts": {
     "pdf": {
       "file": "ClickUpfy-Guia-do-Usuario-v1.2.3.pdf",
-      "sha256": "5216708c4ba3c58acf7483f77f3bd5d6a8b3605760c560fc4cf2b782d2bc0621"
+      "sha256": "d1d97fe50622bf41b54f514d1c03e1fd4f4abd74d33aa4be81e85c3ccb52b4cc"
     },
     "epub": {
       "file": "ClickUpfy-Guia-do-Usuario-v1.2.3.epub",
-      "sha256": "447a20ac1ec279336e7e7b0e345a7970699895a6dccceedb8dd493ed8ba1fea2"
+      "sha256": "379f96189401d2a0ffc2d69c6121c53d483135bf1548ac16a5dbbd00a8f86e3d"
     }
   }
 }

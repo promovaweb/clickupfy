@@ -39,6 +39,8 @@ VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
 STEM="ClickUpfy-Guia-do-Usuario-v$VERSION"
 PDF_OUT="$EBOOK_ROOT/$STEM.pdf"
 EPUB_OUT="$EBOOK_ROOT/$STEM.epub"
+PDF_ALIAS="$EBOOK_ROOT/ebook-clickupfy.pdf"
+EPUB_ALIAS="$EBOOK_ROOT/ebook-clickupfy.epub"
 
 required_sources=(
   "$VERSION_FILE"
@@ -113,6 +115,10 @@ check_manifest() {
   [ -f "$MANIFEST" ] || fail "ebook/build.json ausente; execute make ebook."
   [ -f "$PDF_OUT" ] || fail "$(basename "$PDF_OUT") ausente; execute make ebook."
   [ -f "$EPUB_OUT" ] || fail "$(basename "$EPUB_OUT") ausente; execute make ebook."
+  [ -f "$PDF_ALIAS" ] || fail "ebook-clickupfy.pdf ausente; execute make ebook."
+  [ -f "$EPUB_ALIAS" ] || fail "ebook-clickupfy.epub ausente; execute make ebook."
+  cmp -s "$PDF_OUT" "$PDF_ALIAS" || fail "ebook-clickupfy.pdf não corresponde à edição vigente."
+  cmp -s "$EPUB_OUT" "$EPUB_ALIAS" || fail "ebook-clickupfy.epub não corresponde à edição vigente."
 
   VERSION="$VERSION" SOURCE_SHA="$SOURCE_SHA" PDF_OUT="$PDF_OUT" \
     EPUB_OUT="$EPUB_OUT" MANIFEST="$MANIFEST" python3 - <<'PY'
@@ -393,7 +399,11 @@ jq -n \
       pdf: {file: $pdf_file, sha256: $pdf_sha256},
       epub: {file: $epub_file, sha256: $epub_sha256}
     }
-  }' > "$MANIFEST"
+}' > "$MANIFEST"
+
+# Mantém URLs estáveis para a edição mais recente sem substituir os arquivos versionados.
+cp "$PDF_OUT" "$PDF_ALIAS"
+cp "$EPUB_OUT" "$EPUB_ALIAS"
 
 check_manifest
 python3 "$RETENTION_SCRIPT" \

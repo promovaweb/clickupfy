@@ -41,6 +41,11 @@ ClickUpfy-Guia-do-Usuario-v<versão>.pdf
 ClickUpfy-Guia-do-Usuario-v<versão>.epub
 ```
 
+Para links permanentes, use os aliases da edição mais recente:
+
+- [PDF vigente](ebook-clickupfy.pdf): `ebook-clickupfy.pdf`;
+- [EPUB vigente](ebook-clickupfy.epub): `ebook-clickupfy.epub`.
+
 Cada build mantém somente as cinco edições SemVer mais recentes.
 [`build.json`](build.json) registra versão, ordem, digest das fontes e hashes
 dos dois formatos.
