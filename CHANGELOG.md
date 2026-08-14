@@ -6,10 +6,9 @@ as próximas versões.
 
 ## [0.6.0](https://github.com/promovaweb/clickupfy/compare/v0.5.0...v0.6.0) (2026-08-14)
 
-
 ### Funcionalidades
 
-* adiciona upgrade automatico do CLI ([c0d4b0a](https://github.com/promovaweb/clickupfy/commit/c0d4b0a8740757fead8e8a5ca0cbf1d15b03dadb))
+- adiciona upgrade automatico do CLI ([c0d4b0a](https://github.com/promovaweb/clickupfy/commit/c0d4b0a8740757fead8e8a5ca0cbf1d15b03dadb))
 
 ## [0.5.0](https://github.com/promovaweb/clickupfy/compare/v0.4.0...v0.5.0) (2026-08-14)
 
