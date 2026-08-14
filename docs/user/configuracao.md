@@ -14,8 +14,9 @@ Use uma API key pessoal criada nas configurações do ClickUp. O ClickUpfy
 valida a chave antes de salvar, consulta o usuário autenticado e lista os
 workspaces permitidos.
 
-Não cole a chave em issue, comentário, arquivo `.env` versionado, `.mcp.json`
-ou comando compartilhado no histórico da equipe. Em um terminal interativo,
+Não cole a chave em issue, comentário, arquivo `.env` versionado, `.mcp.json`,
+`.codex/config.toml` ou comando compartilhado no histórico da equipe. Em um
+terminal interativo,
 prefira o setup com prompt oculto:
 
 ```bash

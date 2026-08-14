@@ -66,8 +66,8 @@ Copie a grafia de um status retornado. Status são configuráveis por List.
 
 ## O MCP não inicia
 
-Execute manualmente o comando registrado no `.mcp.json`. Os motivos mais
-comuns são:
+Execute manualmente o comando registrado no `.mcp.json` ou no
+`.codex/config.toml`. Os motivos mais comuns são:
 
 - `clickupfy` ausente no `PATH` do cliente
 - JSON inválido
@@ -85,8 +85,8 @@ projeto. Consulte:
 clickupfy_mcp_context
 ```
 
-Use o destino fixado ou altere o `.mcp.json` conscientemente. Não contorne a
-proteção repetindo a chamada com outro recurso.
+Use o destino fixado ou altere o arquivo do cliente conscientemente. Não
+contorne a proteção repetindo a chamada com outro recurso.
 
 ## Uma ferramenta de escrita não aparece
 

@@ -20,7 +20,8 @@ usar, em qual List trabalhar e como representar uma tarefa grande. O ClickUpfy
 centraliza essas decisões em três contratos:
 
 - o perfil local associa uma API key a um workspace
-- o projeto fixa o perfil e a hierarquia autorizada no `.mcp.json`
+- o projeto fixa o perfil e a hierarquia autorizada no `.mcp.json` ou no
+  `.codex/config.toml`
 - as skills descrevem quando ler, planejar, comentar, medir tempo e concluir.
 
 ## As quatro camadas
@@ -57,9 +58,11 @@ Um **account** do ClickUpfy é um perfil local. Ele contém um nome, a API key, 
 usuário autenticado e o workspace associado. O arquivo vive fora dos
 repositórios, em `~/.promovaweb-clickupfy/config.json`.
 
-Um **projeto** é uma raiz de código que contém `.mcp.json`. Esse arquivo
-seleciona um account e fixa IDs da hierarquia. Ele pode ser versionado quando os
-IDs não forem considerados sensíveis pela equipe, pois nunca contém a API key.
+Um **projeto** é uma raiz de código que pode conter `.mcp.json` e
+`.codex/config.toml`. Esses arquivos selecionam um account e fixam IDs da
+hierarquia no formato esperado por cada cliente. Eles podem ser versionados
+quando os IDs não forem considerados sensíveis pela equipe, pois nunca contêm a
+API key.
 
 O mesmo account pode servir mais de um projeto. Ambientes de clientes ou
 workspaces diferentes devem receber perfis separados.

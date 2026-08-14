@@ -7,6 +7,7 @@ import { confirm } from "@inquirer/prompts";
 import { Command, Option } from "commander";
 import packageJson from "../package.json" with { type: "json" };
 import {
+  configurarCodexProjeto,
   configurarMcpProjeto,
   instalarSkills,
   lerSkill,
@@ -58,7 +59,10 @@ const program = new Command()
     "Gerencie perfis e trabalho de desenvolvimento no ClickUp pelo terminal.",
   )
   .version(packageJson.version)
-  .option("--account <perfil>", "perfil configurado; usa o perfil ativo por padrão")
+  .option(
+    "--account <perfil>",
+    "perfil configurado; usa o perfil ativo por padrão",
+  )
   .option("--json", "imprime a resposta completa em JSON");
 
 program
@@ -414,7 +418,9 @@ sprint
       taskId,
       points,
     );
-    globals.json ? imprimirJson(tarefa) : imprimirTabela([resumirTarefa(tarefa)]);
+    globals.json
+      ? imprimirJson(tarefa)
+      : imprimirTabela([resumirTarefa(tarefa)]);
   });
 
 const task = program.command("task").description("gerencia tarefas");
@@ -509,8 +515,10 @@ task
   .option("--markdown-content <markdown>", "descrição preservada como Markdown")
   .option("--status <status>", "status inicial")
   .addOption(
-    new Option("--priority <n>", "1 urgente, 2 alta, 3 normal, 4 baixa")
-      .argParser(prioridade),
+    new Option(
+      "--priority <n>",
+      "1 urgente, 2 alta, 3 normal, 4 baixa",
+    ).argParser(prioridade),
   )
   .option("--assignee <ids...>", "IDs numéricos dos responsáveis")
   .option("--parent <task-id>", "cria a tarefa como subtarefa")
@@ -535,11 +543,15 @@ task
         start_date: options.startDate
           ? dataParaTimestamp(options.startDate, false)
           : undefined,
-        due_date: options.dueDate ? dataParaTimestamp(options.dueDate) : undefined,
+        due_date: options.dueDate
+          ? dataParaTimestamp(options.dueDate)
+          : undefined,
         points: options.points,
       }),
     );
-    globals.json ? imprimirJson(tarefa) : imprimirTabela([resumirTarefa(tarefa)]);
+    globals.json
+      ? imprimirJson(tarefa)
+      : imprimirTabela([resumirTarefa(tarefa)]);
   });
 
 task
@@ -582,7 +594,9 @@ task
     const tarefa = await (
       await criarContexto(globals.account)
     ).client.atualizarTarefa(taskId, dados);
-    globals.json ? imprimirJson(tarefa) : imprimirTabela([resumirTarefa(tarefa)]);
+    globals.json
+      ? imprimirJson(tarefa)
+      : imprimirTabela([resumirTarefa(tarefa)]);
   });
 
 task
@@ -708,11 +722,20 @@ doc
   .alias("ls")
   .option("--query <texto>", "texto no nome ou ID do Doc")
   .option("--parent-id <id>", "filtra Docs criados sob este local")
-  .option("--parent-type <n>", "tipo do local (4 Space, 5 Folder, 6 List, 7 Everything, 12 Task)", inteiro)
+  .option(
+    "--parent-type <n>",
+    "tipo do local (4 Space, 5 Folder, 6 List, 7 Everything, 12 Task)",
+    inteiro,
+  )
   .option("--deleted", "inclui Docs excluídos")
   .option("--archived", "inclui Docs arquivados")
   .option("--creator <id>", "ID numérico do criador", inteiro)
-  .option("--max-pages <n>", "limite de páginas de cursor consultadas", inteiro, 50)
+  .option(
+    "--max-pages <n>",
+    "limite de páginas de cursor consultadas",
+    inteiro,
+    50,
+  )
   .description("busca Docs do workspace associado")
   .action(async function (this: Command, options) {
     const globals = this.optsWithGlobals() as GlobalOptions;
@@ -720,7 +743,9 @@ doc
     const docs = await ctx.client.listarDocs(ctx.account.workspace.id, {
       ...(options.query ? { query: options.query } : {}),
       ...(options.parentId ? { parentId: options.parentId } : {}),
-      ...(options.parentType !== undefined ? { parentType: options.parentType } : {}),
+      ...(options.parentType !== undefined
+        ? { parentType: options.parentType }
+        : {}),
       ...(options.deleted ? { deleted: true } : {}),
       ...(options.archived ? { archived: true } : {}),
       ...(options.creator !== undefined ? { creator: options.creator } : {}),
@@ -743,8 +768,15 @@ doc
 doc
   .command("create")
   .requiredOption("--name <nome>", "nome do Doc")
-  .option("--parent-id <id>", "ID do local onde o Doc nasce (Space, Folder, List ou tarefa)")
-  .option("--parent-type <n>", "tipo do local (4 Space, 5 Folder, 6 List, 7 Everything, 12 Task)", inteiro)
+  .option(
+    "--parent-id <id>",
+    "ID do local onde o Doc nasce (Space, Folder, List ou tarefa)",
+  )
+  .option(
+    "--parent-type <n>",
+    "tipo do local (4 Space, 5 Folder, 6 List, 7 Everything, 12 Task)",
+    inteiro,
+  )
   .option("--visibility <valor>", "visibilidade do Doc (PRIVATE ou PUBLIC)")
   .option("--create-page", "cria também a primeira página em branco")
   .description("cria um Doc no workspace associado")
@@ -797,7 +829,9 @@ docPage
         ...(options.maxPageDepth !== undefined
           ? { maxPageDepth: options.maxPageDepth }
           : {}),
-        ...(options.contentFormat ? { contentFormat: options.contentFormat } : {}),
+        ...(options.contentFormat
+          ? { contentFormat: options.contentFormat }
+          : {}),
       },
     );
     imprimirJson(paginas);
@@ -809,7 +843,12 @@ docPage
   .argument("<page-id>")
   .option("--content-format <valor>", "text/md (padrão) ou text/plain")
   .description("obtém uma página do Doc com conteúdo")
-  .action(async function (this: Command, docId: string, pageId: string, options) {
+  .action(async function (
+    this: Command,
+    docId: string,
+    pageId: string,
+    options,
+  ) {
     const globals = this.optsWithGlobals() as GlobalOptions;
     const ctx = await criarContexto(globals.account);
     const pagina = await ctx.client.obterPaginaDoc(
@@ -818,7 +857,9 @@ docPage
       pageId,
       options.contentFormat ? { contentFormat: options.contentFormat } : {},
     );
-    globals.json ? imprimirJson(pagina) : process.stdout.write(`${pagina.content ?? ""}\n`);
+    globals.json
+      ? imprimirJson(pagina)
+      : process.stdout.write(`${pagina.content ?? ""}\n`);
   });
 
 docPage
@@ -857,12 +898,19 @@ docPage
   .option("--sub-title <texto>", "novo subtítulo")
   .option("--content <texto>", "novo conteúdo")
   .addOption(
-    new Option("--content-edit-mode <modo>", "replace (padrão), append ou prepend")
-      .choices(["replace", "append", "prepend"]),
+    new Option(
+      "--content-edit-mode <modo>",
+      "replace (padrão), append ou prepend",
+    ).choices(["replace", "append", "prepend"]),
   )
   .option("--content-format <valor>", "text/md (padrão) ou text/plain")
   .description("atualiza título, subtítulo e/ou conteúdo de uma página")
-  .action(async function (this: Command, docId: string, pageId: string, options) {
+  .action(async function (
+    this: Command,
+    docId: string,
+    pageId: string,
+    options,
+  ) {
     const dados = limparIndefinidos({
       name: options.name,
       subTitle: options.subTitle,
@@ -943,16 +991,14 @@ mcp
   .action(async function (this: Command, options) {
     const globals = this.optsWithGlobals() as GlobalOptions;
     await serveMcp({
-      ...(options.account ?? globals.account
+      ...((options.account ?? globals.account)
         ? { accountId: options.account ?? globals.account }
         : {}),
       ...(options.workspace ? { workspaceId: options.workspace } : {}),
       ...(options.space ? { spaceId: options.space } : {}),
       ...(options.folder ? { folderId: options.folder } : {}),
       listId: options.list,
-      ...(options.sprintFolder
-        ? { sprintFolderId: options.sprintFolder }
-        : {}),
+      ...(options.sprintFolder ? { sprintFolderId: options.sprintFolder } : {}),
       ...(options.readOnly ? { readOnly: true } : {}),
     });
   });
@@ -1001,7 +1047,9 @@ agent
   .requiredOption("--list <id>", "List fixa do MCP deste projeto")
   .option("--sprint-folder <id>", "Sprint Folder fixo do MCP")
   .option("--force", "atualiza skills existentes")
-  .description("instala as skills e adiciona o servidor ao .mcp.json")
+  .description(
+    "instala as skills e adiciona o servidor ao .mcp.json e ao .codex/config.toml",
+  )
   .action(async function (this: Command, options) {
     const globals = this.optsWithGlobals() as GlobalOptions;
     const configuracao = await lerConfiguracao();
@@ -1024,12 +1072,19 @@ agent
       space: options.space,
       ...(options.folder ? { folder: options.folder } : {}),
       list: options.list,
-      ...(options.sprintFolder
-        ? { sprintFolder: options.sprintFolder }
-        : {}),
+      ...(options.sprintFolder ? { sprintFolder: options.sprintFolder } : {}),
+    });
+    const codexPath = await configurarCodexProjeto({
+      account: resolvida.id,
+      ...(options.workspace ? { workspace: options.workspace } : {}),
+      space: options.space,
+      ...(options.folder ? { folder: options.folder } : {}),
+      list: options.list,
+      ...(options.sprintFolder ? { sprintFolder: options.sprintFolder } : {}),
     });
     for (const caminho of skills) process.stdout.write(`Skill: ${caminho}\n`);
     process.stdout.write(`MCP: ${mcpPath}\n`);
+    process.stdout.write(`Codex: ${codexPath}\n`);
   });
 
 /** Executa o programa e converte falhas conhecidas em mensagens curtas. */

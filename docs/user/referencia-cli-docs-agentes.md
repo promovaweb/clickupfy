@@ -21,15 +21,15 @@ Busca Docs no workspace associado ao perfil. `--max-pages` controla o número de
 páginas de cursor consultadas e aceita inteiros de `1` a `50`; o padrão é `50`.
 `--parent-id` deve ser usado junto de `--parent-type` para identificar o local.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--query <texto>` | não | Filtro pelo nome ou ID do Doc. |
-| `--parent-id <id>` | não | Local pai do Doc. |
-| `--parent-type <n>` | não | `4` Space, `5` Folder, `6` List, `7` Everything, `12` tarefa. |
-| `--deleted` | não | Inclui Docs excluídos. |
-| `--archived` | não | Inclui Docs arquivados. |
-| `--creator <id>` | não | ID numérico da pessoa criadora. |
-| `--max-pages <n>` | não | Cursor de `1` a `50`; padrão `50`. |
+| Parâmetro           | Obrigatório | Uso                                                           |
+| ------------------- | ----------- | ------------------------------------------------------------- |
+| `--query <texto>`   | não         | Filtro pelo nome ou ID do Doc.                                |
+| `--parent-id <id>`  | não         | Local pai do Doc.                                             |
+| `--parent-type <n>` | não         | `4` Space, `5` Folder, `6` List, `7` Everything, `12` tarefa. |
+| `--deleted`         | não         | Inclui Docs excluídos.                                        |
+| `--archived`        | não         | Inclui Docs arquivados.                                       |
+| `--creator <id>`    | não         | ID numérico da pessoa criadora.                               |
+| `--max-pages <n>`   | não         | Cursor de `1` a `50`; padrão `50`.                            |
 
 Exemplos:
 
@@ -96,13 +96,13 @@ obrigatório. Os tipos são `4` Space, `5` Folder, `6` List, `7` Everything e
 `12` tarefa. `--visibility` aceita o valor definido pela API, normalmente
 `PRIVATE` ou `PUBLIC`; `--create-page` cria a primeira página em branco.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--name <nome>` | sim | Nome do Doc. |
-| `--parent-id <id>` | não | Local onde o Doc será criado. |
-| `--parent-type <n>` | condicional | Tipo do local quando há `parent-id`. |
-| `--visibility <valor>` | não | Visibilidade, como `PRIVATE` ou `PUBLIC`. |
-| `--create-page` | não | Cria uma primeira página vazia. |
+| Parâmetro              | Obrigatório | Uso                                       |
+| ---------------------- | ----------- | ----------------------------------------- |
+| `--name <nome>`        | sim         | Nome do Doc.                              |
+| `--parent-id <id>`     | não         | Local onde o Doc será criado.             |
+| `--parent-type <n>`    | condicional | Tipo do local quando há `parent-id`.      |
+| `--visibility <valor>` | não         | Visibilidade, como `PRIVATE` ou `PUBLIC`. |
+| `--create-page`        | não         | Cria uma primeira página vazia.           |
 
 Exemplos:
 
@@ -167,11 +167,11 @@ Lista páginas com conteúdo. `--max-page-depth` limita a profundidade de
 subpáginas retornada. `--content-format` aceita `text/md`, o padrão, ou
 `text/plain` para texto sem a representação Markdown da API.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `<doc-id>` | sim | Doc cujas páginas serão lidas. |
-| `--max-page-depth <n>` | não | Profundidade máxima de subpáginas. |
-| `--content-format <valor>` | não | `text/md` ou `text/plain`. |
+| Parâmetro                  | Obrigatório | Uso                                |
+| -------------------------- | ----------- | ---------------------------------- |
+| `<doc-id>`                 | sim         | Doc cujas páginas serão lidas.     |
+| `--max-page-depth <n>`     | não         | Profundidade máxima de subpáginas. |
+| `--content-format <valor>` | não         | `text/md` ou `text/plain`.         |
 
 Exemplos:
 
@@ -236,15 +236,15 @@ Cria página ou subpágina em um Doc. `--parent-page` indica uma página pai;
 subtítulo são opcionais. Não use `orderindex` como substituto de uma revisão da
 árvore existente: leia a árvore antes de inserir conteúdo.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `<doc-id>` | sim | Doc proprietário. |
-| `--name <nome>` | sim | Título da página. |
-| `--content <texto>` | não | Conteúdo inicial. |
-| `--sub-title <texto>` | não | Subtítulo. |
-| `--parent-page <id>` | não | Página pai de uma subpágina. |
-| `--orderindex <n>` | não | Posição entre páginas irmãs. |
-| `--content-format <valor>` | não | `text/md` ou `text/plain`. |
+| Parâmetro                  | Obrigatório | Uso                          |
+| -------------------------- | ----------- | ---------------------------- |
+| `<doc-id>`                 | sim         | Doc proprietário.            |
+| `--name <nome>`            | sim         | Título da página.            |
+| `--content <texto>`        | não         | Conteúdo inicial.            |
+| `--sub-title <texto>`      | não         | Subtítulo.                   |
+| `--parent-page <id>`       | não         | Página pai de uma subpágina. |
+| `--orderindex <n>`         | não         | Posição entre páginas irmãs. |
+| `--content-format <valor>` | não         | `text/md` ou `text/plain`.   |
 
 Exemplos:
 
@@ -279,14 +279,14 @@ necessário. `--content-edit-mode` controla o conteúdo: `replace` substitui,
 `append` acrescenta ao fim e `prepend` insere no começo. Sem a flag, o modo é
 `replace`.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `<doc-id>`, `<page-id>` | sim | Doc e página a atualizar. |
-| `--name <nome>` | não | Novo título. |
-| `--sub-title <texto>` | não | Novo subtítulo. |
-| `--content <texto>` | não | Conteúdo enviado à API. |
-| `--content-edit-mode <modo>` | não | `replace`, `append` ou `prepend`. |
-| `--content-format <valor>` | não | `text/md` ou `text/plain`. |
+| Parâmetro                    | Obrigatório | Uso                               |
+| ---------------------------- | ----------- | --------------------------------- |
+| `<doc-id>`, `<page-id>`      | sim         | Doc e página a atualizar.         |
+| `--name <nome>`              | não         | Novo título.                      |
+| `--sub-title <texto>`        | não         | Novo subtítulo.                   |
+| `--content <texto>`          | não         | Conteúdo enviado à API.           |
+| `--content-edit-mode <modo>` | não         | `replace`, `append` ou `prepend`. |
+| `--content-format <valor>`   | não         | `text/md` ou `text/plain`.        |
 
 Exemplos:
 
@@ -384,12 +384,12 @@ posicionais escolhidas. Sem `--global`, o destino padrão é
 `.codex/skills/` da pasta atual. `--global` usa `~/.codex/skills`; `--target`
 escolhe outro diretório; `--force` atualiza uma pasta existente.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `[skills...]` | não | Uma ou mais skills do catálogo. |
-| `--global` | não | Instala no catálogo global do usuário. |
-| `--target <pasta>` | não | Destino explícito para as skills. |
-| `--force` | não | Substitui uma instalação existente. |
+| Parâmetro          | Obrigatório | Uso                                    |
+| ------------------ | ----------- | -------------------------------------- |
+| `[skills...]`      | não         | Uma ou mais skills do catálogo.        |
+| `--global`         | não         | Instala no catálogo global do usuário. |
+| `--target <pasta>` | não         | Destino explícito para as skills.      |
+| `--force`          | não         | Substitui uma instalação existente.    |
 
 Exemplos:
 
@@ -419,20 +419,22 @@ um projeto.
 
 ### `clickupfy agent init`
 
-Instala as skills e mescla um servidor `promovaweb-clickupfy` no `.mcp.json` do
-projeto. `--space` e `--list` são obrigatórios. O arquivo gerado guarda perfil
-e IDs, mas nunca a API key. Acrescente `--read-only` manualmente aos argumentos
-do servidor no JSON quando o primeiro uso só pode consultar dados.
+Instala as skills e mescla um servidor `promovaweb-clickupfy` no `.mcp.json` e
+no `.codex/config.toml` do projeto. `--space` e `--list` são obrigatórios. Os
+arquivos gerados guardam perfil e IDs, mas nunca a API key. O JSON usa
+`mcpServers`; o Codex usa `[mcp_servers."promovaweb-clickupfy"]`. Acrescente
+`--read-only` manualmente aos argumentos das entradas quando o primeiro uso só
+pode consultar dados.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--global` | não | Instala skills globalmente. |
-| `--workspace <id>` | não | Workspace esperado pelo MCP. |
-| `--space <id>` | sim | Space fixado para o projeto. |
-| `--folder <id>` | não | Folder fixado. |
-| `--list <id>` | sim | List fixa e obrigatória. |
-| `--sprint-folder <id>` | não | Sprint Folder do projeto. |
-| `--force` | não | Atualiza skills existentes. |
+| Parâmetro              | Obrigatório | Uso                          |
+| ---------------------- | ----------- | ---------------------------- |
+| `--global`             | não         | Instala skills globalmente.  |
+| `--workspace <id>`     | não         | Workspace esperado pelo MCP. |
+| `--space <id>`         | sim         | Space fixado para o projeto. |
+| `--folder <id>`        | não         | Folder fixado.               |
+| `--list <id>`          | sim         | List fixa e obrigatória.     |
+| `--sprint-folder <id>` | não         | Sprint Folder do projeto.    |
+| `--force`              | não         | Atualiza skills existentes.  |
 
 Exemplos:
 
@@ -456,9 +458,10 @@ clickupfy agent init --global --space 1001 --list 3001 --force
 clickupfy --account cliente-a agent init --workspace 987654 --space 5001 --list 7001 --sprint-folder 8001 --force
 ```
 
-O comando preserva outros servidores no `.mcp.json`. Reabra o cliente MCP e
-chame `clickupfy_mcp_context` para conferir o destino. O CLI não lê esse JSON
-em chamadas normais: ele só é usado pelo cliente para iniciar `mcp serve`.
+O comando preserva outros servidores e configurações nos dois arquivos. Reabra
+o cliente MCP e chame `clickupfy_mcp_context` para conferir o destino. O CLI não
+lê esses arquivos em chamadas normais: eles só são usados pelo cliente para
+iniciar `mcp serve`.
 
 ### `clickupfy mcp serve --list <id>`
 
@@ -467,15 +470,15 @@ JSON-RPC; mensagens operacionais são escritas em stderr. `--list` é obrigatór
 Os outros IDs fixam os níveis superiores; `--read-only` remove ferramentas de
 escrita de `tools/list`.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--account <perfil>` | não | Perfil fixado. |
-| `--workspace <id>` | não | Workspace esperado. |
-| `--space <id>` | não | Space fixado. |
-| `--folder <id>` | não | Folder fixado. |
-| `--list <id>` | sim | List fixa. |
-| `--sprint-folder <id>` | não | Sprint Folder fixado. |
-| `--read-only` | não | Expõe somente ferramentas de leitura. |
+| Parâmetro              | Obrigatório | Uso                                   |
+| ---------------------- | ----------- | ------------------------------------- |
+| `--account <perfil>`   | não         | Perfil fixado.                        |
+| `--workspace <id>`     | não         | Workspace esperado.                   |
+| `--space <id>`         | não         | Space fixado.                         |
+| `--folder <id>`        | não         | Folder fixado.                        |
+| `--list <id>`          | sim         | List fixa.                            |
+| `--sprint-folder <id>` | não         | Sprint Folder fixado.                 |
+| `--read-only`          | não         | Expõe somente ferramentas de leitura. |
 
 Exemplos:
 
@@ -499,7 +502,8 @@ clickupfy mcp serve --list 3001 --sprint-folder 4001 --read-only
 clickupfy mcp serve --account cliente-a --workspace 987654 --space 5001 --list 7001 --sprint-folder 8001
 ```
 
-Normalmente o cliente MCP executa esse comando a partir do `.mcp.json`; não o
-inicie em um terminal que também precise de saída humana. A referência MCP
+Normalmente o cliente MCP executa esse comando a partir do `.mcp.json` ou do
+`.codex/config.toml`; não o inicie em um terminal que também precise de saída
+humana. A referência MCP
 detalha cada ferramenta exposta pelo servidor e as diferenças entre leitura e
 escrita.

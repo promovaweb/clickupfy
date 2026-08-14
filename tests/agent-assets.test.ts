@@ -3,12 +3,14 @@
  */
 
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
+import { parse as parseToml } from "smol-toml";
 import { describe, expect, it } from "vitest";
 import {
+  configurarCodexProjeto,
   configurarMcpProjeto,
   instalarSkills,
 } from "../src/agent-assets.js";
@@ -94,6 +96,59 @@ describe("integração com agentes", () => {
     });
   });
 
+  it("mescla o servidor no config.toml existente do Codex", async () => {
+    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-codex-"));
+    const codexPath = join(pasta, ".codex", "config.toml");
+    await mkdir(join(pasta, ".codex"), { recursive: true });
+    await writeFile(
+      codexPath,
+      [
+        'model = "gpt-5"',
+        "",
+        '[mcp_servers."github"]',
+        'command = "github-mcp"',
+        'args = ["--stdio"]',
+        "",
+      ].join("\n"),
+    );
+
+    await configurarCodexProjeto({
+      path: codexPath,
+      account: "dev",
+      workspace: "123",
+      space: "space-1",
+      folder: "folder-1",
+      list: "list-1",
+      sprintFolder: "sprints-1",
+    });
+
+    const codex = parseToml(await readFile(codexPath, "utf8"));
+    expect(codex.model).toBe("gpt-5");
+    expect(codex.mcp_servers.github).toEqual({
+      command: "github-mcp",
+      args: ["--stdio"],
+    });
+    expect(codex.mcp_servers["promovaweb-clickupfy"]).toEqual({
+      command: "clickupfy",
+      args: [
+        "mcp",
+        "serve",
+        "--account",
+        "dev",
+        "--workspace",
+        "123",
+        "--space",
+        "space-1",
+        "--folder",
+        "folder-1",
+        "--list",
+        "list-1",
+        "--sprint-folder",
+        "sprints-1",
+      ],
+    });
+  });
+
   it("gera um MCP específico na pasta de cada projeto pelo CLI", async () => {
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-init-"));
     const configPath = join(pasta, "config.json");
@@ -141,7 +196,22 @@ describe("integração com agentes", () => {
     );
 
     const mcp = JSON.parse(await readFile(join(pasta, ".mcp.json"), "utf8"));
+    const codex = parseToml(
+      await readFile(join(pasta, ".codex", "config.toml"), "utf8"),
+    );
     expect(mcp.mcpServers["promovaweb-clickupfy"].args).toEqual([
+      "mcp",
+      "serve",
+      "--account",
+      "dev",
+      "--workspace",
+      "123",
+      "--space",
+      "space-1",
+      "--list",
+      "list-1",
+    ]);
+    expect(codex.mcp_servers["promovaweb-clickupfy"].args).toEqual([
       "mcp",
       "serve",
       "--account",

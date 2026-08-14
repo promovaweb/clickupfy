@@ -53,6 +53,7 @@
     "@inquirer/prompts": "^8.5.2",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "commander": "^15.0.0",
+    "smol-toml": "^1.8.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

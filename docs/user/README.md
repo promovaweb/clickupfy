@@ -59,19 +59,19 @@ Siga esta ordem na primeira leitura:
 9. [Planeje Sprints](sprints.md) e acompanhe avanço por tarefas e Sprint
    Points.
 10. Consulte a [referência de Sprints](referencia-cli-sprints.md) para os
-   parâmetros de relatório, associação e Sprint Points.
+    parâmetros de relatório, associação e Sprint Points.
 11. [Registre tempo](time-tracking.md) no item em execução.
 12. [Instale e use as skills](agentes.md) que acompanham criação,
-   implementação e release.
+    implementação e release.
 13. [Conecte um agente por MCP](mcp.md) com IDs fixos e opção read-only.
 14. Consulte a [referência de Docs, skills e servidor MCP](referencia-cli-docs-agentes.md)
-   para os recursos de documentação dentro do ClickUp e a integração no projeto.
+    para os recursos de documentação dentro do ClickUp e a integração no projeto.
 15. Use a [referência MCP de contexto e hierarquia](referencia-mcp-contexto-hierarquia.md)
-   para conhecer cada argumento aceito pelas ferramentas de navegação.
+    para conhecer cada argumento aceito pelas ferramentas de navegação.
 16. Consulte a [referência MCP de Docs e administração](referencia-mcp-docs-administracao.md)
-   para o workspace, Docs, páginas e ferramentas condicionais do servidor.
+    para o workspace, Docs, páginas e ferramentas condicionais do servidor.
 17. Consulte a [referência MCP de trabalho](referencia-mcp-trabalho.md) para
-   operações de tarefas, Sprints, checklists, comentários e tempo.
+    operações de tarefas, Sprints, checklists, comentários e tempo.
 18. [Consulte a referência do CLI](cli.md) para comandos, argumentos e
     formatos de saída.
 19. [Resolva falhas comuns](solucao-de-problemas.md) de autenticação, escopo,
@@ -79,8 +79,9 @@ Siga esta ordem na primeira leitura:
 
 ## O modelo mental em uma frase
 
-O arquivo global guarda credenciais. O arquivo do projeto guarda somente o
-perfil e os IDs autorizados.
+O arquivo global guarda credenciais. Os arquivos do projeto guardam somente o
+perfil e os IDs autorizados. O `.mcp.json` atende clientes que usam JSON; o
+`.codex/config.toml` atende o Codex.
 
 Essa divisão permite usar o mesmo ClickUpfy em vários projetos sem duplicar a
 API key. Um projeto pode apontar para a List de um produto, enquanto outro

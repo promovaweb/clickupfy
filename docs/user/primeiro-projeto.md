@@ -11,8 +11,9 @@
 ## O que você vai preparar
 
 Neste percurso, um repositório será ligado a uma List do ClickUp. O resultado
-é um `.mcp.json` que inicia o ClickUpfy com um account e IDs fixos, além das
-quatro skills instaladas no projeto.
+são `.mcp.json` e `.codex/config.toml`, cada um no formato do cliente que os
+consome, iniciando o ClickUpfy com um account e IDs fixos, além das quatro
+skills instaladas no projeto.
 
 Antes de escrever qualquer tarefa, você vai:
 
@@ -65,8 +66,9 @@ clickupfy --account promovaweb agent init \
 quando não forem necessários ao escopo. Acrescente
 `--sprint-folder <id>` se o projeto usa Sprints.
 
-O comando instala as skills e mescla o servidor no `.mcp.json` existente sem
-remover outros servidores:
+O comando instala as skills e mescla o servidor no `.mcp.json` e no
+`.codex/config.toml` existentes sem remover outros servidores ou configurações.
+No JSON, a entrada fica assim:
 
 ```json
 {
@@ -90,6 +92,14 @@ remover outros servidores:
     }
   }
 }
+```
+
+No Codex, a entrada equivalente fica na tabela `mcp_servers`:
+
+```toml
+[mcp_servers."promovaweb-clickupfy"]
+command = "clickupfy"
+args = ["mcp", "serve", "--account", "promovaweb", "--workspace", "123", "--space", "10", "--folder", "20", "--list", "30"]
 ```
 
 Antes de abrir o cliente MCP pela primeira vez, acrescente `--read-only` ao

@@ -165,8 +165,9 @@ isoladas.
 ## MCP específico por projeto
 
 O `clickupfy` é único na máquina e recebe perfil e IDs por parâmetros. O uso
-agêntico fica isolado no `.mcp.json` de cada projeto, que fixa o perfil e a
-hierarquia permitida sem armazenar a API key.
+agêntico fica isolado nos arquivos de cada projeto: `.mcp.json` para clientes
+MCP compatíveis com JSON e `.codex/config.toml` para o Codex. Os dois fixam o
+perfil e a hierarquia permitida sem armazenar a API key.
 
 Na raiz de cada projeto, execute:
 
@@ -179,7 +180,8 @@ clickupfy agent init \
   --list 30
 ```
 
-O comando instala as skills e mescla o servidor no `.mcp.json` existente:
+O comando instala as skills e mescla o servidor nos dois arquivos existentes,
+preservando outros servidores e configurações:
 
 ```json
 {
@@ -205,6 +207,14 @@ O comando instala as skills e mescla o servidor no `.mcp.json` existente:
 }
 ```
 
+No Codex, a mesma entrada usa a tabela `mcp_servers` do TOML:
+
+```toml
+[mcp_servers."promovaweb-clickupfy"]
+command = "clickupfy"
+args = ["mcp", "serve", "--account", "promovaweb", "--workspace", "123", "--space", "10", "--folder", "20", "--list", "30"]
+```
+
 `space` e `list` são obrigatórios em `agent init`. O `--account` global escolhe
 o perfil; sem ele, o comando fixa o perfil ativo. Workspace e Folder são
 opcionais. O Sprint Folder também é opcional: acrescente
@@ -215,16 +225,18 @@ associado ao perfil.
 As ferramentas do agente podem omitir os IDs fixados. Uma tentativa de passar
 outro perfil, Space, Folder ou List é rejeitada pelo servidor. Quando o Sprint
 Folder estiver configurado, o mesmo isolamento vale para ele. Assim, dois
-projetos podem manter MCPs ativos em paralelo sem compartilhar destino:
+projetos podem manter MCPs ativos em paralelo sem compartilhar destino. Cada
+raiz pode ter os dois formatos para atender clientes diferentes:
 
 ```text
-projeto-a/.mcp.json -> account dev-a, List 30
-projeto-b/.mcp.json -> account cliente-b, List 70
+projeto-a/.mcp.json e .codex/config.toml -> account dev-a, List 30
+projeto-b/.mcp.json e .codex/config.toml -> account cliente-b, List 70
 ```
 
 A API key continua somente em
-`~/.promovaweb-clickupfy/config.json`. O `.mcp.json` guarda nomes de perfis e
-IDs da hierarquia, mas nenhuma credencial.
+`~/.promovaweb-clickupfy/config.json`. Os arquivos `.mcp.json` e
+`.codex/config.toml` guardam nomes de perfis e IDs da hierarquia, mas nenhuma
+credencial.
 
 ## Hierarquia do ClickUp
 
@@ -531,7 +543,8 @@ clickupfy agent skill install --global
 ```
 
 O comando abaixo instala as skills na pasta atual e acrescenta seu servidor ao
-`.mcp.json` sem remover outros servidores:
+`.mcp.json` e ao `.codex/config.toml`, sem remover outros servidores ou
+configurações:
 
 ```bash
 clickupfy agent init \
@@ -541,9 +554,10 @@ clickupfy agent init \
   --list 30
 ```
 
-Cada repositório mantém seu próprio `.mcp.json`, mesmo quando vários projetos
-usam o mesmo executável e o mesmo arquivo global de credenciais. Projetos que
-usam Sprints podem acrescentar `--sprint-folder <id>` ao comando.
+Cada repositório mantém seus próprios `.mcp.json` e `.codex/config.toml`, mesmo
+quando vários projetos usam o mesmo executável e o mesmo arquivo global de
+credenciais. Projetos que usam Sprints podem acrescentar
+`--sprint-folder <id>` ao comando.
 
 Use `--force` para atualizar uma skill já instalada. Os comandos
 `clickupfy agent skill list` e `clickupfy agent skill show <nome>` permitem
@@ -551,23 +565,23 @@ inspecionar o material empacotado.
 
 ## Comandos
 
-| Grupo | Ações |
-| --- | --- |
-| `setup` | Configura a API key e o workspace. |
-| `account` | `list`, `show`, `use`, `remove`. |
-| `workspace` | `list`, `use`. |
-| `space` | `list`. |
-| `folder` | `list`. |
-| `list` | `list`, `get`. |
-| `sprint` | `list`, `current`, `get`, `tasks`, `add-task`, `remove-task`, `set-points`. |
-| `task` | `list`, `search`, `get`, `create`, `update`, `delete`. |
-| `checklist` | `create`, `item-create`, `set` com `--resolved` ou `--open`. |
-| `comment` | `list`, `create`. |
-| `time` | `current`, `start`, `stop`. |
-| `doc` | `list`, `get`, `create`. |
-| `doc page` | `tree`, `list`, `get`, `create`, `update`. |
-| `mcp` | `serve`. |
-| `agent` | Instala skills e configura o MCP. |
+| Grupo       | Ações                                                                       |
+| ----------- | --------------------------------------------------------------------------- |
+| `setup`     | Configura a API key e o workspace.                                          |
+| `account`   | `list`, `show`, `use`, `remove`.                                            |
+| `workspace` | `list`, `use`.                                                              |
+| `space`     | `list`.                                                                     |
+| `folder`    | `list`.                                                                     |
+| `list`      | `list`, `get`.                                                              |
+| `sprint`    | `list`, `current`, `get`, `tasks`, `add-task`, `remove-task`, `set-points`. |
+| `task`      | `list`, `search`, `get`, `create`, `update`, `delete`.                      |
+| `checklist` | `create`, `item-create`, `set` com `--resolved` ou `--open`.                |
+| `comment`   | `list`, `create`.                                                           |
+| `time`      | `current`, `start`, `stop`.                                                 |
+| `doc`       | `list`, `get`, `create`.                                                    |
+| `doc page`  | `tree`, `list`, `get`, `create`, `update`.                                  |
+| `mcp`       | `serve`.                                                                    |
+| `agent`     | Instala skills e configura o MCP.                                           |
 
 Execute `clickupfy <grupo> --help` para conferir argumentos e opções.
 

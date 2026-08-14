@@ -19,10 +19,10 @@ ou captura de tela.
 Todas as ações, exceto a configuração inicial, podem receber estas opções
 imediatamente depois de `clickupfy`:
 
-| Opção | Tipo | Efeito |
-| --- | --- | --- |
-| `--account <perfil>` | texto | Seleciona um perfil para esta execução sem trocar o perfil ativo. |
-| `--json` | booleano | Imprime o payload completo em JSON, adequado para automação e inspeção. |
+| Opção                | Tipo     | Efeito                                                                  |
+| -------------------- | -------- | ----------------------------------------------------------------------- |
+| `--account <perfil>` | texto    | Seleciona um perfil para esta execução sem trocar o perfil ativo.       |
+| `--json`             | booleano | Imprime o payload completo em JSON, adequado para automação e inspeção. |
 
 O perfil ativo só muda com `account use`. A ordem importa: escreva
 `clickupfy --account cliente-a task list`, e não coloque `--account` depois do
@@ -33,14 +33,14 @@ subcomando.
 Cria ou atualiza um perfil local e associa a API key a um workspace autorizado.
 Sem `--non-interactive`, o comando pergunta pelos valores ausentes. A API key
 fica no arquivo de configuração do usuário, cujo caminho aparece em `status`;
-ela não vai para o `.mcp.json` do projeto.
+ela não vai para o `.mcp.json` nem para o `.codex/config.toml` do projeto.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--api-key <chave>` | não | API key pessoal do ClickUp. `--token` é um alias compatível. |
-| `--name <nome>` | não | Nome legível do perfil local. |
-| `--workspace <id>` | não | Workspace que será associado ao perfil. |
-| `--non-interactive` | não | Recusa prompts; use junto dos dados necessários para automação. |
+| Parâmetro           | Obrigatório | Uso                                                             |
+| ------------------- | ----------- | --------------------------------------------------------------- |
+| `--api-key <chave>` | não         | API key pessoal do ClickUp. `--token` é um alias compatível.    |
+| `--name <nome>`     | não         | Nome legível do perfil local.                                   |
+| `--workspace <id>`  | não         | Workspace que será associado ao perfil.                         |
+| `--non-interactive` | não         | Recusa prompts; use junto dos dados necessários para automação. |
 
 Exemplos:
 
@@ -151,9 +151,9 @@ Exibe metadados seguros de um perfil. Sem argumento, resolve o perfil ativo ou
 o que foi indicado pela opção global `--account`. O argumento posicional tem
 precedência sobre a opção global quando os dois aparecem.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `[perfil]` | não | Identificador local do perfil. |
+| Parâmetro  | Obrigatório | Uso                            |
+| ---------- | ----------- | ------------------------------ |
+| `[perfil]` | não         | Identificador local do perfil. |
 
 Exemplos:
 
@@ -188,9 +188,9 @@ muda nada no ClickUp. Evite usar este comando em automações ou quando dois
 projetos usam contas diferentes ao mesmo tempo; nesses casos, informe
 `--account` em cada chamada ou fixe o perfil no MCP de cada projeto.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `<perfil>` | sim | Identificador local já configurado. |
+| Parâmetro  | Obrigatório | Uso                                 |
+| ---------- | ----------- | ----------------------------------- |
+| `<perfil>` | sim         | Identificador local já configurado. |
 
 Exemplos:
 
@@ -224,10 +224,10 @@ Remove somente o perfil local. Não revoga a API key no ClickUp, não remove
 usuários e não exclui tarefas. Em terminal interativo, pede confirmação. Em
 automação, `--yes` confirma a remoção sem prompt.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `<perfil>` | sim | Identificador local a remover. |
-| `--yes` | não | Confirma sem interação. |
+| Parâmetro  | Obrigatório | Uso                            |
+| ---------- | ----------- | ------------------------------ |
+| `<perfil>` | sim         | Identificador local a remover. |
+| `--yes`    | não         | Confirma sem interação.        |
 
 Exemplos:
 
@@ -297,9 +297,9 @@ Associa um workspace autorizado ao perfil resolvido. O CLI consulta a API e só
 salva o ID quando ele aparece na lista permitida, portanto um número copiado de
 outro perfil é recusado.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `<workspace-id>` | sim | ID devolvido por `workspace list`. |
+| Parâmetro        | Obrigatório | Uso                                |
+| ---------------- | ----------- | ---------------------------------- |
+| `<workspace-id>` | sim         | ID devolvido por `workspace list`. |
 
 Exemplos:
 
@@ -370,9 +370,9 @@ workspace selecionado e preserve os IDs retornados em um local seguro.
 Lista Spaces do workspace associado ao perfil. `--archived` acrescenta Spaces
 arquivados; sem a opção, o resultado contém apenas os ativos.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--archived` | não | Inclui Spaces arquivados. |
+| Parâmetro    | Obrigatório | Uso                       |
+| ------------ | ----------- | ------------------------- |
+| `--archived` | não         | Inclui Spaces arquivados. |
 
 Exemplos:
 
@@ -405,10 +405,10 @@ devem ser usados como destino de novas tarefas sem autorização explícita.
 Lista Folders de um Space. O parâmetro `--space` é obrigatório; o CLI não usa
 um Space implícito porque um perfil pode operar em vários projetos.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--space <id>` | sim | ID do Space retornado por `space list`. |
-| `--archived` | não | Inclui Folders arquivados. |
+| Parâmetro      | Obrigatório | Uso                                     |
+| -------------- | ----------- | --------------------------------------- |
+| `--space <id>` | sim         | ID do Space retornado por `space list`. |
+| `--archived`   | não         | Inclui Folders arquivados.              |
 
 Exemplos:
 
@@ -443,11 +443,11 @@ Informe uma das duas opções. O CLI exige pelo menos uma; quando ambas forem
 fornecidas, a chamada deve apontar para o nível real que você pretende ler,
 mantendo um único destino por consulta.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `--folder <id>` | condicional | ID do Folder que contém as Lists. |
-| `--space <id>` | condicional | ID do Space para Lists sem Folder. |
-| `--archived` | não | Inclui Lists arquivadas. |
+| Parâmetro       | Obrigatório | Uso                                |
+| --------------- | ----------- | ---------------------------------- |
+| `--folder <id>` | condicional | ID do Folder que contém as Lists.  |
+| `--space <id>`  | condicional | ID do Space para Lists sem Folder. |
+| `--archived`    | não         | Inclui Lists arquivadas.           |
 
 Exemplos:
 
@@ -481,9 +481,9 @@ Obtém a List e os status aceitos pelas tarefas dela. A grafia retornada para um
 status é a mesma que deve aparecer em `task create --status` e
 `task update --status`; não use uma tradução ou suposição local.
 
-| Parâmetro | Obrigatório | Uso |
-| --- | --- | --- |
-| `<list-id>` | sim | ID da List retornado por `list list`. |
+| Parâmetro   | Obrigatório | Uso                                   |
+| ----------- | ----------- | ------------------------------------- |
+| `<list-id>` | sim         | ID da List retornado por `list list`. |
 
 Exemplos:
 

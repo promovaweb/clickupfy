@@ -7,6 +7,7 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { getAsset, isSea } from "node:sea";
 import { fileURLToPath } from "node:url";
+import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import { CliError } from "./errors.js";
 
 export const SKILL_NAMES = [
@@ -23,6 +24,18 @@ const SKILL_FILES: Record<SkillName, readonly string[]> = {
   "clickup-issue-implement": ["SKILL.md", "agents/openai.yaml"],
   "clickupfy-release": ["SKILL.md", "agents/openai.yaml"],
 };
+
+const MCP_SERVER_NAME = "promovaweb-clickupfy";
+
+interface OpcoesMcpProjeto {
+  path?: string;
+  account: string;
+  workspace?: string;
+  space: string;
+  folder?: string;
+  list: string;
+  sprintFolder?: string;
+}
 
 /**
  * Localiza as skills no código-fonte ou no pacote npm.
@@ -114,15 +127,9 @@ function chaveAssetSkill(name: SkillName, arquivo: string): string {
  * Mescla no `.mcp.json` um servidor preso ao perfil e à hierarquia do projeto,
  * sem remover servidores já configurados.
  */
-export async function configurarMcpProjeto(options: {
-  path?: string;
-  account: string;
-  workspace?: string;
-  space: string;
-  folder?: string;
-  list: string;
-  sprintFolder?: string;
-}): Promise<string> {
+export async function configurarMcpProjeto(
+  options: OpcoesMcpProjeto,
+): Promise<string> {
   const caminho = resolve(options.path ?? join(process.cwd(), ".mcp.json"));
   let configuracao: Record<string, unknown> = {};
 
@@ -132,8 +139,14 @@ export async function configurarMcpProjeto(options: {
       unknown
     >;
   } catch (error) {
-    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) {
-      throw new CliError(`Não foi possível ler ${caminho}.`, 1, { cause: error });
+    if (!(
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "ENOENT"
+    )) {
+      throw new CliError(`Não foi possível ler ${caminho}.`, 1, {
+        cause: error,
+      });
     }
   }
 
@@ -143,7 +156,75 @@ export async function configurarMcpProjeto(options: {
     !Array.isArray(configuracao.mcpServers)
       ? (configuracao.mcpServers as Record<string, unknown>)
       : {};
-  servidores["promovaweb-clickupfy"] = {
+  servidores[MCP_SERVER_NAME] = criarServidorMcp(options);
+  configuracao.mcpServers = servidores;
+
+  await mkdir(dirname(caminho), { recursive: true });
+  await writeFile(
+    caminho,
+    `${JSON.stringify(configuracao, null, 2)}\n`,
+    "utf8",
+  );
+  return caminho;
+}
+
+/**
+ * Mescla o mesmo servidor MCP no `config.toml` local usado pelo Codex.
+ *
+ * O parser mantém todas as chaves existentes e substitui somente a entrada
+ * gerenciada do ClickUpfy. Um TOML inválido é recusado para evitar substituir
+ * uma configuração que o Codex não conseguiria ler.
+ */
+export async function configurarCodexProjeto(
+  options: OpcoesMcpProjeto,
+): Promise<string> {
+  const caminho = resolve(
+    options.path ?? join(process.cwd(), ".codex", "config.toml"),
+  );
+  let configuracao: Record<string, unknown> = {};
+
+  try {
+    configuracao = parseToml(await readFile(caminho, "utf8"));
+  } catch (error) {
+    if (!(
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "ENOENT"
+    )) {
+      throw new CliError(`Não foi possível ler ${caminho}.`, 1, {
+        cause: error,
+      });
+    }
+  }
+
+  const servidores = configuracao.mcp_servers;
+  if (
+    servidores !== undefined &&
+    (typeof servidores !== "object" ||
+      servidores === null ||
+      Array.isArray(servidores))
+  ) {
+    throw new CliError(
+      `A configuração Codex em ${caminho} possui mcp_servers inválido.`,
+    );
+  }
+
+  configuracao.mcp_servers = {
+    ...(servidores as Record<string, unknown> | undefined),
+    [MCP_SERVER_NAME]: criarServidorMcp(options),
+  };
+
+  await mkdir(dirname(caminho), { recursive: true });
+  await writeFile(caminho, `${stringifyToml(configuracao)}\n`, "utf8");
+  return caminho;
+}
+
+/** Monta os argumentos comuns ao wrapper JSON e à entrada TOML do Codex. */
+function criarServidorMcp(options: OpcoesMcpProjeto): {
+  command: string;
+  args: string[];
+} {
+  return {
     command: "clickupfy",
     args: [
       "mcp",
@@ -161,11 +242,6 @@ export async function configurarMcpProjeto(options: {
         : []),
     ],
   };
-  configuracao.mcpServers = servidores;
-
-  await mkdir(dirname(caminho), { recursive: true });
-  await writeFile(caminho, `${JSON.stringify(configuracao, null, 2)}\n`, "utf8");
-  return caminho;
 }
 
 async function existe(caminho: string): Promise<boolean> {
