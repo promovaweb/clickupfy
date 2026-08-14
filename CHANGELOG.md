@@ -6,15 +6,13 @@ as próximas versões.
 
 ## [0.5.0](https://github.com/promovaweb/clickupfy/compare/v0.4.0...v0.5.0) (2026-08-14)
 
-
 ### Funcionalidades
 
-* configura arquivos de agente por projeto ([d59fe59](https://github.com/promovaweb/clickupfy/commit/d59fe591826c7e45ea8c1bbf53a5c9d18680dd6e))
-
+- configura arquivos de agente por projeto ([d59fe59](https://github.com/promovaweb/clickupfy/commit/d59fe591826c7e45ea8c1bbf53a5c9d18680dd6e))
 
 ### Documentação
 
-* amplia referências e guias do ClickUpfy ([2ab1271](https://github.com/promovaweb/clickupfy/commit/2ab1271b4794e8b3bb10dbb33d96f637e26a8b59))
+- amplia referências e guias do ClickUpfy ([2ab1271](https://github.com/promovaweb/clickupfy/commit/2ab1271b4794e8b3bb10dbb33d96f637e26a8b59))
 
 ## [0.4.0](https://github.com/promovaweb/clickupfy/compare/v0.3.0...v0.4.0) (2026-07-31)
 
