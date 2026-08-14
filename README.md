@@ -47,6 +47,17 @@ Os três executáveis nativos pertencem ao mesmo pacote e à mesma versão. Em
 outras plataformas, inclusive Windows, o launcher usa o build JavaScript
 incluído no pacote.
 
+Para atualizar uma instalação global feita pelo npm, execute:
+
+```bash
+clickupfy upgrade
+```
+
+O comando instala `@promovaweb/clickupfy@latest` e confirma a versão do
+launcher global depois da troca. Para um executável standalone, baixe o novo
+archive na [GitHub Release](https://github.com/promovaweb/clickupfy/releases)
+e substitua o arquivo manualmente.
+
 ## Instalação pelo executável
 
 Cada [GitHub Release](https://github.com/promovaweb/clickupfy/releases)
@@ -568,6 +579,7 @@ inspecionar o material empacotado.
 | Grupo       | Ações                                                                       |
 | ----------- | --------------------------------------------------------------------------- |
 | `setup`     | Configura a API key e o workspace.                                          |
+| `upgrade`   | Atualiza a instalação global pelo npm.                                      |
 | `account`   | `list`, `show`, `use`, `remove`.                                            |
 | `workspace` | `list`, `use`.                                                              |
 | `space`     | `list`.                                                                     |

@@ -25,6 +25,7 @@ import {
 import { criarContexto } from "./context.js";
 import { CliError } from "./errors.js";
 import { serveMcp } from "./mcp.js";
+import { executarUpgrade } from "./upgrade.js";
 import {
   imprimirJson,
   imprimirTabela,
@@ -64,6 +65,17 @@ const program = new Command()
     "perfil configurado; usa o perfil ativo por padrão",
   )
   .option("--json", "imprime a resposta completa em JSON");
+
+program
+  .command("upgrade")
+  .argument("[alvo]", "latest, next ou uma versão SemVer; usa latest por padrão")
+  .description("atualiza a instalação global do ClickUpfy pelo npm")
+  .action((target?: string) => {
+    const resultado = executarUpgrade(target);
+    process.stdout.write(
+      `ClickUpfy atualizado para ${resultado.version} pelo canal ${resultado.target}.\n`,
+    );
+  });
 
 program
   .command("setup")

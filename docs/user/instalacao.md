@@ -44,6 +44,21 @@ npm bin --global
 O segundo comando pode não existir em versões novas do npm. Nesse caso, o
 diretório de executáveis costuma ser `bin` dentro do prefixo em Linux e macOS.
 
+## Atualize a instalação npm
+
+Quando o ClickUpfy foi instalado globalmente pelo npm, o próprio comando inicia
+a instalação da versão nova e confirma o launcher que ficará disponível no
+terminal:
+
+```bash
+clickupfy upgrade
+```
+
+O alvo padrão é `latest`. Para testar um canal ou fixar uma versão, use
+`clickupfy upgrade next` ou `clickupfy upgrade 0.5.0`. O comando não substitui um
+executável standalone; nesse caso, baixe o archive correspondente na GitHub
+Release, confira `SHA256SUMS` e substitua o arquivo no `PATH`.
+
 ## Instale um executável standalone
 
 Cada GitHub Release distribui archives para Linux x64, macOS Intel, macOS

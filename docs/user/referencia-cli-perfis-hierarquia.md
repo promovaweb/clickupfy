@@ -28,6 +28,46 @@ O perfil ativo só muda com `account use`. A ordem importa: escreva
 `clickupfy --account cliente-a task list`, e não coloque `--account` depois do
 subcomando.
 
+### `clickupfy upgrade`
+
+Atualiza a instalação global do ClickUpfy pelo npm e relê o launcher global
+depois da instalação. Sem alvo, instala `@promovaweb/clickupfy@latest`.
+
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `[alvo]` | não | `latest`, `next` ou uma versão SemVer, como `0.5.0`. `latest` é o padrão. |
+
+O comando instala a nova versão com `npm install --global`, sem alterar a
+configuração de accounts, e confirma a versão retornada pelo launcher global.
+Ele exige o npm disponível no `PATH` e permissões para alterar o prefixo global.
+Não substitui executáveis standalone baixados da GitHub Release.
+
+Exemplos:
+
+```bash
+clickupfy upgrade
+```
+
+```bash
+clickupfy upgrade latest
+```
+
+```bash
+clickupfy upgrade next
+```
+
+```bash
+clickupfy upgrade 0.5.0
+```
+
+```bash
+clickupfy upgrade v0.5.0
+```
+
+O quinto exemplo normaliza o prefixo `v` antes de chamar o npm. Se o npm falhar
+ou o launcher não retornar uma versão SemVer, o comando encerra com erro e não
+declara a atualização como concluída.
+
 ### `clickupfy setup`
 
 Cria ou atualiza um perfil local e associa a API key a um workspace autorizado.

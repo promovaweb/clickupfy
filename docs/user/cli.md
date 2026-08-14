@@ -14,6 +14,12 @@
 clickupfy [options] [command]
 ```
 
+O comando de manutenção da instalação npm usa esta forma:
+
+```text
+clickupfy upgrade [alvo]
+```
+
 As opções globais selecionam o account e o formato da resposta antes que o
 CLI interprete o grupo e a ação:
 
@@ -44,6 +50,10 @@ clickupfy account remove <perfil>
 clickupfy workspace list
 clickupfy workspace use <workspace-id>
 ```
+
+Para atualizar uma instalação global feita pelo npm, use `clickupfy upgrade`.
+Consulte a [referência de perfis e hierarquia](referencia-cli-perfis-hierarquia.md)
+para parâmetros, canais aceitos, confirmação da versão e limites do comando.
 
 O setup recebe a credencial, identifica o account local e associa o workspace.
 Estes parâmetros permitem executar o mesmo processo com ou sem prompts:
