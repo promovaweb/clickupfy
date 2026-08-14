@@ -41,6 +41,7 @@ clickupfy --account cliente-a --json task get 86abc123
 
 ```bash
 clickupfy setup [options]
+clickupfy doctor
 clickupfy status
 clickupfy whoami
 clickupfy account list
@@ -68,6 +69,12 @@ Estes parâmetros permitem executar o mesmo processo com ou sem prompts:
 
 `account remove <perfil>` aceita `--yes` para confirmar a remoção sem prompt.
 As outras ações desse grupo não possuem opções próprias.
+
+`clickupfy doctor` verifica localmente o JSON em `~/clickupfy/config.json`, as
+permissões, o schema, os accounts e os arquivos `.mcp.json` e
+`.codex/config.toml` do projeto quando existirem. Use `--json` para automação.
+O comando não faz chamada ao ClickUp. Use `clickupfy whoami` para validar a API
+key remotamente.
 
 ## Hierarquia
 

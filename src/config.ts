@@ -50,12 +50,12 @@ export function criarConfiguracaoVazia(): Configuracao {
  * Retorna o caminho canônico solicitado pelo produto.
  *
  * A variável de ambiente existe para testes isolados e automações, sem mudar o
- * comportamento padrão em `~/.promovaweb-clickupfy/config.json`.
+ * comportamento padrão em `~/clickupfy/config.json`.
  */
 export function caminhoConfiguracao(): string {
   return (
     process.env.PROMOVAWEB_CLICKUPFY_CONFIG ??
-    join(homedir(), ".promovaweb-clickupfy", "config.json")
+    join(homedir(), "clickupfy", "config.json")
   );
 }
 

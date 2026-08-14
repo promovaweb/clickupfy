@@ -35,7 +35,7 @@ texto de ajuda ou em uma tabela de nomes.
    ativo apenas para uma consulta pontual.
 
 Nunca ler, imprimir, comentar ou copiar o campo `apiKey` de
-`~/.promovaweb-clickupfy/config.json`. Não incluir credenciais em comandos,
+`~/clickupfy/config.json`. Não incluir credenciais em comandos,
 logs, commits ou respostas.
 
 ## Preservar o isolamento dos projetos

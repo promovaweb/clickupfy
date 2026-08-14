@@ -56,7 +56,7 @@ contexto, registrar progresso e comprovar a conclusão.
 
 Um **account** do ClickUpfy é um perfil local. Ele contém um nome, a API key, o
 usuário autenticado e o workspace associado. O arquivo vive fora dos
-repositórios, em `~/.promovaweb-clickupfy/config.json`.
+repositórios, em `~/clickupfy/config.json`.
 
 Um **projeto** é uma raiz de código que pode conter `.mcp.json` e
 `.codex/config.toml`. Esses arquivos selecionam um account e fixam IDs da

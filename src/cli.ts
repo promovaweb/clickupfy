@@ -26,6 +26,7 @@ import { criarContexto } from "./context.js";
 import { CliError } from "./errors.js";
 import { serveMcp } from "./mcp.js";
 import { executarUpgrade } from "./upgrade.js";
+import { executarDoctor } from "./doctor.js";
 import {
   imprimirJson,
   imprimirTabela,
@@ -91,6 +92,31 @@ program
       `Perfil "${resultado.accountId}" configurado para ${resultado.account.workspace.name}.\n`,
     );
     process.stdout.write(`Configuração: ${resultado.path}\n`);
+  });
+
+program
+  .command("doctor")
+  .description("verifica o setup e os arquivos de configuração locais")
+  .action(async function (this: Command) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const resultado = await executarDoctor();
+    if (globals.json) {
+      imprimirJson(resultado);
+    } else {
+      process.stdout.write("ClickUpfy doctor\n\n");
+      imprimirTabela(
+        resultado.checks.map((check) => ({
+          estado: check.estado.toUpperCase(),
+          verificacao: check.id,
+          mensagem: check.mensagem,
+          caminho: check.caminho ?? "",
+        })),
+      );
+      process.stdout.write(
+        `\nResultado: ${resultado.ok ? "setup local válido" : "há verificações com erro"}.\n`,
+      );
+    }
+    if (!resultado.ok) process.exitCode = 1;
   });
 
 program

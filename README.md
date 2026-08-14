@@ -100,6 +100,12 @@ ao account local:
 clickupfy setup
 ```
 
+Para verificar o setup local e os arquivos de configuração do projeto:
+
+```bash
+clickupfy doctor
+```
+
 Um terminal interativo oculta a API key e abre a escolha do workspace. A mesma
 configuração pode ser feita sem prompts:
 
@@ -114,7 +120,7 @@ clickupfy setup \
 O arquivo fica em:
 
 ```text
-~/.promovaweb-clickupfy/config.json
+~/clickupfy/config.json
 ```
 
 O diretório recebe permissão `0700` e o arquivo recebe `0600`. A API key é
@@ -245,7 +251,7 @@ projeto-b/.mcp.json e .codex/config.toml -> account cliente-b, List 70
 ```
 
 A API key continua somente em
-`~/.promovaweb-clickupfy/config.json`. Os arquivos `.mcp.json` e
+`~/clickupfy/config.json`. Os arquivos `.mcp.json` e
 `.codex/config.toml` guardam nomes de perfis e IDs da hierarquia, mas nenhuma
 credencial.
 
@@ -579,6 +585,7 @@ inspecionar o material empacotado.
 | Grupo       | Ações                                                                       |
 | ----------- | --------------------------------------------------------------------------- |
 | `setup`     | Configura a API key e o workspace.                                          |
+| `doctor`    | Verifica o setup e os arquivos de configuração locais.                      |
 | `upgrade`   | Atualiza a instalação global pelo npm.                                      |
 | `account`   | `list`, `show`, `use`, `remove`.                                            |
 | `workspace` | `list`, `use`.                                                              |

@@ -68,6 +68,46 @@ O quinto exemplo normaliza o prefixo `v` antes de chamar o npm. Se o npm falhar
 ou o launcher não retornar uma versão SemVer, o comando encerra com erro e não
 declara a atualização como concluída.
 
+### `clickupfy doctor`
+
+Verifica o setup local sem fazer chamadas à API do ClickUp. O diagnóstico
+confere o caminho `~/clickupfy/config.json` ou o caminho definido por
+`PROMOVAWEB_CLICKUPFY_CONFIG`, as permissões `0700` do diretório e `0600` do
+arquivo, o JSON, o schema, os accounts e o account ativo. Quando executado na
+raiz de um projeto, também lê `.mcp.json` e `.codex/config.toml` se existirem.
+API keys nunca aparecem na saída.
+
+Os arquivos de projeto são opcionais. A ausência deles gera `skipped` porque o
+MCP só é necessário quando o projeto usa agentes. Um arquivo presente, mas
+inválido, gera `error`. O comando retorna código `1` quando existe uma
+verificação com erro. `warning` e `skipped` não reprovam o diagnóstico.
+
+Exemplos:
+
+```bash
+clickupfy doctor
+```
+
+```bash
+clickupfy --json doctor
+```
+
+```bash
+PROMOVAWEB_CLICKUPFY_CONFIG=/tmp/clickupfy-config.json clickupfy doctor
+```
+
+```bash
+cd ~/projetos/produto && clickupfy doctor
+```
+
+```bash
+clickupfy --json doctor | jq '.checks[] | select(.estado == "error")'
+```
+
+O diagnóstico confirma a configuração local e os arquivos usados pelos
+agentes, mas não testa se a API key continua válida no ClickUp. Para essa
+verificação remota, use `clickupfy whoami`.
+
 ### `clickupfy setup`
 
 Cria ou atualiza um perfil local e associa a API key a um workspace autorizado.

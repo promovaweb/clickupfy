@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "version": "1.2.1",
-  "edition": "v1.2.1",
-  "generated_at": "2026-08-14T17:25:42Z",
-  "source_sha256": "c546e0ebfc9b17c499880d1636c6cfa447ae8767134f583321ed97e9b9c86f2c",
+  "version": "1.2.2",
+  "edition": "v1.2.2",
+  "generated_at": "2026-08-14T17:53:15Z",
+  "source_sha256": "eb40daebf4179e88f250a8acd1e237121aa22ce7e5b50d64c8195f914c68e8d0",
   "sources": [
     ".ebook/build-ebook.sh",
     ".ebook/epub.css",
@@ -146,12 +146,12 @@
   },
   "artifacts": {
     "pdf": {
-      "file": "ClickUpfy-Guia-do-Usuario-v1.2.1.pdf",
-      "sha256": "87784e22e75d5ad4329756216d1b57c8aa9f15f0eddf71bf2c02c63c4c8769a1"
+      "file": "ClickUpfy-Guia-do-Usuario-v1.2.2.pdf",
+      "sha256": "3fba0a6ba8a10f36b91da784f784f4805b223c2c31af50237d64667f007d2526"
     },
     "epub": {
-      "file": "ClickUpfy-Guia-do-Usuario-v1.2.1.epub",
-      "sha256": "0b929d5d169356a97b7b83c3f232f9f2114a9e92ae4c43b1545ee3db46e37055"
+      "file": "ClickUpfy-Guia-do-Usuario-v1.2.2.epub",
+      "sha256": "c157d23b6e027ab678d4232ed9946908ffc750524e09523430f71a22a1512551"
     }
   }
 }

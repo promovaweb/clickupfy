@@ -47,7 +47,7 @@ execução.
 Por padrão, a configuração fica em:
 
 ```text
-~/.promovaweb-clickupfy/config.json
+~/clickupfy/config.json
 ```
 
 O diretório recebe permissão `0700` e o arquivo `0600`. A API key precisa
@@ -93,6 +93,16 @@ clickupfy whoami
 
 `status` mostra o caminho da configuração, o account resolvido e o workspace.
 `whoami` faz uma chamada autenticada e confirma se a chave ainda é válida.
+
+Para conferir o setup local, as permissões do arquivo, o schema e os arquivos
+de integração do projeto, execute:
+
+```bash
+clickupfy doctor
+```
+
+Esse diagnóstico não faz uma chamada ao ClickUp. Use `clickupfy whoami` quando
+precisar validar a API key remotamente.
 
 Para trocar o perfil ativo:
 

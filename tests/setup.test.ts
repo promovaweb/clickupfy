@@ -52,7 +52,7 @@ describe("clickupfy setup", () => {
     const endereco = servidor.address();
     if (!endereco || typeof endereco === "string") throw new Error("Porta ausente");
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-setup-"));
-    const caminho = join(pasta, ".promovaweb-clickupfy", "config.json");
+    const caminho = join(pasta, "clickupfy", "config.json");
     const tsx = resolve("node_modules/.bin/tsx");
 
     const { stdout } = await execFileAsync(

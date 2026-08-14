@@ -14,6 +14,7 @@ const docsRoot = join(root, "docs", "user");
 const cliCommands = [
   "clickupfy setup",
   "clickupfy upgrade",
+  "clickupfy doctor",
   "clickupfy status",
   "clickupfy account list",
   "clickupfy account show",

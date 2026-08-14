@@ -3,11 +3,12 @@
  */
 
 import { mkdtemp, stat } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   criarConfiguracaoVazia,
+  caminhoConfiguracao,
   lerConfiguracao,
   resolverAccount,
   salvarConfiguracao,
@@ -24,6 +25,12 @@ afterEach(() => {
 });
 
 describe("configuração", () => {
+  it("usa ~/clickupfy/config.json por padrão", () => {
+    delete process.env.PROMOVAWEB_CLICKUPFY_CONFIG;
+
+    expect(caminhoConfiguracao()).toBe(join(homedir(), "clickupfy", "config.json"));
+  });
+
   it("grava o JSON com permissão 0600 e preserva múltiplas accounts", async () => {
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-config-"));
     const caminho = join(pasta, "dados", "config.json");
