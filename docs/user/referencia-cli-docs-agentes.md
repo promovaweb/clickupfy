@@ -319,7 +319,8 @@ usada pelo ClickUpfy não oferece exclusão de página nem movimentação na ár
 
 Lista as skills embaladas: `clickupfy-dev`, `clickup-issue-create`,
 `clickup-issue-implement` e `clickupfy-release`. Não instala nada e não precisa
-de perfil configurado.
+de perfil configurado. O estado da instalação é responsabilidade do gerenciador
+`skills`; use `skills list` no projeto ou `skills list --global`.
 
 Exemplos:
 
@@ -345,7 +346,8 @@ clickupfy agent skill list && clickupfy agent skill show clickupfy-dev
 
 O catálogo é incorporado ao pacote ou executável. `list` não verifica se uma
 skill já está instalada no projeto; ele apenas mostra o que a versão instalada
-do ClickUpfy pode distribuir.
+do ClickUpfy pode distribuir. As instruções e os metadados distribuídos estão
+em português do Brasil.
 
 ### `clickupfy agent skill show <skill>`
 
@@ -380,16 +382,16 @@ abre uma cópia local já instalada, que pode ter sido alterada pelo projeto.
 ### `clickupfy agent skill install [skills...]`
 
 Instala todas as skills quando nenhum nome é informado, ou somente as skills
-posicionais escolhidas. Sem `--global`, o destino padrão é
-`.codex/skills/` da pasta atual. `--global` usa `~/.codex/skills`; `--target`
-escolhe outro diretório; `--force` atualiza uma pasta existente.
+posicionais escolhidas, chamando `skills add promovaweb/clickupfy`. Sem
+`--global`, o destino é `.agents/skills/` da pasta atual e o gerenciador
+atualiza `skills-lock.json`. `--global` usa `~/.codex/skills`. A instalação
+sempre usa `--agent codex`, `--copy` e `--yes`.
 
-| Parâmetro          | Obrigatório | Uso                                    |
-| ------------------ | ----------- | -------------------------------------- |
-| `[skills...]`      | não         | Uma ou mais skills do catálogo.        |
-| `--global`         | não         | Instala no catálogo global do usuário. |
-| `--target <pasta>` | não         | Destino explícito para as skills.      |
-| `--force`          | não         | Substitui uma instalação existente.    |
+| Parâmetro     | Obrigatório | Uso                                    |
+| ------------- | ----------- | -------------------------------------- |
+| `[skills...]` | não         | Uma ou mais skills do catálogo.        |
+| `--global`    | não         | Instala no catálogo global do usuário. |
+| `--force`     | não         | Permite repetir a instalação.          |
 
 Exemplos:
 
@@ -410,12 +412,12 @@ clickupfy agent skill install --global clickupfy-dev
 ```
 
 ```bash
-clickupfy agent skill install --target ./skills-test clickupfy-release --force
+clickupfy agent skill install clickupfy-release --force
 ```
 
-Sem `--force`, o comando recusa sobrescrever uma skill existente. Revise a fonte
-com `agent skill show` e o diff da cópia instalada antes de atualizar regras de
-um projeto.
+`--target` não é aceito porque os caminhos canônicos pertencem ao gerenciador
+`skills`. Revise a fonte com `agent skill show` e consulte `skills list` antes de
+atualizar regras de um projeto.
 
 ### `clickupfy agent init`
 

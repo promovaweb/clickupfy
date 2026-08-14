@@ -2,12 +2,13 @@
  * Instalação das skills e geração da configuração MCP para agentes locais.
  */
 
-import { access, cp, mkdir, readFile, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
+import { execFile } from "node:child_process";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { getAsset, isSea } from "node:sea";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
+import { promisify } from "node:util";
 import { CliError } from "./errors.js";
 
 export const SKILL_NAMES = [
@@ -18,14 +19,24 @@ export const SKILL_NAMES = [
 ] as const;
 export type SkillName = (typeof SKILL_NAMES)[number];
 
-const SKILL_FILES: Record<SkillName, readonly string[]> = {
-  "clickupfy-dev": ["SKILL.md", "agents/openai.yaml"],
-  "clickup-issue-create": ["SKILL.md", "agents/openai.yaml"],
-  "clickup-issue-implement": ["SKILL.md", "agents/openai.yaml"],
-  "clickupfy-release": ["SKILL.md", "agents/openai.yaml"],
-};
-
 const MCP_SERVER_NAME = "promovaweb-clickupfy";
+const SKILLS_SOURCE = "promovaweb/clickupfy";
+const execFileAsync = promisify(execFile);
+
+export interface SkillGerenciada {
+  name: string;
+  path: string;
+  scope: "project" | "global";
+  agents: string[];
+  source?: string | null;
+}
+
+export interface OpcoesSkillsCli {
+  command?: string;
+  args?: string[];
+  cwd?: string;
+  env?: NodeJS.ProcessEnv;
+}
 
 interface OpcoesMcpProjeto {
   path?: string;
@@ -53,46 +64,122 @@ export function caminhoSkillsEmpacotadas(): string {
 }
 
 /**
- * Copia uma ou todas as skills para o projeto atual ou para a pasta global do
- * Codex. Um destino existente só é atualizado com `force`.
+ * Instala uma ou todas as skills pelo gerenciador oficial `skills add`.
+ *
+ * O ClickUpfy mantém este wrapper para oferecer uma entrada única no CLI, mas
+ * a fonte, o lockfile e os caminhos de instalação ficam sob responsabilidade
+ * do gerenciador de skills.
  */
 export async function instalarSkills(options: {
   names?: SkillName[];
   global?: boolean;
+  /** Mantido apenas para emitir uma mensagem de migração clara. */
   target?: string;
   force?: boolean;
+  skillsCli?: OpcoesSkillsCli;
 }): Promise<string[]> {
-  const baseDestino = options.target
-    ? resolve(options.target)
-    : options.global
-      ? join(homedir(), ".codex", "skills")
-      : join(process.cwd(), ".codex", "skills");
-  const names = options.names ?? [...SKILL_NAMES];
-  const instaladas: string[] = [];
-
-  await mkdir(baseDestino, { recursive: true });
-  for (const name of names) {
-    const destino = join(baseDestino, name);
-
-    if ((await existe(destino)) && !options.force) {
-      throw new CliError(
-        `A skill "${name}" já existe em ${destino}. Use --force para atualizá-la.`,
-      );
-    }
-
-    if (isSea()) {
-      await instalarSkillIncorporada(name, destino);
-    } else {
-      await cp(join(caminhoSkillsEmpacotadas(), name), destino, {
-        recursive: true,
-        force: Boolean(options.force),
-        errorOnExist: !options.force,
-      });
-    }
-    instaladas.push(destino);
+  if (options.target) {
+    throw new CliError(
+      "--target não é compatível com o gerenciador `skills`. Use o projeto atual ou --global.",
+    );
   }
 
-  return instaladas;
+  const names = options.names ?? [...SKILL_NAMES];
+  const args = [
+    "add",
+    SKILLS_SOURCE,
+    "--yes",
+    "--copy",
+    "--agent",
+    "codex",
+    ...names.flatMap((name) => ["--skill", name]),
+    ...(options.global ? ["--global"] : []),
+  ];
+
+  await executarSkillsCli(args, options.skillsCli);
+  const instaladas = await listarSkillsGerenciadas({
+    names,
+    ...(options.global ? { global: true } : {}),
+    ...(options.skillsCli ? { skillsCli: options.skillsCli } : {}),
+  });
+
+  const ausentes = names.filter(
+    (name) => !instaladas.some((skill) => skill.name === name),
+  );
+  if (ausentes.length > 0) {
+    throw new CliError(
+      `O gerenciador "skills add" terminou sem registrar: ${ausentes.join(", ")}.`,
+    );
+  }
+
+  return instaladas.map((skill) => skill.path);
+}
+
+/** Lista as skills registradas pelo gerenciador oficial. */
+export async function listarSkillsGerenciadas(options: {
+  global?: boolean;
+  names?: readonly string[];
+  skillsCli?: OpcoesSkillsCli;
+} = {}): Promise<SkillGerenciada[]> {
+  const args = ["list", "--json", ...(options.global ? ["--global"] : [])];
+  const { stdout } = await executarSkillsCli(args, options.skillsCli);
+  let valor: unknown;
+  try {
+    valor = JSON.parse(stdout);
+  } catch (error) {
+    throw new CliError("O comando `skills list --json` não retornou JSON válido.", 1, {
+      cause: error,
+    });
+  }
+
+  if (!Array.isArray(valor)) {
+    throw new CliError("O comando `skills list --json` retornou uma estrutura inválida.");
+  }
+
+  const nomes = options.names ? new Set(options.names) : undefined;
+  return valor.filter(isSkillGerenciada).filter((skill) =>
+    nomes ? nomes.has(skill.name) : true,
+  );
+}
+
+/** Executa o binário externo sem expor variáveis sensíveis na mensagem de erro. */
+async function executarSkillsCli(
+  args: string[],
+  options: OpcoesSkillsCli = {},
+): Promise<{ stdout: string; stderr: string }> {
+  const command =
+    options.command ?? options.env?.CLICKUPFY_SKILLS_COMMAND ?? "skills";
+  try {
+    return await execFileAsync(command, [...(options.args ?? []), ...args], {
+      cwd: options.cwd ?? process.cwd(),
+      env: { ...process.env, ...options.env },
+      maxBuffer: 4 * 1024 * 1024,
+    });
+  } catch (error) {
+    const codigo = error instanceof Error && "code" in error ? error.code : undefined;
+    if (codigo === "ENOENT") {
+      throw new CliError(
+        "O comando `skills` não foi encontrado. Instale o gerenciador de skills antes de continuar.",
+        1,
+        { cause: error },
+      );
+    }
+    const mensagem = error instanceof Error ? error.message.split("\n")[0] : "falha desconhecida";
+    throw new CliError(`O comando "skills" falhou: ${mensagem}`, 1, {
+      cause: error,
+    });
+  }
+}
+
+function isSkillGerenciada(valor: unknown): valor is SkillGerenciada {
+  if (!valor || typeof valor !== "object") return false;
+  const skill = valor as Record<string, unknown>;
+  return (
+    typeof skill.name === "string" &&
+    typeof skill.path === "string" &&
+    (skill.scope === "project" || skill.scope === "global") &&
+    Array.isArray(skill.agents)
+  );
 }
 
 /** Retorna o conteúdo da skill para inspeção sem instalá-la. */
@@ -101,21 +188,6 @@ export async function lerSkill(name: SkillName): Promise<string> {
     return getAsset(chaveAssetSkill(name, "SKILL.md"), "utf8");
   }
   return readFile(join(caminhoSkillsEmpacotadas(), name, "SKILL.md"), "utf8");
-}
-
-/** Grava no destino todos os arquivos de uma skill incorporada ao SEA. */
-async function instalarSkillIncorporada(
-  name: SkillName,
-  destino: string,
-): Promise<void> {
-  for (const arquivo of SKILL_FILES[name]) {
-    const caminho = join(destino, arquivo);
-    await mkdir(dirname(caminho), { recursive: true });
-    await writeFile(
-      caminho,
-      Buffer.from(getAsset(chaveAssetSkill(name, arquivo))),
-    );
-  }
 }
 
 /** Mantém a mesma chave usada pelo build ao incorporar uma skill. */
@@ -242,13 +314,4 @@ function criarServidorMcp(options: OpcoesMcpProjeto): {
         : []),
     ],
   };
-}
-
-async function existe(caminho: string): Promise<boolean> {
-  try {
-    await access(caminho);
-    return true;
-  } catch {
-    return false;
-  }
 }

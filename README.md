@@ -547,7 +547,7 @@ O pacote distribui quatro skills:
   validação e status terminal;
 - `clickupfy-release` prepara e acompanha versões, changelog, tags e artefatos.
 
-Instale as quatro no projeto atual:
+Instale as quatro no projeto atual pelo gerenciador `skills`:
 
 ```bash
 clickupfy agent skill install
@@ -559,9 +559,9 @@ Para instalar em `~/.codex/skills`:
 clickupfy agent skill install --global
 ```
 
-O comando abaixo instala as skills na pasta atual e acrescenta seu servidor ao
-`.mcp.json` e ao `.codex/config.toml`, sem remover outros servidores ou
-configurações:
+O comando abaixo chama `skills add promovaweb/clickupfy` para instalar as skills
+em `.agents/skills/` e acrescenta seu servidor ao `.mcp.json` e ao
+`.codex/config.toml`, sem remover outros servidores ou configurações:
 
 ```bash
 clickupfy agent init \
@@ -576,9 +576,10 @@ quando vários projetos usam o mesmo executável e o mesmo arquivo global de
 credenciais. Projetos que usam Sprints podem acrescentar
 `--sprint-folder <id>` ao comando.
 
-Use `--force` para atualizar uma skill já instalada. Os comandos
-`clickupfy agent skill list` e `clickupfy agent skill show <nome>` permitem
-inspecionar o material empacotado.
+Use `--force` por compatibilidade quando precisar repetir a instalação. Os
+comandos `clickupfy agent skill list` e `clickupfy agent skill show <nome>`
+permitem inspecionar o catálogo empacotado; use `skills list` para consultar as
+skills instaladas pelo gerenciador.
 
 ## Comandos
 

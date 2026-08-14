@@ -71,10 +71,10 @@ Estes parâmetros permitem executar o mesmo processo com ou sem prompts:
 As outras ações desse grupo não possuem opções próprias.
 
 `clickupfy doctor` verifica localmente o JSON em `~/clickupfy/config.json`, as
-permissões, o schema, os accounts e os arquivos `.mcp.json` e
-`.codex/config.toml` do projeto quando existirem. Use `--json` para automação.
-O comando não faz chamada ao ClickUp. Use `clickupfy whoami` para validar a API
-key remotamente.
+permissões, o schema, os accounts, o gerenciador `skills`, as skills do
+ClickUpfy e os arquivos `.mcp.json` e `.codex/config.toml` do projeto quando
+existirem. Use `--json` para automação. O comando não faz chamada ao ClickUp.
+Use `clickupfy whoami` para validar a API key remotamente.
 
 ## Hierarquia
 
@@ -282,9 +282,16 @@ clickupfy agent init [options]
 clickupfy mcp serve --list <id> [options]
 ```
 
-`agent skill install` aceita uma lista opcional de skills. As opções
-`--global`, `--target <pasta>` e `--force` controlam destino e substituição,
-permitindo conferir a pasta instalada sem alterar outros catálogos.
+`agent skill install` aceita uma lista opcional de skills e chama
+`skills add promovaweb/clickupfy --agent codex --copy --yes`. Sem `--global`, o
+gerenciador usa `.agents/skills/` e cria ou atualiza `skills-lock.json` no
+projeto. Com `--global`, usa `~/.codex/skills/`. Para consultar o estado real,
+use `skills list` ou `skills list --global`; `clickupfy agent skill list` exibe
+somente o catálogo distribuído pelo ClickUpfy.
+
+O comando não oferece `--target`: o gerenciador de skills controla os caminhos
+canônicos. `--force` permanece aceito por compatibilidade, mas a sincronização
+é feita pelo próprio `skills add`.
 
 `agent init` exige `--space <id>` e `--list <id>`. Ele também aceita
 `--global`, `--workspace <id>`, `--folder <id>`,

@@ -74,13 +74,17 @@ Verifica o setup local sem fazer chamadas à API do ClickUp. O diagnóstico
 confere o caminho `~/clickupfy/config.json` ou o caminho definido por
 `PROMOVAWEB_CLICKUPFY_CONFIG`, as permissões `0700` do diretório e `0600` do
 arquivo, o JSON, o schema, os accounts e o account ativo. Quando executado na
-raiz de um projeto, também lê `.mcp.json` e `.codex/config.toml` se existirem.
-API keys nunca aparecem na saída.
+raiz de um projeto, também verifica o gerenciador `skills`, as quatro skills do
+ClickUpfy, o idioma dos arquivos instalados e lê `.mcp.json` e
+`.codex/config.toml` se existirem. API keys nunca aparecem na saída.
 
 Os arquivos de projeto são opcionais. A ausência deles gera `skipped` porque o
 MCP só é necessário quando o projeto usa agentes. Um arquivo presente, mas
 inválido, gera `error`. O comando retorna código `1` quando existe uma
 verificação com erro. `warning` e `skipped` não reprovam o diagnóstico.
+Se o gerenciador `skills` não estiver instalado, ou se uma skill instalada
+estiver fora do padrão de português do Brasil, o diagnóstico registra essa
+situação para correção.
 
 Exemplos:
 

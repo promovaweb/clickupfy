@@ -3,7 +3,7 @@
  */
 
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { appendFile, chmod, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -12,12 +12,63 @@ import { describe, expect, it } from "vitest";
 import {
   configurarCodexProjeto,
   configurarMcpProjeto,
+  caminhoSkillsEmpacotadas,
   instalarSkills,
+  SKILL_NAMES,
 } from "../src/agent-assets.js";
+import { skillEstaEmPtBr } from "../src/doctor.js";
 
 const execFileAsync = promisify(execFile);
 
+async function criarSkillsFake(pasta: string) {
+  const comando = join(pasta, "skills-fake.mjs");
+  const log = join(pasta, "skills-fake.log");
+  const nomes = [
+    "clickupfy-dev",
+    "clickup-issue-create",
+    "clickup-issue-implement",
+    "clickupfy-release",
+  ];
+  await writeFile(
+    comando,
+    [
+      `#!${process.execPath}`,
+      'import { appendFile, mkdir, writeFile } from "node:fs/promises";',
+      'import { join } from "node:path";',
+      `const nomes = ${JSON.stringify(nomes)};`,
+      'const args = process.argv.slice(2);',
+      'const global = args.includes("--global");',
+      'const base = global ? join(process.env.SKILLS_FAKE_HOME, ".codex", "skills") : join(process.cwd(), ".agents", "skills");',
+      'if (args[0] === "add") {',
+      '  await appendFile(process.env.SKILLS_FAKE_LOG, `${args.join(" ")}\\n`);',
+      '  for (const nome of nomes) { await mkdir(join(base, nome, "agents"), { recursive: true }); await writeFile(join(base, nome, "SKILL.md"), `name: ${nome}\\n`); await writeFile(join(base, nome, "agents", "openai.yaml"), "interface:\\n  display_name: \\"Skill em português\\"\\n"); }',
+      '} else if (args[0] === "list") {',
+      '  console.log(JSON.stringify(nomes.map((name) => ({ name, path: join(base, name), scope: global ? "global" : "project", agents: ["Codex"], source: "promovaweb/clickupfy" }))));',
+      '}',
+    ].join("\n"),
+  );
+  await chmod(comando, 0o755);
+  return {
+    skillsCli: {
+      command: comando,
+      cwd: pasta,
+      env: { SKILLS_FAKE_LOG: log, SKILLS_FAKE_HOME: pasta },
+    },
+    log,
+  };
+}
+
 describe("integração com agentes", () => {
+  it("mantém as skills distribuídas em português do Brasil", async () => {
+    for (const nome of SKILL_NAMES) {
+      const pasta = join(caminhoSkillsEmpacotadas(), nome);
+      expect(skillEstaEmPtBr(await readFile(join(pasta, "SKILL.md"), "utf8"))).toBe(true);
+      expect(
+        skillEstaEmPtBr(await readFile(join(pasta, "agents", "openai.yaml"), "utf8")),
+      ).toBe(true);
+    }
+  });
+
   it("exige uma List para iniciar o servidor MCP", async () => {
     await expect(
       execFileAsync(resolve("node_modules/.bin/tsx"), [
@@ -35,7 +86,7 @@ describe("integração com agentes", () => {
 
   it("instala as skills e preserva servidores MCP existentes", async () => {
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-agent-"));
-    const skills = join(pasta, "skills");
+    const fake = await criarSkillsFake(pasta);
     const mcpPath = join(pasta, ".mcp.json");
     await writeFile(
       mcpPath,
@@ -46,7 +97,7 @@ describe("integração com agentes", () => {
       }),
     );
 
-    const instaladas = await instalarSkills({ target: skills });
+    const instaladas = await instalarSkills({ skillsCli: fake.skillsCli });
     await configurarMcpProjeto({
       path: mcpPath,
       account: "dev",
@@ -59,21 +110,11 @@ describe("integração com agentes", () => {
     const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
 
     expect(instaladas).toHaveLength(4);
-    expect(
-      await readFile(join(skills, "clickupfy-dev", "SKILL.md"), "utf8"),
-    ).toContain("clickupfy_checklist_item_set");
-    expect(
-      await readFile(join(skills, "clickupfy-release", "SKILL.md"), "utf8"),
-    ).toContain("npm run release:check");
-    expect(
-      await readFile(join(skills, "clickup-issue-create", "SKILL.md"), "utf8"),
-    ).toContain("name: clickup-issue-create");
-    expect(
-      await readFile(
-        join(skills, "clickup-issue-implement", "SKILL.md"),
-        "utf8",
-      ),
-    ).toContain("name: clickup-issue-implement");
+    expect(instaladas.every((caminho) => caminho.includes(".agents/skills/"))).toBe(true);
+    const chamada = await readFile(fake.log, "utf8");
+    expect(chamada).toContain("add promovaweb/clickupfy");
+    expect(chamada).toContain("--agent codex");
+    expect(chamada).toContain("--skill clickupfy-dev");
     expect(mcp.mcpServers.github).toEqual({ command: "github-mcp" });
     expect(mcp.mcpServers["promovaweb-clickupfy"]).toEqual({
       command: "clickupfy",
@@ -151,6 +192,7 @@ describe("integração com agentes", () => {
 
   it("gera um MCP específico na pasta de cada projeto pelo CLI", async () => {
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-init-"));
+    const fake = await criarSkillsFake(pasta);
     const configPath = join(pasta, "config.json");
     const agora = new Date().toISOString();
     await writeFile(
@@ -191,6 +233,8 @@ describe("integração com agentes", () => {
         env: {
           ...process.env,
           PROMOVAWEB_CLICKUPFY_CONFIG: configPath,
+          ...fake.skillsCli.env,
+          CLICKUPFY_SKILLS_COMMAND: fake.skillsCli.command,
         },
       },
     );
@@ -225,9 +269,9 @@ describe("integração com agentes", () => {
     ]);
     expect(
       await readFile(
-        join(pasta, ".codex", "skills", "clickupfy-dev", "SKILL.md"),
+        join(pasta, ".agents", "skills", "clickupfy-dev", "SKILL.md"),
         "utf8",
       ),
-    ).toContain("clickupfy_mcp_context");
+    ).toContain("name: clickupfy-dev");
   });
 });

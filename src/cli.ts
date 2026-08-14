@@ -1060,17 +1060,15 @@ skill
 skill
   .command("install")
   .argument("[skills...]", "skills; omita para instalar todas")
-  .option("--global", "instala em ~/.codex/skills")
-  .option("--target <pasta>", "pasta de skills alternativa")
-  .option("--force", "atualiza skills existentes")
-  .description("instala skills no projeto ou globalmente")
+  .option("--global", "instala no catálogo global do usuário")
+  .option("--force", "mantém compatibilidade e permite repetir a instalação")
+  .description("instala skills pelo gerenciador oficial `skills add`")
   .action(async (names: string[], options) => {
     const selecionadas =
       names.length > 0 ? names.map(validarSkillName) : [...SKILL_NAMES];
     const instaladas = await instalarSkills({
       names: selecionadas,
       ...(options.global ? { global: true } : {}),
-      ...(options.target ? { target: options.target } : {}),
       ...(options.force ? { force: true } : {}),
     });
     for (const caminho of instaladas) process.stdout.write(`${caminho}\n`);

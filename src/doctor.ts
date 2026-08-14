@@ -6,6 +6,12 @@ import { readFile, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import {
+  listarSkillsGerenciadas,
+  SKILL_NAMES,
+  type OpcoesSkillsCli,
+  type SkillGerenciada,
+} from "./agent-assets.js";
+import {
   caminhoConfiguracao,
   configuracaoSchema,
   type Configuracao,
@@ -26,6 +32,10 @@ export interface ResultadoDoctor {
   checks: VerificacaoDoctor[];
 }
 
+export interface OpcoesDoctor {
+  skillsCli?: OpcoesSkillsCli;
+}
+
 /**
  * Verifica a configuração local sem fazer chamadas à API do ClickUp.
  *
@@ -35,6 +45,7 @@ export interface ResultadoDoctor {
  */
 export async function executarDoctor(
   diretorioProjeto = process.cwd(),
+  options: OpcoesDoctor = {},
 ): Promise<ResultadoDoctor> {
   const config = caminhoConfiguracao();
   const checks: VerificacaoDoctor[] = [];
@@ -46,12 +57,122 @@ export async function executarDoctor(
     join(diretorioProjeto, ".codex", "config.toml"),
     checks,
   );
+  await verificarSkills(diretorioProjeto, checks, options.skillsCli);
 
   return {
     ok: !checks.some((check) => check.estado === "error"),
     config,
     checks,
   };
+}
+
+/** Verifica o gerenciador externo, os escopos instalados e o idioma das skills. */
+async function verificarSkills(
+  diretorioProjeto: string,
+  checks: VerificacaoDoctor[],
+  skillsCli?: OpcoesSkillsCli,
+): Promise<void> {
+  let projeto: SkillGerenciada[];
+  let global: SkillGerenciada[];
+  try {
+    [projeto, global] = await Promise.all([
+      listarSkillsGerenciadas({ skillsCli: { ...skillsCli, cwd: diretorioProjeto } }),
+      listarSkillsGerenciadas({
+        global: true,
+        ...(skillsCli ? { skillsCli } : {}),
+      }),
+    ]);
+    checks.push({
+      id: "skills-cli",
+      estado: "ok",
+      mensagem: "O gerenciador `skills` está disponível e responde em JSON.",
+    });
+  } catch (error) {
+    checks.push({
+      id: "skills-cli",
+      estado: "warning",
+      mensagem:
+        error instanceof Error
+          ? error.message
+          : "O gerenciador `skills` não pôde ser verificado.",
+    });
+    return;
+  }
+
+  await verificarEscopoSkills("project", projeto, checks);
+  await verificarEscopoSkills("global", global, checks);
+}
+
+async function verificarEscopoSkills(
+  escopo: "project" | "global",
+  skills: SkillGerenciada[],
+  checks: VerificacaoDoctor[],
+): Promise<void> {
+  const esperadas = SKILL_NAMES.filter((name) =>
+    skills.some((skill) => skill.name === name),
+  );
+  const ausentes = SKILL_NAMES.filter((name) => !esperadas.includes(name));
+  const label = escopo === "project" ? "projeto" : "global";
+
+  checks.push({
+    id: `skills-${escopo}`,
+    estado: ausentes.length === 0 ? "ok" : "warning",
+    mensagem:
+      ausentes.length === 0
+        ? `As ${SKILL_NAMES.length} skills do ClickUpfy estão instaladas no escopo ${label}.`
+        : `Faltam skills do ClickUpfy no escopo ${label}: ${ausentes.join(", ")}. Execute 'clickupfy agent skill install${escopo === "global" ? " --global" : ""}'.`,
+  });
+
+  await Promise.all(
+    skills
+      .filter((item) => SKILL_NAMES.some((name) => name === item.name))
+      .map((skill) => verificarIdiomaSkill(skill, checks)),
+  );
+}
+
+async function verificarIdiomaSkill(
+  skill: SkillGerenciada,
+  checks: VerificacaoDoctor[],
+): Promise<void> {
+  const arquivos = [join(skill.path, "SKILL.md"), join(skill.path, "agents", "openai.yaml")];
+  try {
+    const conteudos = await Promise.all(arquivos.map((caminho) => readFile(caminho, "utf8")));
+    const ptBr = conteudos.every(skillEstaEmPtBr);
+    checks.push({
+      id: `skill-language-${skill.name}`,
+      estado: ptBr ? "ok" : "error",
+      mensagem: ptBr
+        ? `A skill ${skill.name} está documentada em português do Brasil.`
+        : `A skill ${skill.name} possui conteúdo fora do padrão de português do Brasil.`,
+      caminho: skill.path,
+    });
+  } catch {
+    checks.push({
+      id: `skill-language-${skill.name}`,
+      estado: "error",
+      mensagem: `A skill ${skill.name} não possui todos os arquivos esperados.`,
+      caminho: skill.path,
+    });
+  }
+}
+
+/** Heurística pequena para detectar regressões de idioma sem traduzir comandos. */
+export function skillEstaEmPtBr(conteudo: string): boolean {
+  const marcadores = [
+    " de ",
+    " para ",
+    " com ",
+    " que ",
+    " do ",
+    " da ",
+    " e ",
+    " o ",
+    " a ",
+    " uma ",
+  ];
+  const ocorrencias = marcadores.filter((marcador) => conteudo.toLowerCase().includes(marcador));
+  const padroesIngleses = /^(use the|when you|this skill|install the|manage the)\b/im;
+  return ocorrencias.length >= 3 && !padroesIngleses.test(conteudo);
 }
 
 /** Verifica diretório, arquivo, permissões e schema da configuração global. */

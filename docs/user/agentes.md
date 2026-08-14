@@ -30,29 +30,38 @@ clickupfy agent skill show clickupfy-dev
 ```
 
 `list` apresenta o catálogo. `show` imprime a fonte empacotada da skill, útil
-para revisar permissões e fluxo antes da instalação.
+para revisar permissões e fluxo antes da instalação. As quatro skills são
+mantidas em português do Brasil.
 
 ## Instale no projeto
 
-Na raiz do repositório:
+Na raiz do repositório, o ClickUpfy delega a instalação ao gerenciador
+`skills`:
 
 ```bash
 clickupfy agent skill install
 ```
 
-As skills entram na pasta local compatível com o agente. Esse modo mantém a
-configuração próxima ao projeto e permite versionar as instruções.
+As skills entram em `.agents/skills/` e o gerenciador registra a origem em
+`skills-lock.json`. Esse modo mantém a configuração próxima ao projeto e
+permite versionar as instruções.
 
-Para instalar no catálogo global do usuário:
+Para instalar no catálogo global do usuário, em `~/.codex/skills/`:
 
 ```bash
 clickupfy agent skill install --global
 ```
 
 Prefira a instalação local quando projetos usam versões ou regras diferentes.
+Consulte a instalação efetiva com:
 
-Use `--force` para substituir uma skill já instalada somente depois de revisar
-as mudanças:
+```bash
+skills list
+skills list --global
+```
+
+`--force` é aceito por compatibilidade. A atualização passa pelo próprio
+`skills add`, que mantém o lockfile e os caminhos canônicos:
 
 ```bash
 clickupfy agent skill install --force
