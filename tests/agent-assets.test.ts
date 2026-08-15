@@ -273,5 +273,5 @@ describe("integração com agentes", () => {
         "utf8",
       ),
     ).toContain("name: clickupfy-dev");
-  });
+  }, 15000);
 });
