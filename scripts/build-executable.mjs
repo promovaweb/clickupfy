@@ -8,13 +8,11 @@ import {
   chmod,
   copyFile,
   mkdir,
-  mkdtemp,
   readFile,
   readdir,
   rm,
   writeFile,
 } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { build } from "esbuild";
@@ -155,35 +153,18 @@ async function listarArquivos(caminho) {
 }
 
 /**
- * Confirma que o SEA consegue ler e instalar as skills incorporadas.
+ * Confirma que o SEA consegue ler as skills incorporadas sem criar uma
+ * instalação local. A instalação pertence ao `npx skills add` e não aceita
+ * diretórios de destino informados pelo ClickUpfy.
  */
 async function validarSkillsIncorporadas(executavel) {
-  const pastaTemporaria = await mkdtemp(join(tmpdir(), "clickupfy-sea-"));
-  try {
-    const saida = execFileSync(
-      executavel,
-      [
-        "agent",
-        "skill",
-        "install",
-        "clickupfy-release",
-        "--target",
-        join(pastaTemporaria, "skills"),
-      ],
-      { encoding: "utf8" },
-    );
-    if (!saida.includes("clickupfy-release")) {
-      throw new Error("O executável não confirmou a instalação da skill.");
-    }
-    const skill = await readFile(
-      join(pastaTemporaria, "skills", "clickupfy-release", "SKILL.md"),
-      "utf8",
-    );
-    if (!skill.includes("name: clickupfy-release")) {
-      throw new Error("A skill incorporada não foi gravada corretamente.");
-    }
-  } finally {
-    await rm(pastaTemporaria, { recursive: true, force: true });
+  const saida = execFileSync(
+    executavel,
+    ["agent", "skill", "show", "clickupfy-release"],
+    { encoding: "utf8" },
+  );
+  if (!saida.includes("name: clickupfy-release")) {
+    throw new Error("O executável não leu a skill incorporada corretamente.");
   }
 }
 
