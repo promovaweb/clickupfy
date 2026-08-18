@@ -64,7 +64,7 @@ export function caminhoSkillsEmpacotadas(): string {
 }
 
 /**
- * Instala uma ou todas as skills pelo gerenciador oficial `skills add`.
+ * Instala uma ou todas as skills pelo gerenciador oficial `npx skills add`.
  *
  * O ClickUpfy mantém este wrapper para oferecer uma entrada única no CLI, mas
  * a fonte, o lockfile e os caminhos de instalação ficam sob responsabilidade
@@ -147,10 +147,12 @@ async function executarSkillsCli(
   args: string[],
   options: OpcoesSkillsCli = {},
 ): Promise<{ stdout: string; stderr: string }> {
-  const command =
-    options.command ?? options.env?.CLICKUPFY_SKILLS_COMMAND ?? "skills";
+  const command = options.command ?? "npx";
+  const commandArgs = options.command
+    ? [...(options.args ?? []), ...args]
+    : ["--yes", "skills", ...(options.args ?? []), ...args];
   try {
-    return await execFileAsync(command, [...(options.args ?? []), ...args], {
+    return await execFileAsync(command, commandArgs, {
       cwd: options.cwd ?? process.cwd(),
       env: { ...process.env, ...options.env },
       maxBuffer: 4 * 1024 * 1024,
@@ -159,7 +161,7 @@ async function executarSkillsCli(
     const codigo = error instanceof Error && "code" in error ? error.code : undefined;
     if (codigo === "ENOENT") {
       throw new CliError(
-        "O comando `skills` não foi encontrado. Instale o gerenciador de skills antes de continuar.",
+        "O comando `npx` não foi encontrado. Instale Node.js para usar `npx skills`.",
         1,
         { cause: error },
       );

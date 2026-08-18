@@ -21,7 +21,7 @@ import { skillEstaEmPtBr } from "../src/doctor.js";
 const execFileAsync = promisify(execFile);
 
 async function criarSkillsFake(pasta: string) {
-  const comando = join(pasta, "skills-fake.mjs");
+  const comando = join(pasta, "npx");
   const log = join(pasta, "skills-fake.log");
   const nomes = [
     "clickupfy-dev",
@@ -36,7 +36,8 @@ async function criarSkillsFake(pasta: string) {
       'import { appendFile, mkdir, writeFile } from "node:fs/promises";',
       'import { join } from "node:path";',
       `const nomes = ${JSON.stringify(nomes)};`,
-      'const args = process.argv.slice(2);',
+      'const rawArgs = process.argv.slice(2);',
+      'const args = rawArgs[0] === "--yes" && rawArgs[1] === "skills" ? rawArgs.slice(2) : rawArgs;',
       'const global = args.includes("--global");',
       'const base = global ? join(process.env.SKILLS_FAKE_HOME, ".codex", "skills") : join(process.cwd(), ".agents", "skills");',
       'if (args[0] === "add") {',
@@ -135,6 +136,20 @@ describe("integração com agentes", () => {
         "sprints-1",
       ],
     });
+  });
+
+  it("usa npx skills quando não há injeção de comando", async () => {
+    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-agent-npx-"));
+    const fake = await criarSkillsFake(pasta);
+    const paths = [pasta, process.env.PATH].filter(Boolean).join(":");
+
+    const instaladas = await instalarSkills({
+      skillsCli: { cwd: pasta, env: { SKILLS_FAKE_LOG: fake.skillsCli.env?.SKILLS_FAKE_LOG, SKILLS_FAKE_HOME: pasta, PATH: paths } },
+    });
+
+    expect(instaladas).toHaveLength(4);
+    const chamada = await readFile(fake.log, "utf8");
+    expect(chamada).toContain("add promovaweb/clickupfy");
   });
 
   it("mescla o servidor no config.toml existente do Codex", async () => {

@@ -56,12 +56,12 @@ Prefira a instalação local quando projetos usam versões ou regras diferentes.
 Consulte a instalação efetiva com:
 
 ```bash
-skills list
-skills list --global
+npx skills list
+npx skills list --global
 ```
 
 `--force` é aceito por compatibilidade. A atualização passa pelo próprio
-`skills add`, que mantém o lockfile e os caminhos canônicos:
+`npx skills add`, que mantém o lockfile e os caminhos canônicos:
 
 ```bash
 clickupfy agent skill install --force

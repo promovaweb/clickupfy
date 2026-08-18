@@ -559,7 +559,7 @@ Para instalar em `~/.codex/skills`:
 clickupfy agent skill install --global
 ```
 
-O comando abaixo chama `skills add promovaweb/clickupfy` para instalar as skills
+O comando abaixo chama `npx skills add promovaweb/clickupfy` para instalar as skills
 em `.agents/skills/` e acrescenta seu servidor ao `.mcp.json` e ao
 `.codex/config.toml`, sem remover outros servidores ou configurações:
 
@@ -578,7 +578,7 @@ credenciais. Projetos que usam Sprints podem acrescentar
 
 Use `--force` por compatibilidade quando precisar repetir a instalação. Os
 comandos `clickupfy agent skill list` e `clickupfy agent skill show <nome>`
-permitem inspecionar o catálogo empacotado; use `skills list` para consultar as
+permitem inspecionar o catálogo empacotado; use `npx skills list` para consultar as
 skills instaladas pelo gerenciador.
 
 ## Comandos

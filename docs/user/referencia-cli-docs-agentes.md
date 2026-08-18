@@ -320,7 +320,7 @@ usada pelo ClickUpfy não oferece exclusão de página nem movimentação na ár
 Lista as skills embaladas: `clickupfy-dev`, `clickup-issue-create`,
 `clickup-issue-implement` e `clickupfy-release`. Não instala nada e não precisa
 de perfil configurado. O estado da instalação é responsabilidade do gerenciador
-`skills`; use `skills list` no projeto ou `skills list --global`.
+`npx skills`; use `npx skills list` no projeto ou `npx skills list --global`.
 
 Exemplos:
 
@@ -382,7 +382,7 @@ abre uma cópia local já instalada, que pode ter sido alterada pelo projeto.
 ### `clickupfy agent skill install [skills...]`
 
 Instala todas as skills quando nenhum nome é informado, ou somente as skills
-posicionais escolhidas, chamando `skills add promovaweb/clickupfy`. Sem
+posicionais escolhidas, chamando `npx skills add promovaweb/clickupfy`. Sem
 `--global`, o destino é `.agents/skills/` da pasta atual e o gerenciador
 atualiza `skills-lock.json`. `--global` usa `~/.codex/skills`. A instalação
 sempre usa `--agent codex`, `--copy` e `--yes`.
@@ -416,7 +416,7 @@ clickupfy agent skill install clickupfy-release --force
 ```
 
 `--target` não é aceito porque os caminhos canônicos pertencem ao gerenciador
-`skills`. Revise a fonte com `agent skill show` e consulte `skills list` antes de
+`npx skills`. Revise a fonte com `agent skill show` e consulte `npx skills list` antes de
 atualizar regras de um projeto.
 
 ### `clickupfy agent init`

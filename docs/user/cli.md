@@ -283,15 +283,15 @@ clickupfy mcp serve --list <id> [options]
 ```
 
 `agent skill install` aceita uma lista opcional de skills e chama
-`skills add promovaweb/clickupfy --agent codex --copy --yes`. Sem `--global`, o
+`npx skills add promovaweb/clickupfy --agent codex --copy --yes`. Sem `--global`, o
 gerenciador usa `.agents/skills/` e cria ou atualiza `skills-lock.json` no
 projeto. Com `--global`, usa `~/.codex/skills/`. Para consultar o estado real,
-use `skills list` ou `skills list --global`; `clickupfy agent skill list` exibe
+use `npx skills list` ou `npx skills list --global`; `clickupfy agent skill list` exibe
 somente o catálogo distribuído pelo ClickUpfy.
 
 O comando não oferece `--target`: o gerenciador de skills controla os caminhos
 canônicos. `--force` permanece aceito por compatibilidade, mas a sincronização
-é feita pelo próprio `skills add`.
+é feita pelo próprio `npx skills add`.
 
 `agent init` exige `--space <id>` e `--list <id>`. Ele também aceita
 `--global`, `--workspace <id>`, `--folder <id>`,

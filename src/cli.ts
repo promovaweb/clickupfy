@@ -1062,7 +1062,7 @@ skill
   .argument("[skills...]", "skills; omita para instalar todas")
   .option("--global", "instala no catálogo global do usuário")
   .option("--force", "mantém compatibilidade e permite repetir a instalação")
-  .description("instala skills pelo gerenciador oficial `skills add`")
+  .description("instala skills pelo gerenciador oficial `npx skills add`")
   .action(async (names: string[], options) => {
     const selecionadas =
       names.length > 0 ? names.map(validarSkillName) : [...SKILL_NAMES];
