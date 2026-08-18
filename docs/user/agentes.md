@@ -10,10 +10,11 @@
 
 ## O catálogo incluído
 
-O pacote distribui quatro skills:
+O pacote distribui cinco skills:
 
 | Skill | Responsabilidade |
 | --- | --- |
+| `clickupfy-setup` | Configuração de perfil, skills e MCP do projeto. |
 | `clickupfy-dev` | Consulta e atualização do trabalho diário de software. |
 | `clickup-issue-create` | Criação de tarefa, subtarefas e checklists sem executar a implementação. |
 | `clickup-issue-implement` | Execução acompanhada por plano, comentários, tempo, testes e status. |
@@ -30,8 +31,15 @@ clickupfy agent skill show clickupfy-dev
 ```
 
 `list` apresenta o catálogo. `show` imprime a fonte empacotada da skill, útil
-para revisar permissões e fluxo antes da instalação. As quatro skills são
+para revisar permissões e fluxo antes da instalação. As cinco skills são
 mantidas em português do Brasil.
+
+## Configure o projeto
+
+Use `$clickupfy-setup` para preparar um repositório novo ou revisar uma
+integração existente. A skill executa `clickupfy doctor`, orienta o perfil com
+`clickupfy setup` quando necessário, instala as skills por `npx skills add` e
+cria o MCP somente depois de confirmar os IDs do ClickUp.
 
 ## Instale no projeto
 

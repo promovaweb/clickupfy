@@ -1,0 +1,4 @@
+interface:
+  display_name: "Configurar o ClickUpfy"
+  short_description: "Prepara perfis, skills e MCP do projeto"
+  default_prompt: "Use $clickupfy-setup para configurar o ClickUpfy, instalar as skills e validar a integração do projeto."

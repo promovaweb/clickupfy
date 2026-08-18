@@ -24,6 +24,7 @@ async function criarSkillsFake(pasta: string) {
   const comando = join(pasta, "npx");
   const log = join(pasta, "skills-fake.log");
   const nomes = [
+    "clickupfy-setup",
     "clickupfy-dev",
     "clickup-issue-create",
     "clickup-issue-implement",
@@ -110,7 +111,7 @@ describe("integração com agentes", () => {
     });
     const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
 
-    expect(instaladas).toHaveLength(4);
+    expect(instaladas).toHaveLength(SKILL_NAMES.length);
     expect(instaladas.every((caminho) => caminho.includes(".agents/skills/"))).toBe(true);
     const chamada = await readFile(fake.log, "utf8");
     expect(chamada).toContain("add promovaweb/clickupfy");
@@ -147,7 +148,7 @@ describe("integração com agentes", () => {
       skillsCli: { cwd: pasta, env: { SKILLS_FAKE_LOG: fake.skillsCli.env?.SKILLS_FAKE_LOG, SKILLS_FAKE_HOME: pasta, PATH: paths } },
     });
 
-    expect(instaladas).toHaveLength(4);
+    expect(instaladas).toHaveLength(SKILL_NAMES.length);
     const chamada = await readFile(fake.log, "utf8");
     expect(chamada).toContain("add promovaweb/clickupfy");
   });
@@ -249,7 +250,7 @@ describe("integração com agentes", () => {
           ...process.env,
           PROMOVAWEB_CLICKUPFY_CONFIG: configPath,
           ...fake.skillsCli.env,
-          CLICKUPFY_SKILLS_COMMAND: fake.skillsCli.command,
+          PATH: [pasta, process.env.PATH].filter(Boolean).join(":"),
         },
       },
     );

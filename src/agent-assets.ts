@@ -12,6 +12,7 @@ import { promisify } from "node:util";
 import { CliError } from "./errors.js";
 
 export const SKILL_NAMES = [
+  "clickupfy-setup",
   "clickupfy-dev",
   "clickup-issue-create",
   "clickup-issue-implement",
