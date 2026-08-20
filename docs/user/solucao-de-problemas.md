@@ -27,7 +27,7 @@ Use:
 clickupfy whoami
 ```
 
-Se falhar, gere ou confira a chave no ClickUp e execute `clickupfy setup`
+Se falhar, gere ou confira a chave no ClickUp e execute `clickupfy install`
 novamente. Uma chave revogada não pode ser recuperada pelo ClickUpfy.
 
 Nunca publique a chave para pedir suporte. Informe apenas o account, o

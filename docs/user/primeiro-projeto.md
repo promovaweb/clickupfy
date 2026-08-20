@@ -6,7 +6,7 @@
 | --- | --- |
 | Natureza | normativo |
 | Escopo | primeira integração de um repositório com ClickUpfy e MCP |
-| Autoridade | agent init, escopo MCP e ferramentas públicas |
+| Autoridade | agent install, escopo MCP e ferramentas públicas |
 
 ## O que você vai preparar
 
@@ -55,7 +55,7 @@ Folder que contém as Lists temporais.
 Na raiz do repositório:
 
 ```bash
-clickupfy --account promovaweb agent init \
+clickupfy --account promovaweb agent install \
   --workspace 123 \
   --space 10 \
   --folder 20 \
@@ -103,7 +103,7 @@ args = ["mcp", "serve", "--account", "promovaweb", "--workspace", "123", "--spac
 ```
 
 Antes de abrir o cliente MCP pela primeira vez, acrescente `--read-only` ao
-fim de `args`. O `agent init` prepara o servidor completo. Essa edição
+fim de `args`. O `agent install` prepara o servidor completo. Essa edição
 consciente reduz a superfície durante a conferência inicial.
 
 ## Confira no agente

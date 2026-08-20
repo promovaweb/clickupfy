@@ -97,7 +97,7 @@ O setup valida a API key, consulta os workspaces autorizados e associa um deles
 ao account local:
 
 ```bash
-clickupfy setup
+clickupfy install
 ```
 
 Para verificar o setup local e os arquivos de configuração do projeto:
@@ -110,7 +110,7 @@ Um terminal interativo oculta a API key e abre a escolha do workspace. A mesma
 configuração pode ser feita sem prompts:
 
 ```bash
-clickupfy setup \
+clickupfy install \
   --api-key "pk_..." \
   --name "Promovaweb" \
   --workspace "123456" \
@@ -189,7 +189,7 @@ perfil e a hierarquia permitida sem armazenar a API key.
 Na raiz de cada projeto, execute:
 
 ```bash
-clickupfy agent init \
+clickupfy agent install \
   --account promovaweb \
   --workspace 123 \
   --space 10 \
@@ -232,7 +232,7 @@ command = "clickupfy"
 args = ["mcp", "serve", "--account", "promovaweb", "--workspace", "123", "--space", "10", "--folder", "20", "--list", "30"]
 ```
 
-`space` e `list` são obrigatórios em `agent init`. O `--account` global escolhe
+`space` e `list` são obrigatórios em `agent install`. O `--account` global escolhe
 o perfil; sem ele, o comando fixa o perfil ativo. Workspace e Folder são
 opcionais. O Sprint Folder também é opcional: acrescente
 `--sprint-folder <id>` somente nos projetos que usam Sprints. Quando o
@@ -564,7 +564,7 @@ em `.agents/skills/` e acrescenta seu servidor ao `.mcp.json` e ao
 `.codex/config.toml`, sem remover outros servidores ou configurações:
 
 ```bash
-clickupfy agent init \
+clickupfy agent install \
   --account promovaweb \
   --space 10 \
   --folder 20 \
@@ -585,7 +585,7 @@ skills instaladas pelo gerenciador.
 
 | Grupo       | Ações                                                                       |
 | ----------- | --------------------------------------------------------------------------- |
-| `setup`     | Configura a API key e o workspace.                                          |
+| `install`   | Configura a API key e o workspace.                                          |
 | `doctor`    | Verifica o setup e os arquivos de configuração locais.                      |
 | `upgrade`   | Atualiza a instalação global pelo npm.                                      |
 | `account`   | `list`, `show`, `use`, `remove`.                                            |

@@ -97,7 +97,7 @@ define se ele representa complexidade, esforço ou tamanho relativo.
 Acrescente o Folder ao projeto:
 
 ```bash
-clickupfy --account produto agent init \
+clickupfy --account produto agent install \
   --space 10 \
   --folder 20 \
   --list 30 \

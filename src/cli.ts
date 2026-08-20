@@ -79,7 +79,7 @@ program
   });
 
 program
-  .command("setup")
+  .command("install")
   .description("configura uma API key e associa o perfil a um workspace")
   .option("--api-key <chave>", "API key pessoal do ClickUp")
   .option("--token <chave>", "alias compatível para --api-key")
@@ -1075,7 +1075,7 @@ skill
   });
 
 agent
-  .command("init")
+  .command("install")
   .option("--global", "instala as skills globalmente")
   .option("--workspace <id>", "workspace esperado pelo MCP")
   .requiredOption("--space <id>", "Space fixo do MCP deste projeto")

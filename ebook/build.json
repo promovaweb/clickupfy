@@ -2,8 +2,8 @@
   "schema_version": 1,
   "version": "1.2.3",
   "edition": "v1.2.3",
-  "generated_at": "2026-08-18T21:39:05Z",
-  "source_sha256": "32e6d608373fe2cf89d5206747252ab1de503cd832e4845e67a3d9397639a19c",
+  "generated_at": "2026-08-20T12:51:53Z",
+  "source_sha256": "7db2882e6355c6a575218d7f00188b63f69996e9e0bd92658f06c86e567aa805",
   "sources": [
     ".ebook/build-ebook.sh",
     ".ebook/epub.css",
@@ -49,7 +49,7 @@
       "natureza": "normativo"
     },
     "docs/user/agentes.md": {
-      "autoridade": "assets empacotados e contrato de agent init",
+      "autoridade": "assets empacotados e contrato de agent install",
       "escopo": "instalação e responsabilidades das skills distribuídas",
       "natureza": "normativo"
     },
@@ -84,7 +84,7 @@
       "natureza": "normativo"
     },
     "docs/user/primeiro-projeto.md": {
-      "autoridade": "agent init, escopo MCP e ferramentas públicas",
+      "autoridade": "agent install, escopo MCP e ferramentas públicas",
       "escopo": "primeira integração de um repositório com ClickUpfy e MCP",
       "natureza": "normativo"
     },
@@ -147,11 +147,11 @@
   "artifacts": {
     "pdf": {
       "file": "ClickUpfy-Guia-do-Usuario-v1.2.3.pdf",
-      "sha256": "90525120b1725f58571f81a21973a4f40945d67634e3ca12b9c9c007e345dee5"
+      "sha256": "35f0499b46d4b545b825b4bf50ae06a038007b017750f4ffde7043e3ea053068"
     },
     "epub": {
       "file": "ClickUpfy-Guia-do-Usuario-v1.2.3.epub",
-      "sha256": "eef87ca9d5f378ac4c16fef7c8c6a1d0f22b9ccdc90eda5714761ded94c3d4d6"
+      "sha256": "23229bb01b51e57a7fb6e95c1f05d4c75827acaa5f5d08ef4739fca16b98e69d"
     }
   }
 }

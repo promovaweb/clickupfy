@@ -95,7 +95,7 @@ export async function lerConfiguracao(
       error.code === "ENOENT"
     ) {
       throw new CliError(
-        "Nenhum perfil configurado. Execute `clickupfy setup`.",
+        "Nenhum perfil configurado. Execute `clickupfy install`.",
       );
     }
 
@@ -160,7 +160,7 @@ export function resolverAccount(
 
   if (!id) {
     throw new CliError(
-      "Nenhum perfil ativo. Execute `clickupfy setup` ou `clickupfy account use <perfil>`.",
+      "Nenhum perfil ativo. Execute `clickupfy install` ou `clickupfy account use <perfil>`.",
     );
   }
 

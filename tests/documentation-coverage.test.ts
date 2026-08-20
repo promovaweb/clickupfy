@@ -12,7 +12,7 @@ const docsRoot = join(root, "docs", "user");
 
 /** Comandos públicos que exigem seção detalhada no manual do usuário. */
 const cliCommands = [
-  "clickupfy setup",
+  "clickupfy install",
   "clickupfy upgrade",
   "clickupfy doctor",
   "clickupfy status",
@@ -59,7 +59,7 @@ const cliCommands = [
   "clickupfy agent skill list",
   "clickupfy agent skill show",
   "clickupfy agent skill install",
-  "clickupfy agent init",
+  "clickupfy agent install",
   "clickupfy mcp serve",
 ] as const;
 

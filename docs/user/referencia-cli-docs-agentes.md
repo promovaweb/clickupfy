@@ -419,7 +419,7 @@ clickupfy agent skill install clickupfy-release --force
 `npx skills`. Revise a fonte com `agent skill show` e consulte `npx skills list` antes de
 atualizar regras de um projeto.
 
-### `clickupfy agent init`
+### `clickupfy agent install`
 
 Instala as skills e mescla um servidor `promovaweb-clickupfy` no `.mcp.json` e
 no `.codex/config.toml` do projeto. `--space` e `--list` são obrigatórios. Os
@@ -441,23 +441,23 @@ pode consultar dados.
 Exemplos:
 
 ```bash
-clickupfy agent init --space 1001 --list 3001
+clickupfy agent install --space 1001 --list 3001
 ```
 
 ```bash
-clickupfy --account produto agent init --workspace 123456 --space 1001 --folder 2001 --list 3001
+clickupfy --account produto agent install --workspace 123456 --space 1001 --folder 2001 --list 3001
 ```
 
 ```bash
-clickupfy agent init --space 1001 --list 3001 --sprint-folder 4001
+clickupfy agent install --space 1001 --list 3001 --sprint-folder 4001
 ```
 
 ```bash
-clickupfy agent init --global --space 1001 --list 3001 --force
+clickupfy agent install --global --space 1001 --list 3001 --force
 ```
 
 ```bash
-clickupfy --account cliente-a agent init --workspace 987654 --space 5001 --list 7001 --sprint-folder 8001 --force
+clickupfy --account cliente-a agent install --workspace 987654 --space 5001 --list 7001 --sprint-folder 8001 --force
 ```
 
 O comando preserva outros servidores e configurações nos dois arquivos. Reabra

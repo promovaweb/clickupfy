@@ -94,7 +94,7 @@ configurado quando as Sprints do projeto estiverem dentro dele.
 Para um projeto com List diretamente no Space:
 
 ```bash
-clickupfy --account produto agent init \
+clickupfy --account produto agent install \
   --space 10 \
   --list 30
 ```
@@ -102,7 +102,7 @@ clickupfy --account produto agent init \
 Para um projeto com Folder e Sprints:
 
 ```bash
-clickupfy --account produto agent init \
+clickupfy --account produto agent install \
   --space 10 \
   --folder 20 \
   --list 30 \

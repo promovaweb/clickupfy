@@ -196,7 +196,7 @@ async function verificarArquivoGlobal(
     checks.push({
       id: "config-directory",
       estado: "error",
-      mensagem: "O diretório da configuração não existe. Execute `clickupfy setup`.",
+      mensagem: "O diretório da configuração não existe. Execute `clickupfy install`.",
       caminho: diretorio,
     });
   } else if (!informacaoDiretorio.isDirectory()) {
@@ -223,7 +223,7 @@ async function verificarArquivoGlobal(
     checks.push({
       id: "config-file",
       estado: "error",
-      mensagem: "O arquivo não existe. Execute `clickupfy setup`.",
+      mensagem: "O arquivo não existe. Execute `clickupfy install`.",
       caminho,
     });
     return undefined;
@@ -315,7 +315,7 @@ function verificarAccounts(
     mensagem:
       quantidade > 0
         ? `${quantidade} account(s) local(is) configurado(s).`
-        : "Nenhum account local configurado. Execute `clickupfy setup`.",
+        : "Nenhum account local configurado. Execute `clickupfy install`.",
   });
 
   const ativo = configuracao.activeAccount;
@@ -392,7 +392,7 @@ function verificarServidorMcp(
     checks.push({
       id: "mcp-server",
       estado: "warning",
-      mensagem: `O servidor promovaweb-clickupfy não está configurado no arquivo ${formato}. Execute 'clickupfy agent init'.`,
+      mensagem: `O servidor promovaweb-clickupfy não está configurado no arquivo ${formato}. Execute 'clickupfy agent install'.`,
       caminho,
     });
     return;

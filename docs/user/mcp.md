@@ -31,7 +31,7 @@ clickupfy mcp serve \
 ```
 
 Na prática, deixe o cliente MCP iniciar esse processo pelo `.mcp.json` ou pelo
-`.codex/config.toml` quando o cliente for o Codex. O comando `agent init` gera e
+`.codex/config.toml` quando o cliente for o Codex. O comando `agent install` gera e
 atualiza os dois formatos.
 
 ## Ative read-only

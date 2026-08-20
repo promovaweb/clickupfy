@@ -40,7 +40,7 @@ clickupfy --account cliente-a --json task get 86abc123
 ## Configuração e identidade
 
 ```bash
-clickupfy setup [options]
+clickupfy install [options]
 clickupfy doctor
 clickupfy status
 clickupfy whoami
@@ -278,7 +278,7 @@ reordenar páginas na árvore, nem gerenciar permissões de compartilhamento.
 clickupfy agent skill list
 clickupfy agent skill show <nome>
 clickupfy agent skill install [--global] [--force]
-clickupfy agent init [options]
+clickupfy agent install [options]
 clickupfy mcp serve --list <id> [options]
 ```
 
@@ -293,7 +293,7 @@ O comando não oferece `--target`: o gerenciador de skills controla os caminhos
 canônicos. `--force` permanece aceito por compatibilidade, mas a sincronização
 é feita pelo próprio `npx skills add`.
 
-`agent init` exige `--space <id>` e `--list <id>`. Ele também aceita
+`agent install` exige `--space <id>` e `--list <id>`. Ele também aceita
 `--global`, `--workspace <id>`, `--folder <id>`,
 `--sprint-folder <id>` e `--force`. O comando atualiza o servidor
 `promovaweb-clickupfy` no `.mcp.json` e no `.codex/config.toml`, preservando as

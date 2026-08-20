@@ -207,7 +207,7 @@ describe("integração com agentes", () => {
   });
 
   it("gera um MCP específico na pasta de cada projeto pelo CLI", async () => {
-    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-init-"));
+    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-install-"));
     const fake = await criarSkillsFake(pasta);
     const configPath = join(pasta, "config.json");
     const agora = new Date().toISOString();
@@ -234,7 +234,7 @@ describe("integração com agentes", () => {
       [
         resolve("src/cli.ts"),
         "agent",
-        "init",
+        "install",
         "--account",
         "dev",
         "--workspace",

@@ -6,7 +6,7 @@
 | --- | --- |
 | Natureza | normativo |
 | Escopo | instalação e responsabilidades das skills distribuídas |
-| Autoridade | assets empacotados e contrato de agent init |
+| Autoridade | assets empacotados e contrato de agent install |
 
 ## O catálogo incluído
 
@@ -38,7 +38,7 @@ mantidas em português do Brasil.
 
 Use `$clickupfy-setup` para preparar um repositório novo ou revisar uma
 integração existente. A skill executa `clickupfy doctor`, orienta o perfil com
-`clickupfy setup` quando necessário, instala as skills por `npx skills add` e
+`clickupfy auth add` quando necessário, instala as skills por `npx skills add` e
 cria o MCP somente depois de confirmar os IDs do ClickUp.
 
 ## Instale no projeto

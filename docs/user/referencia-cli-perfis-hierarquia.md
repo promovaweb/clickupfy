@@ -112,7 +112,7 @@ O diagnóstico confirma a configuração local e os arquivos usados pelos
 agentes, mas não testa se a API key continua válida no ClickUp. Para essa
 verificação remota, use `clickupfy whoami`.
 
-### `clickupfy setup`
+### `clickupfy install`
 
 Cria ou atualiza um perfil local e associa a API key a um workspace autorizado.
 Sem `--non-interactive`, o comando pergunta pelos valores ausentes. A API key
@@ -129,23 +129,23 @@ ela não vai para o `.mcp.json` nem para o `.codex/config.toml` do projeto.
 Exemplos:
 
 ```bash
-clickupfy setup
+clickupfy install
 ```
 
 ```bash
-clickupfy setup --name "Produto"
+clickupfy install --name "Produto"
 ```
 
 ```bash
-clickupfy setup --name "Cliente A" --workspace 123456
+clickupfy install --name "Cliente A" --workspace 123456
 ```
 
 ```bash
-clickupfy setup --api-key "$CLICKUP_API_KEY" --name "Automação"
+clickupfy install --api-key "$CLICKUP_API_KEY" --name "Automação"
 ```
 
 ```bash
-clickupfy setup \
+clickupfy install \
   --api-key "$CLICKUP_API_KEY" \
   --name "Produto" \
   --workspace 123456 \
@@ -557,7 +557,7 @@ clickupfy --account produto --json list list --space 1001 --archived
 
 Consulte cada List pelo comando seguinte para obter os status configurados.
 Em projetos com MCP, o ID da List escolhido aqui será o valor obrigatório de
-`agent init --list` ou de `mcp serve --list`.
+`agent install --list` ou de `mcp serve --list`.
 
 ### `clickupfy list get <list-id>`
 

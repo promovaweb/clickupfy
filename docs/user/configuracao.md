@@ -20,7 +20,7 @@ terminal interativo,
 prefira o setup com prompt oculto:
 
 ```bash
-clickupfy setup
+clickupfy install
 ```
 
 Escolha um nome local para o perfil e selecione o workspace. O nome vira um
@@ -31,7 +31,7 @@ identificador normalizado, como `promovaweb` ou `cliente-a`.
 Em uma automação isolada, o setup aceita parâmetros:
 
 ```bash
-clickupfy setup \
+clickupfy install \
   --api-key "pk_..." \
   --name "Promovaweb" \
   --workspace "123456" \

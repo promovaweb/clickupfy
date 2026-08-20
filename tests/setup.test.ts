@@ -24,7 +24,7 @@ afterEach(async () => {
   );
 });
 
-describe("clickupfy setup", () => {
+describe("clickupfy install", () => {
   it("valida a chave, associa o workspace e cria o config.json", async () => {
     const servidor = createServer((request, response) => {
       response.setHeader("Content-Type", "application/json");
@@ -59,7 +59,7 @@ describe("clickupfy setup", () => {
       tsx,
       [
         "src/cli.ts",
-        "setup",
+        "install",
         "--api-key",
         "pk_teste",
         "--name",
