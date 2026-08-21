@@ -4,6 +4,24 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico e usa commits convencionais para preparar
 as próximas versões.
 
+## [0.7.0](https://github.com/promovaweb/clickupfy/compare/v0.6.0...v0.7.0) (2026-08-20)
+
+### Funcionalidades
+
+- adiciona doctor e atualiza config local ([01f47e4](https://github.com/promovaweb/clickupfy/commit/01f47e49af8523858f9a476fac8398add3ce837d))
+- gerencia skills pelo skills add e amplia doctor ([659725e](https://github.com/promovaweb/clickupfy/commit/659725e1716980f1df0e14dd0e0bd31c71d6f834))
+- **setup:** adiciona skill de configuração do ClickUpfy ([5f37aab](https://github.com/promovaweb/clickupfy/commit/5f37aab89a576b9b7d0c7600d1da6b03f52a6c46))
+
+### Correções
+
+- **sea:** valida skills sem destino legado ([046d063](https://github.com/promovaweb/clickupfy/commit/046d063e195c5b85ea4c40fd8ba16043b21c708f))
+- **skills:** usa npx no ClickUpfy ([0923b16](https://github.com/promovaweb/clickupfy/commit/0923b168b82590e740f0dbba456369021d739723))
+
+### Documentação
+
+- publica aliases estaveis do ebook ([67c5974](https://github.com/promovaweb/clickupfy/commit/67c59746839367c86e45696727319726717219b4))
+- sincroniza guia e referências do ClickUpfy ([fcd9404](https://github.com/promovaweb/clickupfy/commit/fcd9404032f49ea623b9b580acc78783447e4a49))
+
 ## [0.6.0](https://github.com/promovaweb/clickupfy/compare/v0.5.0...v0.6.0) (2026-08-14)
 
 ### Funcionalidades
