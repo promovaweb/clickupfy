@@ -18,6 +18,10 @@ as próximas versões.
 - Documenta parâmetros, arquivos locais, exemplos e limites do setup no manual e README.
 - PDF e EPUB permanecem na edição anterior: o gerador legado depende de Python e não foi executado.
 
+### Build
+
+- Incorpora a entrada ESM do parser JSONC ao executável standalone para evitar carregamento dinâmico incompatível com Node.js SEA.
+
 ### Validação
 
 - Typecheck, build e 104 testes aprovados, incluindo CLI, seletores e preservação de configurações.
