@@ -1,10 +1,12 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
       - main
+      - "fix/issue-*"
 
 permissions:
   contents: read
@@ -12,7 +14,11 @@ permissions:
 jobs:
   validar:
     name: Validar Node.js
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Obter código
         uses: actions/checkout@v7
@@ -29,5 +35,14 @@ jobs:
       - name: Validar projeto
         run: npm run validar
 
-      - name: Validar executável Linux
+      - name: Repetir suíte no Windows (cinco execuções no total)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          1..4 | ForEach-Object {
+            npm test
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Validar executável nativo
         run: npm run build:executable

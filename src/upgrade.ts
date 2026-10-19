@@ -7,14 +7,15 @@
  * iniciou o processo atual.
  */
 
-import { execFileSync, spawnSync } from "node:child_process";
+import { executarProcessoSync as spawnSync } from "./processos.js";
 import { join } from "node:path";
 import { CliError } from "./errors.js";
 
 const PACKAGE_NAME = "@promovaweb/clickupfy";
 const VERSION_PATTERN =
   /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/;
-const TARGET_PATTERN = /^(?:latest|next|v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?)$/;
+const TARGET_PATTERN =
+  /^(?:latest|next|v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?)$/;
 
 /** Dependências substituíveis usadas para testar o fluxo sem tocar no npm real. */
 export interface UpgradeDependencies {
@@ -59,15 +60,17 @@ export function executarUpgrade(
     );
   }
 
-  const prefixo = execFileSync(npmCommand, ["prefix", "--global"], {
+  const consultaPrefixo = spawnSync(npmCommand, ["prefix", "--global"], {
     encoding: "utf8",
     env: environment,
-  }).trim();
+  });
+  if (consultaPrefixo.error || consultaPrefixo.status !== 0)
+    throw new CliError("Não foi possível consultar o prefixo global do npm.");
+  const prefixo = consultaPrefixo.stdout.trim();
   const launcher = caminhoLauncherGlobal(prefixo);
   const leitura = spawnSync(launcher, ["--version"], {
     encoding: "utf8",
     env: environment,
-    shell: process.platform === "win32",
     stdio: ["ignore", "pipe", "pipe"],
   });
 
@@ -82,7 +85,11 @@ export function executarUpgrade(
     );
   }
 
-  const version = String(leitura.stdout ?? "").trim().split(/\s+/u).at(-1) ?? "";
+  const version =
+    String(leitura.stdout ?? "")
+      .trim()
+      .split(/\s+/u)
+      .at(-1) ?? "";
   if (!VERSION_PATTERN.test(version)) {
     throw new CliError(
       `A instalação terminou, mas o launcher retornou uma versão inválida: ${version || "vazia"}.`,

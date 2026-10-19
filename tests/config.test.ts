@@ -28,7 +28,9 @@ describe("configuração", () => {
   it("usa ~/clickupfy/config.json por padrão", () => {
     delete process.env.PROMOVAWEB_CLICKUPFY_CONFIG;
 
-    expect(caminhoConfiguracao()).toBe(join(homedir(), "clickupfy", "config.json"));
+    expect(caminhoConfiguracao()).toBe(
+      join(homedir(), "clickupfy", "config.json"),
+    );
   });
 
   it("grava o JSON com permissão 0600 e preserva múltiplas accounts", async () => {
@@ -58,8 +60,13 @@ describe("configuração", () => {
     await salvarConfiguracao(config);
 
     expect(await lerConfiguracao()).toEqual(config);
-    expect((await stat(caminho)).mode & 0o777).toBe(0o600);
+    expect(
+      (await stat(caminho)).mode &
+        (process.platform === "win32" ? 0o200 : 0o777),
+    ).toBe(process.platform === "win32" ? 0o200 : 0o600);
     expect(resolverAccount(config).id).toBe("dev");
-    expect(resolverAccount(config, "consultoria").account.workspace.id).toBe("456");
+    expect(resolverAccount(config, "consultoria").account.workspace.id).toBe(
+      "456",
+    );
   });
 });

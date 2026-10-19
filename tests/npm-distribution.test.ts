@@ -3,7 +3,14 @@
  */
 
 import { execFile } from "node:child_process";
-import { chmod, mkdtemp, readFile, rm, mkdir, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdtemp,
+  readFile,
+  rm,
+  mkdir,
+  writeFile,
+} from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { promisify } from "node:util";
@@ -39,16 +46,24 @@ describe("distribuição npm", () => {
   });
 
   it("instala o alvo no npm global e confirma o launcher novo", async () => {
-    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-upgrade-"));
+    const pasta = await mkdtemp(
+      join(tmpdir(), "clickupfy upgrade com espaços-"),
+    );
     const prefixo = join(pasta, "prefix");
     const bin = join(prefixo, "bin");
     const chamadas = join(pasta, "calls.jsonl");
-    const npm = join(pasta, "npm.mjs");
-    const launcher = join(bin, "clickupfy");
+    const scriptNpm = join(pasta, "npm.mjs");
+    const npm =
+      process.platform === "win32" ? join(pasta, "npm.cmd") : scriptNpm;
+    const launcher =
+      process.platform === "win32"
+        ? join(prefixo, "clickupfy.cmd")
+        : join(bin, "clickupfy");
+    const scriptLauncher = join(bin, "launcher.mjs");
 
     await mkdir(bin, { recursive: true });
     await writeFile(
-      npm,
+      scriptNpm,
       `#!/usr/bin/env node
 import { appendFileSync } from "node:fs";
 const args = process.argv.slice(2);
@@ -58,10 +73,20 @@ if (args[0] === "prefix") process.stdout.write(process.env.PREFIX);
       "utf8",
     );
     await writeFile(
-      launcher,
+      process.platform === "win32" ? scriptLauncher : launcher,
       `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify("0.6.0\n")});\n`,
       "utf8",
     );
+    if (process.platform === "win32") {
+      await writeFile(
+        npm,
+        `@echo off\r\n"${process.execPath}" "${scriptNpm}" %*\r\n`,
+      );
+      await writeFile(
+        launcher,
+        `@echo off\r\n"${process.execPath}" "${scriptLauncher}" %*\r\n`,
+      );
+    }
     await chmod(npm, 0o755);
     await chmod(launcher, 0o755);
 
@@ -80,7 +105,13 @@ if (args[0] === "prefix") process.stdout.write(process.env.PREFIX);
 
       expect(resultado).toEqual({ target: "0.6.0", version: "0.6.0" });
       expect(registros).toEqual([
-        ["install", "--global", "@promovaweb/clickupfy@0.6.0", "--no-fund", "--no-audit"],
+        [
+          "install",
+          "--global",
+          "@promovaweb/clickupfy@0.6.0",
+          "--no-fund",
+          "--no-audit",
+        ],
         ["prefix", "--global"],
       ]);
     } finally {

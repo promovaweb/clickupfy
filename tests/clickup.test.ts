@@ -4,7 +4,6 @@
 
 import { describe, expect, it, vi } from "vitest";
 import { ClickUpClient } from "../src/clickup.js";
-import { CliError } from "../src/errors.js";
 
 describe("ClickUpClient", () => {
   it("envia autenticação e filtros repetidos no formato da API", async () => {
@@ -42,7 +41,7 @@ describe("ClickUpClient", () => {
       ),
     });
 
-    await expect(client.obterUsuario()).rejects.toMatchObject<CliError>({
+    await expect(client.obterUsuario()).rejects.toMatchObject({
       message: "Token inválido",
       exitCode: 2,
     });

@@ -123,6 +123,7 @@ describe("cobertura do manual de referência", () => {
 
     expect(ferramentas.length).toBeGreaterThan(0);
     for (const ferramenta of ferramentas) {
+      if (!ferramenta) throw new Error("Nome de ferramenta ausente");
       const texto = secao(referencias, ferramenta);
       expect(texto, `Seção ausente para ${ferramenta}`).not.toBe("");
       expect(texto, `Exemplos insuficientes para ${ferramenta}`).toContain(

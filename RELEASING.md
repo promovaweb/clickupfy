@@ -205,3 +205,22 @@ Referências técnicas:
 - [Release Please Action](https://github.com/googleapis/release-please-action);
 - [Node.js Single Executable Applications](https://nodejs.org/api/single-executable-applications.html);
 - [GitHub Artifact Attestations](https://docs.github.com/en/actions/concepts/security/artifact-attestations).
+
+## Verificação de Windows
+
+O workflow CI executa typecheck de código e testes, build e suíte em Linux e
+Windows. No Windows, repete a suíte quatro vezes após `validar`, totalizando
+cinco execuções, e verifica o executável SEA. As fixtures usam lançadores
+`.cmd` reais e caminhos com espaços; o fallback JavaScript do launcher npm
+também é executado pelos testes.
+
+A execução de processos usa `cross-spawn`, que resolve PATH/PATHEXT e trata
+argumentos dos lançadores Windows. O comportamento POSIX permanece sem shell
+genérico. Não substitua esse tratamento por concatenação de argumentos com
+`shell: true`. A issue de origem é
+[promovaweb/clickupfy#8](https://github.com/promovaweb/clickupfy/issues/8),
+relatada por @vitorcanoas.
+
+Permanecem fora desta correção a distribuição npm por pacotes de plataforma,
+a assinatura Authenticode e a migração do gerador de ebook. O pipeline de
+ebook legado usa Bash e Python e não foi executado nesta validação.

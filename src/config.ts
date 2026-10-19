@@ -2,10 +2,11 @@
  * Persistência e resolução da configuração multi-account do ClickUpfy.
  */
 
-import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { z } from "zod";
+import { gravarArquivoAtomico, removerBom } from "./arquivos.js";
 import { CliError } from "./errors.js";
 
 const usuarioSchema = z.object({
@@ -70,7 +71,7 @@ export async function lerConfiguracao(
 
   try {
     const conteudo = await readFile(caminho, "utf8");
-    return configuracaoSchema.parse(JSON.parse(conteudo));
+    return configuracaoSchema.parse(JSON.parse(removerBom(conteudo)));
   } catch (error) {
     if (
       permitirAusente &&
@@ -89,11 +90,7 @@ export async function lerConfiguracao(
       );
     }
 
-    if (
-      error instanceof Error &&
-      "code" in error &&
-      error.code === "ENOENT"
-    ) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       throw new CliError(
         "Nenhum perfil configurado. Execute `clickupfy install`.",
       );
@@ -113,19 +110,11 @@ export async function salvarConfiguracao(
   const validada = configuracaoSchema.parse(configuracao);
   const caminho = caminhoConfiguracao();
   const diretorio = dirname(caminho);
-  const temporario = join(
-    diretorio,
-    `.config.${process.pid}.${Date.now()}.tmp`,
-  );
 
   await mkdir(diretorio, { recursive: true, mode: 0o700 });
-  await chmod(diretorio, 0o700);
-  await writeFile(temporario, `${JSON.stringify(validada, null, 2)}\n`, {
-    encoding: "utf8",
-    mode: 0o600,
-  });
-  await rename(temporario, caminho);
-  await chmod(caminho, 0o600);
+  if (process.platform !== "win32") await chmod(diretorio, 0o700);
+  await gravarArquivoAtomico(caminho, `${JSON.stringify(validada, null, 2)}\n`);
+  if (process.platform !== "win32") await chmod(caminho, 0o600);
 }
 
 /**
