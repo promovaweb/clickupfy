@@ -114,6 +114,10 @@ Gere o executável para a plataforma e arquitetura locais:
 npm run build:executable
 ```
 
+O bundle usa a entrada ESM do `jsonc-parser` para incorporar os módulos internos
+ao executável SEA. A entrada UMD depende de `require` dinâmico e não pode ser
+usada no binário standalone.
+
 O script:
 
 1. transpila e reúne o CLI em um único arquivo CommonJS;

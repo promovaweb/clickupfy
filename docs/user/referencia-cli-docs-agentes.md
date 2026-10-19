@@ -509,3 +509,81 @@ Normalmente o cliente MCP executa esse comando a partir do `.mcp.json` ou do
 humana. A referência MCP
 detalha cada ferramenta exposta pelo servidor e as diferenças entre leitura e
 escrita.
+
+### `clickupfy mcp setup`
+
+Configura um MCP nomeado no diretório atual. Com terminal interativo, pergunta
+nome, clientes, conta cadastrada, espaço e lista. Use setas e Enter nos
+seletores; no seletor de clientes, Espaço marca ou desmarca uma opção.
+Ctrl+C cancela antes da gravação. As listas incluem pastas e listas sem pasta.
+O workspace é o associado à conta escolhida. Cadastre a conta antes com
+`clickupfy install`.
+
+| Parâmetro | Tipo | Obrigatoriedade e padrão |
+| --- | --- | --- |
+| `--name` | texto | Perguntado; obrigatório sem interação. Letras, números, hífen e sublinhado |
+| `--account` | texto | Perguntado; obrigatório sem interação; perfil já cadastrado |
+| `--space` | ID | Perguntado; obrigatório sem interação; pertence ao workspace do perfil |
+| `--list` | ID | Perguntado; obrigatório sem interação; pertence ao espaço escolhido |
+| `--clients` | CSV | Seleção múltipla; os quatro clientes são sugeridos e usados sem interação |
+| `--project` | caminho | Diretório atual |
+| `--read-only` | booleano | Desativado; quando presente, expõe somente ferramentas de leitura |
+| `--force` | booleano | Desativado; permite substituir o mesmo nome nos clientes selecionados |
+| `--non-interactive` | booleano | Desativado; exige escolhas por flags |
+| `--json` | booleano | Desativado; retorna nome, IDs e caminhos em JSON |
+
+Clientes aceitos: `claude-code`, `codex`, `gemini` e `opencode`.
+
+| Cliente | Arquivo local | Seção |
+| --- | --- | --- |
+| Claude Code | `.mcp.json` | `mcpServers` |
+| Codex | `.codex/config.toml` | `mcp_servers` |
+| Gemini CLI | `.gemini/settings.json` | `mcpServers` |
+| OpenCode | `opencode.jsonc`, se existir; senão `opencode.json` | `mcp` |
+
+Cada entrada inicia `clickupfy mcp serve` com conta, workspace, espaço e lista
+fixos. A pasta da lista é acrescentada quando existe. A API key permanece na
+configuração pessoal; o setup não troca o perfil ativo nem modifica recursos
+no ClickUp. O binário `clickupfy` precisa estar disponível no PATH do cliente.
+A autorização do projeto e a ativação do MCP continuam sob controle de cada
+cliente. Reinicie ou recarregue o cliente após configurar.
+
+Repita com outro nome para manter vários MCPs no mesmo projeto. Nomes iguais
+são recusados sem `--force`. Um ID fora da hierarquia, nenhuma opção acessível,
+falha da API ou configuração inválida encerra o comando antes da gravação.
+Todos os arquivos são analisados antes de escrever; cada substituição é
+atômica, mas uma falha de disco pode deixar apenas parte dos clientes atualizada.
+Os demais servidores e ajustes são preservados. O TOML é reserializado e perde
+comentários; comentários do JSONC do OpenCode são preservados.
+
+O escopo segue as regras de `mcp serve`: Docs continuam no workspace e as
+permissões da API key continuam sendo as concedidas pelo ClickUp. O setup
+não cria uma credencial com permissões reduzidas.
+
+Exemplos:
+
+```bash
+clickupfy mcp setup
+```
+
+```bash
+clickupfy mcp setup --name produto
+```
+
+```bash
+clickupfy mcp setup --name suporte --clients claude-code,gemini
+```
+
+```bash
+clickupfy mcp setup --name dev --account empresa --space 10 --list 30 --non-interactive
+```
+
+```bash
+clickupfy mcp setup --name dev --account empresa --space 10 --list 31 --clients codex,opencode --project ./app --read-only --force --non-interactive --json
+```
+
+Formatos conferidos nas documentações oficiais de
+[Claude Code](https://code.claude.com/docs/en/mcp),
+[Codex](https://developers.openai.com/codex/mcp),
+[Gemini CLI](https://geminicli.com/docs/tools/mcp-server/) e
+[OpenCode](https://opencode.ai/docs/mcp-servers/).

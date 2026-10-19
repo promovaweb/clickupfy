@@ -61,6 +61,7 @@ const cliCommands = [
   "clickupfy agent skill install",
   "clickupfy agent install",
   "clickupfy mcp serve",
+  "clickupfy mcp setup",
 ] as const;
 
 /** Lê as referências acrescentadas ao manual, onde a cobertura é mantida. */

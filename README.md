@@ -27,7 +27,21 @@ npm run ebook:verify
 Versão, formatos e regras de atualização ficam em
 [`ebook/README.md`](ebook/README.md).
 
-## Requisitos
+## Configure o MCP do projeto
+
+Após cadastrar uma conta com `clickupfy install`, execute no projeto:
+
+```bash
+clickupfy mcp setup
+```
+
+O assistente permite selecionar conta, espaço, lista e clientes pelo terminal.
+Defina um nome para cada MCP; repita o comando com outro nome para acrescentar
+outra conta ou lista ao mesmo projeto. Os clientes disponíveis são Claude Code,
+Codex, Gemini CLI e OpenCode. As API keys permanecem no cadastro pessoal.
+Veja [parâmetros e exemplos](docs/user/referencia-cli-docs-agentes.md#clickupfy-mcp-setup).
+
+## Requisitos de instalação
 
 - Node.js `>=22.12.0` para instalar pelo npm ou desenvolver;
 - uma API key pessoal do ClickUp;

@@ -4,6 +4,28 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico e usa commits convencionais para preparar
 as próximas versões.
 
+## [0.8.0](https://github.com/promovaweb/clickupfy/compare/v0.7.0...v0.8.0) (2026-10-19)
+
+### Funcionalidades
+
+- Adiciona `clickupfy mcp setup` com seleção interativa de conta, espaço, lista e clientes.
+- Permite vários MCPs nomeados no mesmo projeto para Claude Code, Codex, Gemini CLI e OpenCode.
+- Preserva configurações existentes, aceita JSONC do OpenCode e exige `--force` para substituir nomes existentes.
+- Oferece configuração por flags e modo somente leitura, sem copiar API keys para o projeto.
+
+### Documentação
+
+- Documenta parâmetros, arquivos locais, exemplos e limites do setup no manual e README.
+- PDF e EPUB permanecem na edição anterior: o gerador legado depende de Python e não foi executado.
+
+### Build
+
+- Incorpora a entrada ESM do parser JSONC ao executável standalone para evitar carregamento dinâmico incompatível com Node.js SEA.
+
+### Validação
+
+- Typecheck, build e 104 testes aprovados, incluindo CLI, seletores e preservação de configurações.
+
 ## [0.7.0](https://github.com/promovaweb/clickupfy/compare/v0.6.0...v0.7.0) (2026-08-20)
 
 ### Funcionalidades

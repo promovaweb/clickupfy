@@ -31,7 +31,11 @@ describe("clickupfy install", () => {
       if (request.url === "/api/v2/user") {
         response.end(
           JSON.stringify({
-            user: { id: 10, username: "Dev Promovaweb", email: "dev@example.com" },
+            user: {
+              id: 10,
+              username: "Dev Promovaweb",
+              email: "dev@example.com",
+            },
           }),
         );
         return;
@@ -39,6 +43,20 @@ describe("clickupfy install", () => {
       if (request.url === "/api/v2/team") {
         response.end(
           JSON.stringify({ teams: [{ id: "123", name: "Engenharia" }] }),
+        );
+        return;
+      }
+      if (request.url?.startsWith("/api/v2/team/123/space")) {
+        response.end(JSON.stringify({ spaces: [{ id: "10", name: "Dev" }] }));
+        return;
+      }
+      if (request.url?.startsWith("/api/v2/space/10/folder")) {
+        response.end(JSON.stringify({ folders: [] }));
+        return;
+      }
+      if (request.url?.startsWith("/api/v2/space/10/list")) {
+        response.end(
+          JSON.stringify({ lists: [{ id: "30", name: "Produto" }] }),
         );
         return;
       }
@@ -50,7 +68,8 @@ describe("clickupfy install", () => {
       servidor.listen(0, "127.0.0.1", resolveListen),
     );
     const endereco = servidor.address();
-    if (!endereco || typeof endereco === "string") throw new Error("Porta ausente");
+    if (!endereco || typeof endereco === "string")
+      throw new Error("Porta ausente");
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-setup-"));
     const caminho = join(pasta, "clickupfy", "config.json");
     const tsx = resolve("node_modules/.bin/tsx");
@@ -86,5 +105,43 @@ describe("clickupfy install", () => {
       id: "123",
       name: "Engenharia",
     });
+    const setupMcp = await execFileAsync(
+      tsx,
+      [
+        "src/cli.ts",
+        "mcp",
+        "setup",
+        "--name",
+        "produto",
+        "--account",
+        "promovaweb-dev",
+        "--space",
+        "10",
+        "--list",
+        "30",
+        "--project",
+        pasta,
+        "--non-interactive",
+        "--json",
+      ],
+      {
+        cwd: resolve("."),
+        env: {
+          ...process.env,
+          PROMOVAWEB_CLICKUPFY_CONFIG: caminho,
+          PROMOVAWEB_CLICKUPFY_API_URL: `http://127.0.0.1:${endereco.port}/api/v2`,
+        },
+      },
+    );
+    expect(JSON.parse(setupMcp.stdout)).toMatchObject({
+      name: "produto",
+      account: "promovaweb-dev",
+      space: "10",
+      list: "30",
+    });
+    expect(
+      JSON.parse(await readFile(join(pasta, ".mcp.json"), "utf8")).mcpServers
+        .produto.command,
+    ).toBe("clickupfy");
   });
 });

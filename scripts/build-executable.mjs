@@ -49,6 +49,9 @@ await build({
   bundle: true,
   format: "cjs",
   platform: "node",
+  // A entrada UMD mantém require dinâmico, indisponível dentro do Node.js SEA.
+  // A entrada ESM incorpora também os módulos internos do parser JSONC.
+  alias: { "jsonc-parser": "jsonc-parser/lib/esm/main.js" },
   target: "node22",
   sourcemap: false,
   minify: false,
