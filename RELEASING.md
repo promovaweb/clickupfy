@@ -224,3 +224,16 @@ relatada por @vitorcanoas.
 Permanecem fora desta correção a distribuição npm por pacotes de plataforma,
 a assinatura Authenticode e a migração do gerador de ebook. O pipeline de
 ebook legado usa Bash e Python e não foi executado nesta validação.
+
+## Preparação manual de uma Release PR
+
+Quando a versão já estiver preparada, use uma branch no padrão
+`release-please--branches--main`, título `chore(main): release X.Y.Z`,
+label `autorelease: pending` e corpo no formato reconhecido pelo Release
+Please, com a seção correspondente do changelog. Uma PR de implementação
+com outro nome de branch não publica a release, mesmo com título e label
+ajustados. Confira os logs do job antes de considerar a publicação concluída.
+
+Se a implementação já foi integrada, prepare uma PR de release separada.
+Não crie a tag manualmente para contornar o fluxo, pois os artefatos dependem
+da saída `release_created` do job.
