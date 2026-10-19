@@ -25,6 +25,7 @@ import {
 import { criarContexto } from "./context.js";
 import { CliError } from "./errors.js";
 import { serveMcp } from "./mcp.js";
+import { executarMcpSetup } from "./mcp-setup.js";
 import { executarUpgrade } from "./upgrade.js";
 import { executarDoctor } from "./doctor.js";
 import {
@@ -1016,6 +1017,27 @@ time
   });
 
 const mcp = program.command("mcp").description("integração MCP para agentes");
+mcp
+  .command("setup")
+  .description("seleciona conta, espaço e lista e configura MCPs locais nomeados")
+  .option("--name <nome>", "nome único do MCP no projeto")
+  .option("--account <perfil>", "conta cadastrada no ClickUpfy")
+  .option("--space <id>", "espaço do workspace da conta")
+  .option("--list <id>", "lista pertencente ao espaço")
+  .option("--clients <clientes>", "claude-code,codex,gemini,opencode separados por vírgula")
+  .option("--project <diretorio>", "diretório do projeto; padrão: diretório atual")
+  .option("--read-only", "configura ferramentas somente de leitura")
+  .option("--force", "substitui a entrada com o mesmo nome")
+  .option("--non-interactive", "exige nome, conta, espaço e lista por flags")
+  .action(async function (this: Command) {
+    const options = this.optsWithGlobals();
+    const resultado = await executarMcpSetup(options);
+    if (options.json) imprimirJson(resultado);
+    else {
+      process.stdout.write(`MCP "${resultado.name}" configurado: ${resultado.account} / ${resultado.space} / ${resultado.list}.\n`);
+      for (const arquivo of resultado.arquivos) process.stdout.write(`${arquivo}\n`);
+    }
+  });
 mcp
   .command("serve")
   .option("--account <perfil>", "fixa um perfil para o servidor")

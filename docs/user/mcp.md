@@ -8,6 +8,16 @@
 | Escopo | configuração, isolamento e uso do servidor MCP |
 | Autoridade | implementação do servidor MCP e schemas das ferramentas |
 
+## Configure pelo terminal
+
+Execute `clickupfy mcp setup` dentro do projeto. O assistente pergunta o nome
+do MCP e permite selecionar clientes, conta cadastrada, espaço e lista.
+Ele configura Claude Code, Codex, Gemini CLI e OpenCode nos arquivos locais
+de cada cliente. Repita com outro nome para adicionar mais um MCP.
+
+Consulte as flags, arquivos gerados e exemplos na
+[referência de setup](referencia-cli-docs-agentes.md#clickupfy-mcp-setup).
+
 ## Inicie manualmente
 
 O servidor usa transporte stdio e reserva a saída padrão para as mensagens
