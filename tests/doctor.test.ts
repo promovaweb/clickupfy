@@ -57,7 +57,10 @@ describe("clickupfy doctor", () => {
       list: "list-1",
     });
 
-    const resultado = await executarDoctor(pasta);
+    const resultado = await executarDoctor(pasta, {
+      // O teste verifica o diagnóstico local, sem baixar o gerenciador no npm.
+      skillsCli: { command: process.execPath, args: ["-e", "console.log('[]')", "--"] },
+    });
     const texto = JSON.stringify(resultado);
 
     expect(resultado.ok).toBe(true);
@@ -76,7 +79,10 @@ describe("clickupfy doctor", () => {
     process.env.PROMOVAWEB_CLICKUPFY_CONFIG = caminho;
     await mkdir(join(pasta, ".codex"), { recursive: true });
 
-    const resultado = await executarDoctor(pasta);
+    const resultado = await executarDoctor(pasta, {
+      // O teste verifica o diagnóstico local, sem baixar o gerenciador no npm.
+      skillsCli: { command: process.execPath, args: ["-e", "console.log('[]')", "--"] },
+    });
 
     expect(resultado.ok).toBe(false);
     expect(
