@@ -6,41 +6,37 @@ as próximas versões.
 
 ## [0.9.0](https://github.com/promovaweb/clickupfy/compare/v0.8.0...v0.9.0) (2026-10-19)
 
-
 ### Funcionalidades
 
-* adiciona doctor e atualiza config local ([01f47e4](https://github.com/promovaweb/clickupfy/commit/01f47e49af8523858f9a476fac8398add3ce837d))
-* adiciona gestao completa de Docs do ClickUp ([7095e15](https://github.com/promovaweb/clickupfy/commit/7095e15dd357d72dfea635417434102d6e0c03bd))
-* adiciona upgrade automatico do CLI ([c0d4b0a](https://github.com/promovaweb/clickupfy/commit/c0d4b0a8740757fead8e8a5ca0cbf1d15b03dadb))
-* amplia fluxos de issues e documentação ([41c1f27](https://github.com/promovaweb/clickupfy/commit/41c1f2712b1c4ff1b0fc688474164a815f9eee15))
-* automatiza execução de tarefas e releases ([a1d8a62](https://github.com/promovaweb/clickupfy/commit/a1d8a62c3be6181574e913732fcc55e638b1e1a0))
-* **brand:** atualiza identidade visual ([5f642b8](https://github.com/promovaweb/clickupfy/commit/5f642b81333ea236642e70867a2046ac64914f93))
-* configura arquivos de agente por projeto ([d59fe59](https://github.com/promovaweb/clickupfy/commit/d59fe591826c7e45ea8c1bbf53a5c9d18680dd6e))
-* distribui binários nativos pelo npm ([8206a5a](https://github.com/promovaweb/clickupfy/commit/8206a5aa3105d83c4b9aad9e66b09e747b21630e))
-* gerencia skills pelo skills add e amplia doctor ([659725e](https://github.com/promovaweb/clickupfy/commit/659725e1716980f1df0e14dd0e0bd31c71d6f834))
-* **setup:** adiciona skill de configuração do ClickUpfy ([5f37aab](https://github.com/promovaweb/clickupfy/commit/5f37aab89a576b9b7d0c7600d1da6b03f52a6c46))
-
+- adiciona doctor e atualiza config local ([01f47e4](https://github.com/promovaweb/clickupfy/commit/01f47e49af8523858f9a476fac8398add3ce837d))
+- adiciona gestao completa de Docs do ClickUp ([7095e15](https://github.com/promovaweb/clickupfy/commit/7095e15dd357d72dfea635417434102d6e0c03bd))
+- adiciona upgrade automatico do CLI ([c0d4b0a](https://github.com/promovaweb/clickupfy/commit/c0d4b0a8740757fead8e8a5ca0cbf1d15b03dadb))
+- amplia fluxos de issues e documentação ([41c1f27](https://github.com/promovaweb/clickupfy/commit/41c1f2712b1c4ff1b0fc688474164a815f9eee15))
+- automatiza execução de tarefas e releases ([a1d8a62](https://github.com/promovaweb/clickupfy/commit/a1d8a62c3be6181574e913732fcc55e638b1e1a0))
+- **brand:** atualiza identidade visual ([5f642b8](https://github.com/promovaweb/clickupfy/commit/5f642b81333ea236642e70867a2046ac64914f93))
+- configura arquivos de agente por projeto ([d59fe59](https://github.com/promovaweb/clickupfy/commit/d59fe591826c7e45ea8c1bbf53a5c9d18680dd6e))
+- distribui binários nativos pelo npm ([8206a5a](https://github.com/promovaweb/clickupfy/commit/8206a5aa3105d83c4b9aad9e66b09e747b21630e))
+- gerencia skills pelo skills add e amplia doctor ([659725e](https://github.com/promovaweb/clickupfy/commit/659725e1716980f1df0e14dd0e0bd31c71d6f834))
+- **setup:** adiciona skill de configuração do ClickUpfy ([5f37aab](https://github.com/promovaweb/clickupfy/commit/5f37aab89a576b9b7d0c7600d1da6b03f52a6c46))
 
 ### Correções
 
-* **build:** incorpora parser JSONC no executável SEA ([29a273d](https://github.com/promovaweb/clickupfy/commit/29a273d8bba9a7c50d81b384d975382e02bb584a))
-* diferencia branches de tags na validação ([613a306](https://github.com/promovaweb/clickupfy/commit/613a3064db00b017cf0afaad3a4464c649b03954))
-* inicia launcher antes do build local ([b68b96c](https://github.com/promovaweb/clickupfy/commit/b68b96cafe27fc050c40cc125af2e4aa9d046ea1))
-* **sea:** valida skills sem destino legado ([046d063](https://github.com/promovaweb/clickupfy/commit/046d063e195c5b85ea4c40fd8ba16043b21c708f))
-* **skills:** usa npx no ClickUpfy ([0923b16](https://github.com/promovaweb/clickupfy/commit/0923b168b82590e740f0dbba456369021d739723))
-
+- **build:** incorpora parser JSONC no executável SEA ([29a273d](https://github.com/promovaweb/clickupfy/commit/29a273d8bba9a7c50d81b384d975382e02bb584a))
+- diferencia branches de tags na validação ([613a306](https://github.com/promovaweb/clickupfy/commit/613a3064db00b017cf0afaad3a4464c649b03954))
+- inicia launcher antes do build local ([b68b96c](https://github.com/promovaweb/clickupfy/commit/b68b96cafe27fc050c40cc125af2e4aa9d046ea1))
+- **sea:** valida skills sem destino legado ([046d063](https://github.com/promovaweb/clickupfy/commit/046d063e195c5b85ea4c40fd8ba16043b21c708f))
+- **skills:** usa npx no ClickUpfy ([0923b16](https://github.com/promovaweb/clickupfy/commit/0923b168b82590e740f0dbba456369021d739723))
 
 ### Documentação
 
-* amplia referências e guias do ClickUpfy ([2ab1271](https://github.com/promovaweb/clickupfy/commit/2ab1271b4794e8b3bb10dbb33d96f637e26a8b59))
-* publica aliases estaveis do ebook ([67c5974](https://github.com/promovaweb/clickupfy/commit/67c59746839367c86e45696727319726717219b4))
-* publica guia do usuário v1.1.1 ([ffaf61e](https://github.com/promovaweb/clickupfy/commit/ffaf61e8602afcf19863b23a2754060f4c2bae25))
-* sincroniza guia e referências do ClickUpfy ([fcd9404](https://github.com/promovaweb/clickupfy/commit/fcd9404032f49ea623b9b580acc78783447e4a49))
-
+- amplia referências e guias do ClickUpfy ([2ab1271](https://github.com/promovaweb/clickupfy/commit/2ab1271b4794e8b3bb10dbb33d96f637e26a8b59))
+- publica aliases estaveis do ebook ([67c5974](https://github.com/promovaweb/clickupfy/commit/67c59746839367c86e45696727319726717219b4))
+- publica guia do usuário v1.1.1 ([ffaf61e](https://github.com/promovaweb/clickupfy/commit/ffaf61e8602afcf19863b23a2754060f4c2bae25))
+- sincroniza guia e referências do ClickUpfy ([fcd9404](https://github.com/promovaweb/clickupfy/commit/fcd9404032f49ea623b9b580acc78783447e4a49))
 
 ### Integração contínua
 
-* normaliza changelog da release automaticamente ([bec42c3](https://github.com/promovaweb/clickupfy/commit/bec42c3390675dfd446058279b255c941655b55f))
+- normaliza changelog da release automaticamente ([bec42c3](https://github.com/promovaweb/clickupfy/commit/bec42c3390675dfd446058279b255c941655b55f))
 
 ## [0.8.0](https://github.com/promovaweb/clickupfy/compare/v0.7.0...v0.8.0) (2026-10-19)
 
