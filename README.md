@@ -137,7 +137,9 @@ O arquivo fica em:
 ~/clickupfy/config.json
 ```
 
-O diretório recebe permissão `0700` e o arquivo recebe `0600`. A API key é
+Em Linux e macOS, o diretório recebe permissão `0700` e o arquivo recebe
+`0600`. No Windows, o acesso depende das ACLs do perfil; o doctor informa
+que as verificações POSIX não se aplicam e não afirma ter auditado as ACLs. A API key é
 armazenada no JSON porque o CLI precisa autenticar chamadas futuras; não
 adicione esse arquivo ao Git, não envie seu conteúdo em comentários e não use
 uma pasta sincronizada como destino.
@@ -622,7 +624,7 @@ Execute `clickupfy <grupo> --help` para conferir argumentos e opções.
 ## Desenvolvimento e validação
 
 ```bash
-npm run typecheck
+npm run typecheck # inclui src e tests
 npm test
 npm run build
 npm run release:check

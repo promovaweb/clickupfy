@@ -72,11 +72,13 @@ describe("clickupfy install", () => {
       throw new Error("Porta ausente");
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-setup-"));
     const caminho = join(pasta, "clickupfy", "config.json");
-    const tsx = resolve("node_modules/.bin/tsx");
+    const tsx = process.execPath;
 
     const { stdout } = await execFileAsync(
       tsx,
       [
+        "--import",
+        "tsx",
         "src/cli.ts",
         "install",
         "--api-key",
@@ -108,6 +110,8 @@ describe("clickupfy install", () => {
     const setupMcp = await execFileAsync(
       tsx,
       [
+        "--import",
+        "tsx",
         "src/cli.ts",
         "mcp",
         "setup",

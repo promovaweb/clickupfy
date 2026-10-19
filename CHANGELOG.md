@@ -4,6 +4,19 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico e usa commits convencionais para preparar
 as próximas versões.
 
+## [0.8.1](https://github.com/promovaweb/clickupfy/compare/v0.8.0...v0.8.1) (2026-10-19)
+
+### Correções
+
+- Trata lançadores npm/npx e caminhos com espaços no Windows em upgrade e instalação de skills.
+- Ajusta o doctor para distinguir permissões POSIX de ACLs Windows e aceita BOM UTF-8.
+- Remove temporários quando a gravação falha e informa como conferir arquivos abertos ou somente leitura.
+
+### Testes e documentação
+
+- Acrescenta CI Windows com cinco execuções da suíte, fixtures portáteis, typecheck dos testes e arquivos de texto com LF.
+- Documenta PATH, PowerShell e permissões Windows. Agradecimento a @vitorcanoas pelo relato em #8.
+
 ## [0.8.0](https://github.com/promovaweb/clickupfy/compare/v0.7.0...v0.8.0) (2026-10-19)
 
 ### Funcionalidades

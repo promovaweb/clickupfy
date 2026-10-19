@@ -1,6 +1,6 @@
 {
   "name": "@promovaweb/clickupfy",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "CLI e servidor MCP para gerenciar Sprints e trabalho de desenvolvimento no ClickUp.",
   "type": "module",
   "bin": {
@@ -31,7 +31,7 @@
     "start": "node dist/cli.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tests.json --noEmit",
     "validar": "npm run typecheck && npm run test && npm run build && npm run release:check && npm run changelog:check"
   },
   "engines": {
@@ -53,11 +53,13 @@
     "@inquirer/prompts": "^8.5.2",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "commander": "^15.0.0",
+    "cross-spawn": "^7.0.6",
     "jsonc-parser": "^3.3.1",
     "smol-toml": "^1.8.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
     "@types/node": "^24.10.0",
     "esbuild": "0.28.1",
     "postject": "1.0.0-alpha.6",

@@ -2,13 +2,13 @@
  * Instalação das skills e geração da configuração MCP para agentes locais.
  */
 
-import { execFile } from "node:child_process";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { executarProcesso as execFileAsync } from "./processos.js";
+import { gravarArquivoAtomico, removerBom } from "./arquivos.js";
+import { readFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { getAsset, isSea } from "node:sea";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
-import { promisify } from "node:util";
 import { CliError } from "./errors.js";
 
 export const SKILL_NAMES = [
@@ -22,7 +22,6 @@ export type SkillName = (typeof SKILL_NAMES)[number];
 
 const MCP_SERVER_NAME = "promovaweb-clickupfy";
 const SKILLS_SOURCE = "promovaweb/clickupfy";
-const execFileAsync = promisify(execFile);
 
 export interface SkillGerenciada {
   name: string;
@@ -117,30 +116,38 @@ export async function instalarSkills(options: {
 }
 
 /** Lista as skills registradas pelo gerenciador oficial. */
-export async function listarSkillsGerenciadas(options: {
-  global?: boolean;
-  names?: readonly string[];
-  skillsCli?: OpcoesSkillsCli;
-} = {}): Promise<SkillGerenciada[]> {
+export async function listarSkillsGerenciadas(
+  options: {
+    global?: boolean;
+    names?: readonly string[];
+    skillsCli?: OpcoesSkillsCli;
+  } = {},
+): Promise<SkillGerenciada[]> {
   const args = ["list", "--json", ...(options.global ? ["--global"] : [])];
   const { stdout } = await executarSkillsCli(args, options.skillsCli);
   let valor: unknown;
   try {
     valor = JSON.parse(stdout);
   } catch (error) {
-    throw new CliError("O comando `skills list --json` não retornou JSON válido.", 1, {
-      cause: error,
-    });
+    throw new CliError(
+      "O comando `skills list --json` não retornou JSON válido.",
+      1,
+      {
+        cause: error,
+      },
+    );
   }
 
   if (!Array.isArray(valor)) {
-    throw new CliError("O comando `skills list --json` retornou uma estrutura inválida.");
+    throw new CliError(
+      "O comando `skills list --json` retornou uma estrutura inválida.",
+    );
   }
 
   const nomes = options.names ? new Set(options.names) : undefined;
-  return valor.filter(isSkillGerenciada).filter((skill) =>
-    nomes ? nomes.has(skill.name) : true,
-  );
+  return valor
+    .filter(isSkillGerenciada)
+    .filter((skill) => (nomes ? nomes.has(skill.name) : true));
 }
 
 /** Executa o binário externo sem expor variáveis sensíveis na mensagem de erro. */
@@ -159,15 +166,19 @@ async function executarSkillsCli(
       maxBuffer: 4 * 1024 * 1024,
     });
   } catch (error) {
-    const codigo = error instanceof Error && "code" in error ? error.code : undefined;
+    const codigo =
+      error instanceof Error && "code" in error ? error.code : undefined;
     if (codigo === "ENOENT") {
       throw new CliError(
-        "O comando `npx` não foi encontrado. Instale Node.js para usar `npx skills`.",
+        `O comando "${command}" não foi encontrado no PATH. Confira a instalação do npm e o diretório dos seus executáveis.`,
         1,
         { cause: error },
       );
     }
-    const mensagem = error instanceof Error ? error.message.split("\n")[0] : "falha desconhecida";
+    const mensagem =
+      error instanceof Error
+        ? error.message.split("\n")[0]
+        : "falha desconhecida";
     throw new CliError(`O comando "skills" falhou: ${mensagem}`, 1, {
       cause: error,
     });
@@ -209,16 +220,13 @@ export async function configurarMcpProjeto(
   let configuracao: Record<string, unknown> = {};
 
   try {
-    configuracao = JSON.parse(await readFile(caminho, "utf8")) as Record<
-      string,
-      unknown
-    >;
+    configuracao = JSON.parse(
+      removerBom(await readFile(caminho, "utf8")),
+    ) as Record<string, unknown>;
   } catch (error) {
-    if (!(
-      error instanceof Error &&
-      "code" in error &&
-      error.code === "ENOENT"
-    )) {
+    if (
+      !(error instanceof Error && "code" in error && error.code === "ENOENT")
+    ) {
       throw new CliError(`Não foi possível ler ${caminho}.`, 1, {
         cause: error,
       });
@@ -234,11 +242,9 @@ export async function configurarMcpProjeto(
   servidores[MCP_SERVER_NAME] = criarServidorMcp(options);
   configuracao.mcpServers = servidores;
 
-  await mkdir(dirname(caminho), { recursive: true });
-  await writeFile(
+  await gravarArquivoAtomico(
     caminho,
     `${JSON.stringify(configuracao, null, 2)}\n`,
-    "utf8",
   );
   return caminho;
 }
@@ -259,13 +265,11 @@ export async function configurarCodexProjeto(
   let configuracao: Record<string, unknown> = {};
 
   try {
-    configuracao = parseToml(await readFile(caminho, "utf8"));
+    configuracao = parseToml(removerBom(await readFile(caminho, "utf8")));
   } catch (error) {
-    if (!(
-      error instanceof Error &&
-      "code" in error &&
-      error.code === "ENOENT"
-    )) {
+    if (
+      !(error instanceof Error && "code" in error && error.code === "ENOENT")
+    ) {
       throw new CliError(`Não foi possível ler ${caminho}.`, 1, {
         cause: error,
       });
@@ -289,8 +293,7 @@ export async function configurarCodexProjeto(
     [MCP_SERVER_NAME]: criarServidorMcp(options),
   };
 
-  await mkdir(dirname(caminho), { recursive: true });
-  await writeFile(caminho, `${stringifyToml(configuracao)}\n`, "utf8");
+  await gravarArquivoAtomico(caminho, `${stringifyToml(configuracao)}\n`);
   return caminho;
 }
 

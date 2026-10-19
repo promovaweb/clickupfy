@@ -1,8 +1,8 @@
 /** Configuração guiada de servidores MCP nomeados no diretório do projeto. */
 import { checkbox, input, select } from "@inquirer/prompts";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
-import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
+import { gravarArquivoAtomico, removerBom } from "./arquivos.js";
 import {
   applyEdits,
   modify,
@@ -234,7 +234,7 @@ export async function gravarClientes(options: {
     let config: Record<string, unknown> = {};
     let original = "{}\n";
     try {
-      const texto = await readFile(path, "utf8");
+      const texto = removerBom(await readFile(path, "utf8"));
       original = texto;
       const erros: ParseError[] = [];
       config = objeto(
@@ -290,10 +290,7 @@ export async function gravarClientes(options: {
     preparados.push({ path, text });
   }
   for (const arquivo of preparados) {
-    await mkdir(dirname(arquivo.path), { recursive: true });
-    const temp = `${arquivo.path}.${randomUUID()}.tmp`;
-    await writeFile(temp, arquivo.text, { mode: 0o600 });
-    await rename(temp, arquivo.path);
+    await gravarArquivoAtomico(arquivo.path, arquivo.text);
   }
   return preparados.map((arquivo) => arquivo.path);
 }

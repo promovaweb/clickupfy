@@ -3,9 +3,10 @@
  */
 
 import { execFile } from "node:child_process";
-import { appendFile, chmod, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { delimiter, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { parse as parseToml } from "smol-toml";
 import { describe, expect, it } from "vitest";
@@ -21,7 +22,9 @@ import { skillEstaEmPtBr } from "../src/doctor.js";
 const execFileAsync = promisify(execFile);
 
 async function criarSkillsFake(pasta: string) {
-  const comando = join(pasta, "npx");
+  const comando = join(pasta, process.platform === "win32" ? "npx.cmd" : "npx");
+  const script =
+    process.platform === "win32" ? join(pasta, "npx.mjs") : comando;
   const log = join(pasta, "skills-fake.log");
   const nomes = [
     "clickupfy-setup",
@@ -31,13 +34,13 @@ async function criarSkillsFake(pasta: string) {
     "clickupfy-release",
   ];
   await writeFile(
-    comando,
+    script,
     [
       `#!${process.execPath}`,
       'import { appendFile, mkdir, writeFile } from "node:fs/promises";',
       'import { join } from "node:path";',
       `const nomes = ${JSON.stringify(nomes)};`,
-      'const rawArgs = process.argv.slice(2);',
+      "const rawArgs = process.argv.slice(2);",
       'const args = rawArgs[0] === "--yes" && rawArgs[1] === "skills" ? rawArgs.slice(2) : rawArgs;',
       'const global = args.includes("--global");',
       'const base = global ? join(process.env.SKILLS_FAKE_HOME, ".codex", "skills") : join(process.cwd(), ".agents", "skills");',
@@ -46,9 +49,14 @@ async function criarSkillsFake(pasta: string) {
       '  for (const nome of nomes) { await mkdir(join(base, nome, "agents"), { recursive: true }); await writeFile(join(base, nome, "SKILL.md"), `name: ${nome}\\n`); await writeFile(join(base, nome, "agents", "openai.yaml"), "interface:\\n  display_name: \\"Skill em português\\"\\n"); }',
       '} else if (args[0] === "list") {',
       '  console.log(JSON.stringify(nomes.map((name) => ({ name, path: join(base, name), scope: global ? "global" : "project", agents: ["Codex"], source: "promovaweb/clickupfy" }))));',
-      '}',
+      "}",
     ].join("\n"),
   );
+  if (process.platform === "win32")
+    await writeFile(
+      comando,
+      `@echo off\r\n"${process.execPath}" "${script}" %*\r\n`,
+    );
   await chmod(comando, 0o755);
   return {
     skillsCli: {
@@ -64,16 +72,22 @@ describe("integração com agentes", () => {
   it("mantém as skills distribuídas em português do Brasil", async () => {
     for (const nome of SKILL_NAMES) {
       const pasta = join(caminhoSkillsEmpacotadas(), nome);
-      expect(skillEstaEmPtBr(await readFile(join(pasta, "SKILL.md"), "utf8"))).toBe(true);
       expect(
-        skillEstaEmPtBr(await readFile(join(pasta, "agents", "openai.yaml"), "utf8")),
+        skillEstaEmPtBr(await readFile(join(pasta, "SKILL.md"), "utf8")),
+      ).toBe(true);
+      expect(
+        skillEstaEmPtBr(
+          await readFile(join(pasta, "agents", "openai.yaml"), "utf8"),
+        ),
       ).toBe(true);
     }
   });
 
   it("exige uma List para iniciar o servidor MCP", async () => {
     await expect(
-      execFileAsync(resolve("node_modules/.bin/tsx"), [
+      execFileAsync(process.execPath, [
+        "--import",
+        pathToFileURL(resolve("node_modules/tsx/dist/loader.mjs")).href,
         resolve("src/cli.ts"),
         "mcp",
         "serve",
@@ -112,7 +126,14 @@ describe("integração com agentes", () => {
     const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
 
     expect(instaladas).toHaveLength(SKILL_NAMES.length);
-    expect(instaladas.every((caminho) => caminho.includes(".agents/skills/"))).toBe(true);
+    expect(
+      instaladas.every((caminho) =>
+        caminho.includes(
+          join(".agents", "skills") +
+            (process.platform === "win32" ? "\\" : "/"),
+        ),
+      ),
+    ).toBe(true);
     const chamada = await readFile(fake.log, "utf8");
     expect(chamada).toContain("add promovaweb/clickupfy");
     expect(chamada).toContain("--agent codex");
@@ -142,10 +163,17 @@ describe("integração com agentes", () => {
   it("usa npx skills quando não há injeção de comando", async () => {
     const pasta = await mkdtemp(join(tmpdir(), "clickupfy-agent-npx-"));
     const fake = await criarSkillsFake(pasta);
-    const paths = [pasta, process.env.PATH].filter(Boolean).join(":");
+    const paths = [pasta, process.env.PATH].filter(Boolean).join(delimiter);
 
     const instaladas = await instalarSkills({
-      skillsCli: { cwd: pasta, env: { SKILLS_FAKE_LOG: fake.skillsCli.env?.SKILLS_FAKE_LOG, SKILLS_FAKE_HOME: pasta, PATH: paths } },
+      skillsCli: {
+        cwd: pasta,
+        env: {
+          SKILLS_FAKE_LOG: fake.skillsCli.env?.SKILLS_FAKE_LOG,
+          SKILLS_FAKE_HOME: pasta,
+          PATH: paths,
+        },
+      },
     });
 
     expect(instaladas).toHaveLength(SKILL_NAMES.length);
@@ -181,11 +209,18 @@ describe("integração com agentes", () => {
 
     const codex = parseToml(await readFile(codexPath, "utf8"));
     expect(codex.model).toBe("gpt-5");
-    expect(codex.mcp_servers.github).toEqual({
+    expect(
+      (codex.mcp_servers as Record<string, { command: string; args: string[] }>)
+        .github,
+    ).toEqual({
       command: "github-mcp",
       args: ["--stdio"],
     });
-    expect(codex.mcp_servers["promovaweb-clickupfy"]).toEqual({
+    expect(
+      (
+        codex.mcp_servers as Record<string, { command: string; args: string[] }>
+      )["promovaweb-clickupfy"],
+    ).toEqual({
       command: "clickupfy",
       args: [
         "mcp",
@@ -230,8 +265,10 @@ describe("integração com agentes", () => {
     );
 
     await execFileAsync(
-      resolve("node_modules/.bin/tsx"),
+      process.execPath,
       [
+        "--import",
+        pathToFileURL(resolve("node_modules/tsx/dist/loader.mjs")).href,
         resolve("src/cli.ts"),
         "agent",
         "install",
@@ -250,7 +287,7 @@ describe("integração com agentes", () => {
           ...process.env,
           PROMOVAWEB_CLICKUPFY_CONFIG: configPath,
           ...fake.skillsCli.env,
-          PATH: [pasta, process.env.PATH].filter(Boolean).join(":"),
+          PATH: [pasta, process.env.PATH].filter(Boolean).join(delimiter),
         },
       },
     );
@@ -271,7 +308,11 @@ describe("integração com agentes", () => {
       "--list",
       "list-1",
     ]);
-    expect(codex.mcp_servers["promovaweb-clickupfy"].args).toEqual([
+    expect(
+      (
+        codex.mcp_servers as Record<string, { command: string; args: string[] }>
+      )["promovaweb-clickupfy"]!.args,
+    ).toEqual([
       "mcp",
       "serve",
       "--account",

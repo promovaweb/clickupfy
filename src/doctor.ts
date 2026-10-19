@@ -2,6 +2,7 @@
  * Diagnóstico local da configuração global e dos arquivos MCP do projeto.
  */
 
+import { removerBom } from "./arquivos.js";
 import { readFile, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parse as parseToml } from "smol-toml";
@@ -76,7 +77,9 @@ async function verificarSkills(
   let global: SkillGerenciada[];
   try {
     [projeto, global] = await Promise.all([
-      listarSkillsGerenciadas({ skillsCli: { ...skillsCli, cwd: diretorioProjeto } }),
+      listarSkillsGerenciadas({
+        skillsCli: { ...skillsCli, cwd: diretorioProjeto },
+      }),
       listarSkillsGerenciadas({
         global: true,
         ...(skillsCli ? { skillsCli } : {}),
@@ -134,9 +137,14 @@ async function verificarIdiomaSkill(
   skill: SkillGerenciada,
   checks: VerificacaoDoctor[],
 ): Promise<void> {
-  const arquivos = [join(skill.path, "SKILL.md"), join(skill.path, "agents", "openai.yaml")];
+  const arquivos = [
+    join(skill.path, "SKILL.md"),
+    join(skill.path, "agents", "openai.yaml"),
+  ];
   try {
-    const conteudos = await Promise.all(arquivos.map((caminho) => readFile(caminho, "utf8")));
+    const conteudos = await Promise.all(
+      arquivos.map((caminho) => readFile(caminho, "utf8")),
+    );
     const ptBr = conteudos.every(skillEstaEmPtBr);
     checks.push({
       id: `skill-language-${skill.name}`,
@@ -170,8 +178,11 @@ export function skillEstaEmPtBr(conteudo: string): boolean {
     " a ",
     " uma ",
   ];
-  const ocorrencias = marcadores.filter((marcador) => conteudo.toLowerCase().includes(marcador));
-  const padroesIngleses = /^(use the|when you|this skill|install the|manage the)\b/im;
+  const ocorrencias = marcadores.filter((marcador) =>
+    conteudo.toLowerCase().includes(marcador),
+  );
+  const padroesIngleses =
+    /^(use the|when you|this skill|install the|manage the)\b/im;
   return ocorrencias.length >= 3 && !padroesIngleses.test(conteudo);
 }
 
@@ -196,7 +207,8 @@ async function verificarArquivoGlobal(
     checks.push({
       id: "config-directory",
       estado: "error",
-      mensagem: "O diretório da configuração não existe. Execute `clickupfy install`.",
+      mensagem:
+        "O diretório da configuração não existe. Execute `clickupfy install`.",
       caminho: diretorio,
     });
   } else if (!informacaoDiretorio.isDirectory()) {
@@ -209,11 +221,18 @@ async function verificarArquivoGlobal(
   } else {
     checks.push({
       id: "config-directory",
-      estado: (informacaoDiretorio.mode & 0o777) === 0o700 ? "ok" : "error",
+      estado:
+        process.platform === "win32"
+          ? "skipped"
+          : (informacaoDiretorio.mode & 0o777) === 0o700
+            ? "ok"
+            : "error",
       mensagem:
-        (informacaoDiretorio.mode & 0o777) === 0o700
-          ? "O diretório da configuração usa permissão 0700."
-          : "O diretório da configuração precisa usar permissão 0700.",
+        process.platform === "win32"
+          ? "Permissão POSIX 0700 não se aplica ao Windows; ACLs não foram verificadas."
+          : (informacaoDiretorio.mode & 0o777) === 0o700
+            ? "O diretório da configuração usa permissão 0700."
+            : "O diretório da configuração precisa usar permissão 0700.",
       caminho: diretorio,
     });
   }
@@ -242,11 +261,18 @@ async function verificarArquivoGlobal(
   const permissaoArquivo = informacaoArquivo.mode & 0o777;
   checks.push({
     id: "config-permissions",
-    estado: permissaoArquivo === 0o600 ? "ok" : "error",
+    estado:
+      process.platform === "win32"
+        ? "skipped"
+        : permissaoArquivo === 0o600
+          ? "ok"
+          : "error",
     mensagem:
-      permissaoArquivo === 0o600
-        ? "O arquivo de configuração usa permissão 0600."
-        : "O arquivo de configuração precisa usar permissão 0600.",
+      process.platform === "win32"
+        ? "Permissão POSIX 0600 não se aplica ao Windows; ACLs não foram verificadas."
+        : permissaoArquivo === 0o600
+          ? "O arquivo de configuração usa permissão 0600."
+          : "O arquivo de configuração precisa usar permissão 0600.",
     caminho,
   });
 
@@ -272,7 +298,7 @@ async function verificarArquivoGlobal(
 
   let valor: unknown;
   try {
-    valor = JSON.parse(conteudo);
+    valor = JSON.parse(removerBom(conteudo));
   } catch {
     checks.push({
       id: "config-json",
@@ -288,7 +314,8 @@ async function verificarArquivoGlobal(
     checks.push({
       id: "config-schema",
       estado: "error",
-      mensagem: "O JSON não corresponde ao schema de configuração do ClickUpfy.",
+      mensagem:
+        "O JSON não corresponde ao schema de configuração do ClickUpfy.",
       caminho,
     });
     return undefined;
@@ -338,7 +365,7 @@ async function verificarArquivoMcp(
   if (conteudo === undefined) return;
 
   try {
-    const valor = JSON.parse(conteudo) as Record<string, unknown>;
+    const valor = JSON.parse(removerBom(conteudo)) as Record<string, unknown>;
     const servidores = valor.mcpServers;
     const servidor =
       servidores && typeof servidores === "object" && !Array.isArray(servidores)

@@ -112,3 +112,33 @@ que os assets foram empacotados junto ao CLI.
 
 Ainda não execute comandos remotos. Primeiro
 [configure um perfil](configuracao.md).
+
+## Windows: PATH e PowerShell
+
+No Windows, `npm prefix --global` informa o diretório que contém
+`clickupfy.cmd`. Inclua esse diretório no PATH do seu usuário e abra outro
+terminal. Para o standalone, extraia `clickupfy.exe` para uma pasta própria,
+adicione essa pasta ao PATH em Variáveis de Ambiente e abra outro terminal.
+
+Se o PowerShell impedir a execução de `npm.ps1`, use `npm.cmd` e
+`clickupfy.cmd` explicitamente, ou execute pelo Prompt de Comando. Isso evita
+alterar a política de execução da máquina.
+
+Para capturar saída JSON com acentos, prefira PowerShell 7 ou redirecionamento
+pelo `cmd.exe`. No PowerShell 5.1, configure UTF-8 na sessão antes de capturar:
+
+```powershell
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+clickupfy.cmd task list --list 30 --json | ConvertFrom-Json
+```
+
+O ClickUpfy emite UTF-8. Alterar a codepage dentro do processo filho não corrige
+a leitura feita pelo PowerShell pai.
+
+As permissões `0700`/`0600` são verificadas apenas em Linux e macOS. No Windows,
+o doctor marca essas verificações como não aplicáveis; as ACLs NTFS precisam
+ser conferidas separadamente. Arquivos JSON com BOM UTF-8 são aceitos.
+
+Se houver erro de escrita, feche programas que mantêm o arquivo aberto e
+confira o atributo somente leitura. As gravações usam substituição atômica e
+removem o temporário mesmo se a substituição falhar.

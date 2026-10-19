@@ -51,8 +51,10 @@ describe("servidor MCP", () => {
     await salvarConfiguracao(config);
 
     const transport = new StdioClientTransport({
-      command: resolve("node_modules/.bin/tsx"),
+      command: process.execPath,
       args: [
+        "--import",
+        "tsx",
         "src/cli.ts",
         "mcp",
         "serve",
@@ -107,8 +109,10 @@ describe("servidor MCP", () => {
     expect(JSON.stringify(resposta.content)).not.toContain("pk_teste");
 
     const writableTransport = new StdioClientTransport({
-      command: resolve("node_modules/.bin/tsx"),
+      command: process.execPath,
       args: [
+        "--import",
+        "tsx",
         "src/cli.ts",
         "mcp",
         "serve",
@@ -122,7 +126,10 @@ describe("servidor MCP", () => {
       } as Record<string, string>,
       stderr: "pipe",
     });
-    const writableClient = new Client({ name: "teste-write", version: "1.0.0" });
+    const writableClient = new Client({
+      name: "teste-write",
+      version: "1.0.0",
+    });
     clientes.push(writableClient);
     await writableClient.connect(writableTransport);
 
@@ -163,7 +170,9 @@ describe("servidor MCP", () => {
       response.setHeader("Content-Type", "application/json");
       if (request.url?.startsWith("/api/v2/list/list-project/task")) {
         response.end(
-          JSON.stringify({ tasks: [{ id: "task-1", name: "Implementar API" }] }),
+          JSON.stringify({
+            tasks: [{ id: "task-1", name: "Implementar API" }],
+          }),
         );
         return;
       }
@@ -182,8 +191,7 @@ describe("servidor MCP", () => {
       }
       if (
         request.method === "PUT" &&
-        request.url ===
-          "/api/v2/checklist/check-1/checklist_item/check-item-1"
+        request.url === "/api/v2/checklist/check-1/checklist_item/check-item-1"
       ) {
         checklistResolvido = true;
         response.end("{}");
@@ -233,8 +241,10 @@ describe("servidor MCP", () => {
     }
 
     const transport = new StdioClientTransport({
-      command: resolve("node_modules/.bin/tsx"),
+      command: process.execPath,
       args: [
+        "--import",
+        "tsx",
         "src/cli.ts",
         "mcp",
         "serve",
@@ -308,18 +318,18 @@ describe("servidor MCP", () => {
       "checklist:check-1:check-item-1",
     );
     expect(
-      checklist.content
+      (checklist.content as Array<{ text?: string }>)
         .map((bloco) => ("text" in bloco ? bloco.text : ""))
         .join(""),
     ).toContain('"done": true');
     expect(
-      markdown.content
+      (markdown.content as Array<{ text?: string }>)
         .map((bloco) => ("text" in bloco ? bloco.text : ""))
         .join(""),
     ).toContain("- [x] **Checklist · Entrega:** Validar endpoint");
-    expect(requisicoes.some((url) => url.includes("/list/list-project/task"))).toBe(
-      true,
-    );
+    expect(
+      requisicoes.some((url) => url.includes("/list/list-project/task")),
+    ).toBe(true);
     const foraDoEscopo = await client.callTool({
       name: "clickupfy_tasks_list",
       arguments: { listId: "outra-list" },
@@ -348,8 +358,8 @@ describe("servidor MCP", () => {
     await salvarConfiguracao(config);
 
     const requisicoes: Array<{
-      method?: string;
-      url?: string;
+      method?: string | undefined;
+      url?: string | undefined;
       body?: unknown;
     }> = [];
     const servidor = createServer(async (request, response) => {
@@ -374,8 +384,10 @@ describe("servidor MCP", () => {
     }
 
     const transport = new StdioClientTransport({
-      command: resolve("node_modules/.bin/tsx"),
+      command: process.execPath,
       args: [
+        "--import",
+        "tsx",
         "src/cli.ts",
         "mcp",
         "serve",
@@ -479,8 +491,8 @@ describe("servidor MCP", () => {
     await salvarConfiguracao(config);
 
     const requisicoes: Array<{
-      method?: string;
-      url?: string;
+      method?: string | undefined;
+      url?: string | undefined;
       body?: unknown;
     }> = [];
     const servidor = createServer(async (request, response) => {
@@ -493,7 +505,10 @@ describe("servidor MCP", () => {
         ...(texto ? { body: JSON.parse(texto) } : {}),
       });
       response.setHeader("Content-Type", "application/json");
-      if (request.method === "GET" && request.url?.startsWith("/api/v3/workspaces/123/docs")) {
+      if (
+        request.method === "GET" &&
+        request.url?.startsWith("/api/v3/workspaces/123/docs")
+      ) {
         response.end(
           JSON.stringify({
             docs: [{ id: "doc-1", name: "Runbook" }],
@@ -515,8 +530,18 @@ describe("servidor MCP", () => {
     const baseUrl = `http://127.0.0.1:${endereco.port}`;
 
     const transport = new StdioClientTransport({
-      command: resolve("node_modules/.bin/tsx"),
-      args: ["src/cli.ts", "mcp", "serve", "--account", "dev", "--list", "list-project"],
+      command: process.execPath,
+      args: [
+        "--import",
+        "tsx",
+        "src/cli.ts",
+        "mcp",
+        "serve",
+        "--account",
+        "dev",
+        "--list",
+        "list-project",
+      ],
       cwd: resolve("."),
       env: {
         ...process.env,
@@ -540,7 +565,11 @@ describe("servidor MCP", () => {
     });
     await client.callTool({
       name: "clickupfy_doc_page_create",
-      arguments: { docId: "doc-1", name: "Introdução", content: "# Introdução" },
+      arguments: {
+        docId: "doc-1",
+        name: "Introdução",
+        content: "# Introdução",
+      },
     });
     await client.callTool({
       name: "clickupfy_doc_page_update",
@@ -554,7 +583,10 @@ describe("servidor MCP", () => {
 
     expect(JSON.stringify(docs.content)).toContain("Runbook");
     expect(requisicoes).toEqual([
-      { method: "GET", url: expect.stringContaining("/api/v3/workspaces/123/docs") },
+      {
+        method: "GET",
+        url: expect.stringContaining("/api/v3/workspaces/123/docs"),
+      },
       {
         method: "POST",
         url: "/api/v3/workspaces/123/docs",
