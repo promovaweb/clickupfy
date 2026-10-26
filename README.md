@@ -29,15 +29,15 @@ Versão, formatos e regras de atualização ficam em
 
 ## Configure o MCP do projeto
 
-Após cadastrar uma conta com `clickupfy install`, execute no projeto:
+Após cadastrar um perfil com `clickupfy install`, execute no projeto:
 
 ```bash
 clickupfy mcp setup
 ```
 
-O assistente permite selecionar conta, espaço, lista e clientes pelo terminal.
+O assistente permite selecionar perfil, espaço, lista e clientes pelo terminal.
 Defina um nome para cada MCP; repita o comando com outro nome para acrescentar
-outra conta ou lista ao mesmo projeto. Os clientes disponíveis são Claude Code,
+outro perfil ou lista ao mesmo projeto. Os clientes disponíveis são Claude Code,
 Codex, Gemini CLI e OpenCode. As API keys permanecem no cadastro pessoal.
 Veja [parâmetros e exemplos](docs/user/referencia-cli-docs-agentes.md#clickupfy-mcp-setup).
 
@@ -288,6 +288,51 @@ Use `clickupfy list list --space <space-id>` para uma list que não pertence a
 um folder. A opção global `--json` imprime a resposta completa da API; sem ela,
 listas e tarefas usam uma tabela menor.
 
+## API pública completa
+
+O catálogo inclui 173 operações das especificações oficiais: 138 da v2 e 35
+da v3. Cada endpoint tem um comando `clickupfy api v2-...` ou `v3-...` e uma
+ferramenta MCP `clickupfy_api_...`, com parâmetros de caminho, query e corpo.
+Os comandos existentes continuam disponíveis. Consulte o
+[guia da API](docs/api/README.md) e a [referência de endpoints](docs/api/REFERENCE.md).
+
+```bash
+clickupfy api list
+clickupfy api describe v2-get-space-tags
+clickupfy api v2-get-space-tags --path '{"space_id":"123"}'
+clickupfy api v3-search-docs-public --path '{"workspace_id":"123"}'
+```
+
+Os arquivos oficiais ficam em `api/`, e o catálogo distribuído fica em
+`src/api/catalog.json`. `npm run api:generate` gera o catálogo e o manual;
+`npm run api:check` confere os arquivos locais; `npm run api:upstream:check`
+compara com a origem sem gravar; `npm run api:update` baixa as especificações
+e regenera os arquivos. A suíte `npm run validar` verifica a cobertura.
+
+Uploads usam multipart, e OAuth aceita JSON ou formulário. O MCP em modo
+somente leitura omite ferramentas mutáveis. As chamadas DELETE do catálogo
+exigem `--yes` no CLI ou `confirm: true` no MCP. A cobertura é comprovada por
+testes simulados; o acesso real depende das permissões e do plano do ClickUp.
+
+## Gestão de tags
+
+Use `tag` para gerenciar nomes e cores no Space e `task add-tag` ou
+`task remove-tag` para alterar as associações de uma tarefa:
+
+```bash
+clickupfy tag list --space 123
+clickupfy tag create bug --space 123 --foreground "#ffffff" --background "#cc0000"
+clickupfy tag update bug --space 123 --name defeito
+clickupfy task add-tag task-1 defeito
+clickupfy task remove-tag task-1 defeito
+clickupfy tag delete defeito --space 123 --yes
+```
+
+No MCP, use `clickupfy_tags_list`, `clickupfy_tag_create`,
+`clickupfy_tag_update`, `clickupfy_tag_delete`, `clickupfy_task_add_tag` e
+`clickupfy_task_remove_tag`. A edição preserva nome e cores omitidos. Consulte
+os parâmetros na [referência de tarefas](docs/user/referencia-cli-tarefas.md#gestão-do-catálogo-de-tags).
+
 ## Tarefas de desenvolvimento
 
 ```bash
@@ -312,6 +357,8 @@ clickupfy task update <task-id> --status "em andamento"
 clickupfy task update <task-id> --priority 2
 clickupfy task update <task-id> --start-date 2026-08-01
 clickupfy task update <task-id> --due-date 2026-08-05
+clickupfy task add-tag <task-id> "em revisão"
+clickupfy task add-tag DEV-42 backend --custom-task-id
 
 clickupfy comment list --task <task-id>
 clickupfy comment create \

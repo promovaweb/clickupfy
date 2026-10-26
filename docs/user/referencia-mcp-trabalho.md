@@ -803,3 +803,224 @@ Exemplos:
 ```json
 {"account":"suporte"}
 ```
+
+## Tags de tarefas
+
+### `clickupfy_task_add_tag`
+
+Adiciona uma tag a uma tarefa ou subtarefa existente, preservando as outras
+tags. A ferramenta está disponível somente quando o servidor permite escrita.
+Ela usa a API key do perfil selecionado e respeita o perfil e o workspace
+fixados pelo MCP do projeto.
+
+| Campo | Tipo | Obrigatório | Padrão e uso |
+| --- | --- | --- | --- |
+| `taskId` | string | sim | ID interno da tarefa; não aceita texto vazio. |
+| `tagName` | string | sim | Nome da tag; não aceita texto vazio ou composto apenas por espaços. |
+| `customTaskId` | boolean | não | `false`; habilite para resolver o ID no workspace do perfil. |
+| `account` | string | não | Perfil ativo ou fixado no projeto. |
+
+Cada chamada associa um nome e retorna `added: true`, `taskId` e `tagName`
+quando a API aceita a operação. A permissão para alterar a tarefa depende da
+API key. Recusas do ClickUp retornam `isError: true`; argumentos inválidos são
+recusados pelo schema. Em `--read-only`, a ferramenta não é registrada.
+A ferramenta não gerencia as cores ou o catálogo de tags do Space.
+
+Exemplos:
+
+Associe uma tag pelo ID interno:
+
+```json
+{"taskId":"task-1","tagName":"bug"}
+```
+
+Use um nome com espaços e acentos:
+
+```json
+{"taskId":"task-1","tagName":"em revisão"}
+```
+
+Resolva um ID personalizado no workspace configurado:
+
+```json
+{"taskId":"DEV-42","tagName":"backend","customTaskId":true}
+```
+
+Selecione outro perfil quando o servidor permitir:
+
+```json
+{"account":"produto","taskId":"task-2","tagName":"documentação"}
+```
+
+Associe uma tag a uma subtarefa pelo ID interno:
+
+```json
+{"taskId":"sub-1","tagName":"QA / revisão","customTaskId":false}
+```
+
+Depois da escrita, consulte `clickupfy_task_get` com `raw: true` e o ID interno
+para conferir o campo `tags`. IDs personalizados usam `custom_task_ids=true`
+e `team_id` no endpoint [Add Tag To Task](https://developer.clickup.com/reference/addtagtotask).
+
+## Gestão do catálogo de tags
+
+As operações usam o perfil ativo ou `--account` no CLI e `account` no MCP.
+A API key precisa ter acesso ao Space ou à tarefa. Falhas do ClickUp são
+propagadas; no MCP, retornam `isError: true`. Ferramentas de escrita não ficam
+disponíveis em modo somente leitura. O MCP aceita `spaceId` ou usa o Space
+fixado na configuração; o CLI exige `--space` nos comandos `tag`.
+
+### `clickupfy_tags_list`
+
+Lista nomes e cores das tags de um Space. A saída JSON é um array; o terminal mostra uma tabela. A consulta não altera tags.
+
+`spaceId` é string, opcional quando o MCP fixa o Space. No CLI, `--space` é obrigatório.
+
+Exemplos:
+
+```json
+{"spaceId":"123"}
+```
+
+```json
+{"spaceId":"456"}
+```
+
+```json
+{"spaceId":"123","account":"dev"}
+```
+
+```json
+{"spaceId":"456","account":"produto"}
+```
+
+```json
+{}
+```
+
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
+ou `task get <task-id> --raw` para conferir as associações da tarefa.
+
+### `clickupfy_tag_create`
+
+Cria uma tag no catálogo do Space com nome e cores. Retorna `created`, `spaceId` e `name`. A associação a tarefas é feita separadamente com `task add-tag`.
+
+`name`, `foreground` e `background` são strings obrigatórias. As cores usam `#RRGGBB`. No CLI, use `--foreground` e `--background`. Nome vazio e cores inválidas são recusados.
+
+Exemplos:
+
+```json
+{"spaceId":"123","name":"bug","foreground":"#ffffff","background":"#112233"}
+```
+
+```json
+{"spaceId":"123","name":"em revisão","foreground":"#ffffff","background":"#336699"}
+```
+
+```json
+{"spaceId":"123","name":"backend","foreground":"#ffffff","background":"#112233"}
+```
+
+```json
+{"spaceId":"123","name":"documentação","foreground":"#ffffff","background":"#336699"}
+```
+
+```json
+{"spaceId":"123","name":"QA / revisão","foreground":"#ffffff","background":"#112233"}
+```
+
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
+ou `task get <task-id> --raw` para conferir as associações da tarefa.
+
+### `clickupfy_tag_update`
+
+Renomeia a tag ou altera suas cores no Space. Consulta a definição atual e preserva os campos omitidos. Retorna `updated`, `spaceId` e `name`. Tag ausente e atualização sem campos são recusadas.
+
+`tagName` é o nome atual obrigatório; no CLI, é o argumento `<tag>`. `name`, `foreground` e `background` são strings opcionais, com pelo menos um campo informado. No CLI, use `--name`, `--foreground` e `--background`.
+
+Exemplos:
+
+```json
+{"spaceId":"123","tagName":"bug","name":"defeito"}
+```
+
+```json
+{"spaceId":"123","tagName":"bug","foreground":"#ffffff"}
+```
+
+```json
+{"spaceId":"123","tagName":"bug","background":"#cc0000"}
+```
+
+```json
+{"spaceId":"123","tagName":"em revisão","name":"revisada","background":"#00aa00"}
+```
+
+```json
+{"spaceId":"123","tagName":"backend","foreground":"#ffffff","background":"#112233"}
+```
+
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
+ou `task get <task-id> --raw` para conferir as associações da tarefa.
+
+### `clickupfy_tag_delete`
+
+Exclui a tag do Space. Consulte as tarefas que a utilizam antes de executar essa alteração. Retorna `deleted`, `spaceId` e `name`. Para remover somente a associação a uma tarefa, use `task remove-tag`.
+
+`tagName` é string obrigatória. No MCP, `confirm: true` é obrigatório. No CLI, `--yes` dispensa o prompt; sem terminal interativo, a confirmação precisa ser explícita. O cliente consulta a definição da tag para enviar o corpo DELETE exigido pela API.
+
+Exemplos:
+
+```json
+{"spaceId":"123","tagName":"bug","confirm":true}
+```
+
+```json
+{"spaceId":"123","tagName":"em revisão","confirm":true}
+```
+
+```json
+{"spaceId":"123","tagName":"backend","confirm":true}
+```
+
+```json
+{"spaceId":"123","tagName":"documentação","confirm":true}
+```
+
+```json
+{"spaceId":"123","tagName":"QA / revisão","confirm":true}
+```
+
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
+ou `task get <task-id> --raw` para conferir as associações da tarefa.
+
+### `clickupfy_task_remove_tag`
+
+Remove uma tag da tarefa e mantém a definição no Space. Retorna `removed`, `taskId` e `tagName`. As outras associações da tarefa permanecem intactas.
+
+`taskId` e `tagName` são strings obrigatórias. `customTaskId` é boolean opcional, desativado por padrão; no CLI, use `--custom-task-id`. IDs personalizados usam o workspace do perfil.
+
+Exemplos:
+
+```json
+{"taskId":"task-1","tagName":"bug"}
+```
+
+```json
+{"taskId":"task-1","tagName":"em revisão"}
+```
+
+```json
+{"taskId":"DEV-42","tagName":"backend","customTaskId":true}
+```
+
+```json
+{"account":"produto","taskId":"task-2","tagName":"documentação"}
+```
+
+```json
+{"taskId":"sub-1","tagName":"QA / revisão"}
+```
+
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
+ou `task get <task-id> --raw` para conferir as associações da tarefa.

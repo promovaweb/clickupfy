@@ -2,6 +2,8 @@
  * Servidor MCP stdio com ferramentas voltadas ao fluxo de desenvolvimento.
  */
 
+import { registerTagMcp } from "./tags-mcp.js";
+import { registerApiMcp } from "./api/mcp.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -630,6 +632,8 @@ export function createMcpServer(options: McpServerOptions): McpServer {
     registerWriteTools(server, options);
   }
 
+  registerApiMcp(server, options, contexto);
+  registerTagMcp(server, options, contexto);
   return server;
 }
 
@@ -780,6 +784,30 @@ function registerWriteTools(
           taskId,
           atualizacoes,
         );
+      }),
+  );
+
+  server.registerTool(
+    "clickupfy_task_add_tag",
+    {
+      title: "Adicionar tag à tarefa",
+      description: "Adiciona uma tag à tarefa sem substituir as tags existentes.",
+      inputSchema: {
+        ...accountSchema,
+        taskId: z.string().trim().min(1),
+        tagName: z.string().min(1).refine((value) => value.trim().length > 0),
+        customTaskId: z.boolean().optional().describe("Usa ID personalizado no workspace do perfil."),
+      },
+    },
+    ({ account, taskId, tagName, customTaskId }) =>
+      executar(async () => {
+        const ctx = await contexto(account);
+        await ctx.client.adicionarTagTarefa(
+          taskId,
+          tagName,
+          customTaskId ? ctx.account.workspace.id : undefined,
+        );
+        return { added: true, taskId, tagName };
       }),
   );
 

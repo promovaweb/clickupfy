@@ -178,6 +178,9 @@ export class ClickUpClient {
     options: {
       query?: Record<string, QueryValue | QueryValue[]>;
       body?: unknown;
+      rawBody?: BodyInit;
+      headers?: Record<string, string>;
+      authenticated?: boolean;
     } = {},
   ): Promise<T> {
     return this.#executar(this.#baseUrl, method, path, options);
@@ -193,6 +196,9 @@ export class ClickUpClient {
     options: {
       query?: Record<string, QueryValue | QueryValue[]>;
       body?: unknown;
+      rawBody?: BodyInit;
+      headers?: Record<string, string>;
+      authenticated?: boolean;
     } = {},
   ): Promise<T> {
     return this.#executar(this.#baseUrlV3, method, path, options);
@@ -205,6 +211,9 @@ export class ClickUpClient {
     options: {
       query?: Record<string, QueryValue | QueryValue[]>;
       body?: unknown;
+      rawBody?: BodyInit;
+      headers?: Record<string, string>;
+      authenticated?: boolean;
     },
   ): Promise<T> {
     const url = new URL(`${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`);
@@ -221,13 +230,15 @@ export class ClickUpClient {
       resposta = await this.#fetch(url, {
         method,
         headers: {
-          Authorization: this.apiKey,
-          "Content-Type": "application/json",
+          ...(options.authenticated === false ? {} : { Authorization: this.apiKey }),
+          ...(options.rawBody instanceof FormData ? {} : { "Content-Type": "application/json" }),
+          ...options.headers,
         },
-        ...(options.body === undefined
+        ...(options.rawBody !== undefined ? { body: options.rawBody } : options.body === undefined
           ? {}
           : { body: JSON.stringify(options.body) }),
         signal: AbortSignal.timeout(this.#timeoutMs),
+        redirect: "error",
       });
     } catch (error) {
       throw new CliError(
@@ -513,6 +524,29 @@ export class ClickUpClient {
     return this.request<Record<string, never>>(
       "DELETE",
       `/list/${listId}/task/${taskId}`,
+    );
+  }
+
+  /** Adiciona uma tag; workspaceId habilita IDs personalizados no workspace informado. */
+  public async adicionarTagTarefa(
+    taskId: string,
+    tagName: string,
+    workspaceId?: string,
+  ): Promise<Record<string, never>> {
+    if (!taskId.trim() || !tagName.trim() || [taskId, tagName].some(value => value === "." || value === "..")) {
+      throw new CliError("Informe o ID da tarefa e o nome da tag.");
+    }
+    if (workspaceId !== undefined && !workspaceId.trim()) {
+      throw new CliError("Informe o workspace para usar IDs personalizados.");
+    }
+    return this.request<Record<string, never>>(
+      "POST",
+      `/task/${encodeURIComponent(taskId)}/tag/${encodeURIComponent(tagName)}`,
+      {
+        query: workspaceId === undefined
+          ? {}
+          : { custom_task_ids: true, team_id: workspaceId },
+      },
     );
   }
 

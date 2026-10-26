@@ -3,6 +3,8 @@
  * Entrada do ClickUpfy da Promovaweb e definição de seus comandos públicos.
  */
 
+import { registerTagCli } from "./tags-cli.js";
+import { registerApiCli } from "./api/cli.js";
 import { confirm } from "@inquirer/prompts";
 import { Command, Option } from "commander";
 import packageJson from "../package.json" with { type: "json" };
@@ -639,6 +641,25 @@ task
   });
 
 task
+  .command("add-tag")
+  .argument("<task-id>", "ID da tarefa")
+  .argument("<tag>", "nome da tag")
+  .option("--custom-task-id", "usa ID personalizado no workspace do perfil")
+  .description("adiciona uma tag a uma tarefa")
+  .action(async function (this: Command, taskId: string, tagName: string, options) {
+    const globals = this.optsWithGlobals() as GlobalOptions;
+    const ctx = await criarContexto(globals.account);
+    await ctx.client.adicionarTagTarefa(
+      taskId,
+      tagName,
+      options.customTaskId ? ctx.account.workspace.id : undefined,
+    );
+    globals.json
+      ? imprimirJson({ added: true, taskId, tagName })
+      : process.stdout.write(`Tag "${tagName}" adicionada à tarefa ${taskId}.\n`);
+  });
+
+task
   .command("delete")
   .argument("<task-id>")
   .option("--yes", "confirma a exclusão sem prompt")
@@ -1144,6 +1165,9 @@ agent
     process.stdout.write(`MCP: ${mcpPath}\n`);
     process.stdout.write(`Codex: ${codexPath}\n`);
   });
+
+registerApiCli(program);
+registerTagCli(program);
 
 /** Executa o programa e converte falhas conhecidas em mensagens curtas. */
 export async function main(argv = process.argv): Promise<void> {

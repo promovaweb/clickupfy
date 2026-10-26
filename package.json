@@ -32,7 +32,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tests.json --noEmit",
-    "validar": "npm run typecheck && npm run test && npm run build && npm run release:check && npm run changelog:check"
+    "validar": "npm run api:check && npm run typecheck && npm run test && npm run build && npm run release:check && npm run changelog:check",
+    "api:generate": "node scripts/generate-api.mjs && node --import tsx scripts/generate-api-docs.mjs",
+    "api:check": "node scripts/generate-api.mjs --check && node --import tsx scripts/generate-api-docs.mjs --check",
+    "api:update": "node scripts/generate-api.mjs --fetch && node --import tsx scripts/generate-api-docs.mjs",
+    "api:upstream:check": "node scripts/generate-api.mjs --fetch --check"
   },
   "engines": {
     "node": ">=22.12.0"

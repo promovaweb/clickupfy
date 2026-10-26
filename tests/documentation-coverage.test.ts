@@ -39,6 +39,12 @@ const cliCommands = [
   "clickupfy task search",
   "clickupfy task create",
   "clickupfy task update",
+  "clickupfy task add-tag",
+  "clickupfy task remove-tag",
+  "clickupfy tag list",
+  "clickupfy tag create",
+  "clickupfy tag update",
+  "clickupfy tag delete",
   "clickupfy task delete",
   "clickupfy checklist create",
   "clickupfy checklist item-create",
@@ -111,7 +117,7 @@ describe("cobertura do manual de referência", () => {
   it("documenta cada ferramenta registrada no servidor MCP", async () => {
     const [referencias, mcp] = await Promise.all([
       lerReferencias(),
-      readFile(join(root, "src", "mcp.ts"), "utf8"),
+      Promise.all(["mcp.ts", "tags-mcp.ts"].map(file => readFile(join(root, "src", file), "utf8"))).then(parts => parts.join("\n")),
     ]);
     const ferramentas = [
       ...new Set(

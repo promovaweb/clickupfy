@@ -94,6 +94,7 @@ describe("servidor MCP", () => {
     expect(names).not.toContain("clickupfy_doc_page_update");
     expect(names).not.toContain("clickupfy_task_create");
     expect(names).not.toContain("clickupfy_task_delete");
+    expect(names).not.toContain("clickupfy_task_add_tag");
     expect(names).not.toContain("clickupfy_sprint_add_task");
     expect(names).not.toContain("clickupfy_sprint_remove_task");
     expect(names).not.toContain("clickupfy_sprint_set_points");
@@ -137,6 +138,7 @@ describe("servidor MCP", () => {
       (tool) => tool.name,
     );
     expect(writableNames).toContain("clickupfy_sprint_add_task");
+    expect(writableNames).toContain("clickupfy_task_add_tag");
     expect(writableNames).toContain("clickupfy_sprint_remove_task");
     expect(writableNames).toContain("clickupfy_sprint_set_points");
     expect(writableNames).toContain("clickupfy_checklist_create");
