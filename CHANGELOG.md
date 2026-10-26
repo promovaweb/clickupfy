@@ -4,6 +4,12 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico e usa commits convencionais para preparar
 as próximas versões.
 
+## [0.9.0](https://github.com/promovaweb/clickupfy/compare/v0.8.1...v0.9.0) (2026-10-26)
+
+### Funcionalidades
+
+- **api:** adiciona API, comandos de tags e documentação gerada ([e09220c](https://github.com/promovaweb/clickupfy/commit/e09220c91395ad5c2c75a7600cde84341a2b7c08))
+
 ## [0.8.1](https://github.com/promovaweb/clickupfy/compare/v0.8.0...v0.8.1) (2026-10-19)
 
 ### Correções
