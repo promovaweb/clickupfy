@@ -1,0 +1,102 @@
+{
+  "docs/user/README.md": {
+    "autoridade": "interfaces públicas do CLI, TUI, servidor MCP e skills distribuídas",
+    "escopo": "percurso completo do usuário do ClickUpfy",
+    "natureza": "normativo"
+  },
+  "docs/user/agentes.md": {
+    "autoridade": "assets embutidos no binário e contrato de agent install",
+    "escopo": "instalação e responsabilidades das skills distribuídas",
+    "natureza": "normativo"
+  },
+  "docs/user/cli.md": {
+    "autoridade": "registry de commands em src/cli/commands.ts",
+    "escopo": "grupos públicos, opções globais, formatos de saída e exit codes",
+    "natureza": "referência"
+  },
+  "docs/user/conceitos.md": {
+    "autoridade": "README, CLI, TUI, servidor MCP e cliente HTTP do ClickUpfy",
+    "escopo": "conceitos, responsabilidades e limites do produto",
+    "natureza": "normativo"
+  },
+  "docs/user/configuracao.md": {
+    "autoridade": "setup, schema de configuração, cofre e resolução de perfis",
+    "escopo": "autenticação, perfis e armazenamento local",
+    "natureza": "normativo"
+  },
+  "docs/user/hierarquia.md": {
+    "autoridade": "comandos workspace, space, folder, list e task",
+    "escopo": "descoberta de IDs e navegação entre recursos do ClickUp",
+    "natureza": "normativo"
+  },
+  "docs/user/instalacao.md": {
+    "autoridade": "pacote npm, GitHub Release e comandos de manutenção",
+    "escopo": "instalação do binário para uso e desenvolvimento",
+    "natureza": "normativo"
+  },
+  "docs/user/mcp.md": {
+    "autoridade": "implementação do servidor MCP e schemas das ferramentas",
+    "escopo": "configuração, isolamento e uso do servidor MCP",
+    "natureza": "normativo"
+  },
+  "docs/user/primeiro-projeto.md": {
+    "autoridade": "agent install, mcp setup, escopo MCP e ferramentas públicas",
+    "escopo": "primeira integração de um repositório com ClickUpfy e MCP",
+    "natureza": "normativo"
+  },
+  "docs/user/referencia-cli-docs-agentes.md": {
+    "autoridade": "`src/operations/cli.ts`, `src/clickup/docs.ts`, `src/agent/skills.ts`, `src/mcp/setup.ts` e a ajuda da versão instalada",
+    "escopo": "comandos de Docs do ClickUp, skills distribuídas, inicialização de projeto e servidor MCP",
+    "natureza": "referência"
+  },
+  "docs/user/referencia-cli-perfis-hierarquia.md": {
+    "autoridade": "`src/cli/commands/setup.ts`, `src/cli/commands/account.ts`, `src/cli/commands/workspace.ts`, `src/clickup/accounts.ts`, `src/clickup/hierarchy.ts` e a ajuda da versão instalada",
+    "escopo": "comandos globais, perfis locais, autenticação e descoberta da hierarquia do ClickUp",
+    "natureza": "referência"
+  },
+  "docs/user/referencia-cli-sprints.md": {
+    "autoridade": "`src/operations/cli.ts`, `src/clickup/sprints.ts` e os endpoints públicos do ClickUp usados pelo ClickUpfy",
+    "escopo": "consulta, relatório, associação de tarefas e Sprint Points no terminal",
+    "natureza": "referência"
+  },
+  "docs/user/referencia-cli-tarefas.md": {
+    "autoridade": "`src/operations/cli.ts`, `src/clickup/tasks.ts`, `src/clickup/checklists.ts`, `src/clickup/comments.ts`, `src/clickup/time.ts`, `src/clickup/tags.ts` e a ajuda da versão instalada",
+    "escopo": "comandos de consulta e alteração de tarefas, checklists, comentários, time tracking e tags",
+    "natureza": "referência"
+  },
+  "docs/user/referencia-mcp-contexto-hierarquia.md": {
+    "autoridade": "`src/operations/mcp.ts`, `src/clickup/accounts.ts`, `src/clickup/hierarchy.ts`, `src/clickup/scope.ts` e os schemas registrados em `src/mcp/server.ts`",
+    "escopo": "ferramentas MCP de identificação do projeto, perfis e navegação na hierarquia do ClickUp",
+    "natureza": "referência"
+  },
+  "docs/user/referencia-mcp-docs-administracao.md": {
+    "autoridade": "`src/operations/mcp.ts`, `src/clickup/docs.ts`, `src/clickup/scope.ts` e os schemas registrados em `src/mcp/server.ts`",
+    "escopo": "ferramentas MCP de Docs do ClickUp, seleção de perfil e seleção de workspace",
+    "natureza": "referência"
+  },
+  "docs/user/referencia-mcp-trabalho.md": {
+    "autoridade": "`src/operations/mcp.ts`, `src/clickup/tasks.ts`, `src/clickup/sprints.ts`, `src/clickup/checklists.ts`, `src/clickup/comments.ts`, `src/clickup/time.ts`, `src/clickup/tags.ts` e os schemas registrados em `src/mcp/server.ts`",
+    "escopo": "ferramentas MCP de trabalho em tarefas, Sprints, checklists, comentários, time tracking e tags",
+    "natureza": "referência"
+  },
+  "docs/user/solucao-de-problemas.md": {
+    "autoridade": "mensagens de erro e contratos públicos do ClickUpfy",
+    "escopo": "diagnóstico de instalação, autenticação, escopo e API",
+    "natureza": "referência"
+  },
+  "docs/user/sprints.md": {
+    "autoridade": "módulo de Sprints e endpoints públicos do ClickUp",
+    "escopo": "consulta e planejamento de Sprints existentes",
+    "natureza": "normativo"
+  },
+  "docs/user/tarefas.md": {
+    "autoridade": "comandos task, checklist e comment e fila execution",
+    "escopo": "ciclo de leitura, criação, atualização e conclusão do trabalho",
+    "natureza": "normativo"
+  },
+  "docs/user/time-tracking.md": {
+    "autoridade": "comandos e ferramentas de time tracking",
+    "escopo": "início, consulta e encerramento de time entries",
+    "natureza": "normativo"
+  }
+}

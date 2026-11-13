@@ -262,3 +262,5 @@ ClickUp localmente: só settings, perfis e credenciais.
 - 2026-11-13: spec 0010 (Integração com agentes e manutenção) closed.
 - 2026-11-13: na Surface, o `data` dos commands das specs 0004 a 0010 está
   descrito em `docs/cli.md`, que o `docs:check` confere com o registry.
+- 2026-11-13: `legacy/` removido; a paridade com o 0.9.0 está nas specs
+  0001 a 0011.

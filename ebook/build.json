@@ -1,25 +1,15 @@
 {
   "schema_version": 1,
-  "version": "1.2.3",
-  "edition": "v1.2.3",
-  "generated_at": "2026-08-20T12:51:53Z",
-  "source_sha256": "7db2882e6355c6a575218d7f00188b63f69996e9e0bd92658f06c86e567aa805",
+  "version": "2.0.0",
+  "edition": "v2.0.0",
+  "generated_at": "2026-11-13T18:11:33Z",
+  "source_sha256": "5eb86fd91075500d3b283c6da5c4cc0bc0e0bf348d43b56830d796374f8a0749",
   "sources": [
-    ".ebook/build-ebook.sh",
-    ".ebook/epub.css",
-    ".ebook/external-links.lua",
-    ".ebook/extract-document-metadata.py",
-    ".ebook/metadata.yaml",
-    ".ebook/pdf.css",
-    ".ebook/prune-editions.py",
-    ".ebook/strip-document-metadata.lua",
-    ".ebook/template.html",
     "brand/fonts/fonts.css",
     "brand/fonts/inter-latin.woff2",
     "brand/fonts/manrope-latin.woff2",
     "brand/logo/icon.png",
     "brand/logo/icon.svg",
-    "docs/user/README.md",
     "docs/user/agentes.md",
     "docs/user/cli.md",
     "docs/user/conceitos.md",
@@ -29,6 +19,7 @@
     "docs/user/mcp.md",
     "docs/user/primeiro-projeto.md",
     "docs/user/reading-order.txt",
+    "docs/user/README.md",
     "docs/user/referencia-cli-docs-agentes.md",
     "docs/user/referencia-cli-perfis-hierarquia.md",
     "docs/user/referencia-cli-sprints.md",
@@ -40,32 +31,41 @@
     "docs/user/sprints.md",
     "docs/user/tarefas.md",
     "docs/user/time-tracking.md",
+    ".ebook/build-ebook.sh",
+    ".ebook/epub.css",
+    ".ebook/external-links.lua",
+    ".ebook/extract-document-metadata.py",
+    ".ebook/metadata.yaml",
+    ".ebook/pdf.css",
+    ".ebook/prune-editions.py",
+    ".ebook/strip-document-metadata.lua",
+    ".ebook/template.html",
     "ebook/VERSION"
   ],
   "document_metadata": {
     "docs/user/README.md": {
-      "autoridade": "interfaces públicas do CLI, servidor MCP e skills distribuídas",
+      "autoridade": "interfaces públicas do CLI, TUI, servidor MCP e skills distribuídas",
       "escopo": "percurso completo do usuário do ClickUpfy",
       "natureza": "normativo"
     },
     "docs/user/agentes.md": {
-      "autoridade": "assets empacotados e contrato de agent install",
+      "autoridade": "assets embutidos no binário e contrato de agent install",
       "escopo": "instalação e responsabilidades das skills distribuídas",
       "natureza": "normativo"
     },
     "docs/user/cli.md": {
-      "autoridade": "definições Commander em src/cli.ts",
-      "escopo": "grupos públicos, opções globais e formatos de saída",
+      "autoridade": "registry de commands em src/cli/commands.ts",
+      "escopo": "grupos públicos, opções globais, formatos de saída e exit codes",
       "natureza": "referência"
     },
     "docs/user/conceitos.md": {
-      "autoridade": "README, CLI, servidor MCP e cliente HTTP do ClickUpfy",
+      "autoridade": "README, CLI, TUI, servidor MCP e cliente HTTP do ClickUpfy",
       "escopo": "conceitos, responsabilidades e limites do produto",
       "natureza": "normativo"
     },
     "docs/user/configuracao.md": {
-      "autoridade": "setup, schema de configuração e resolução de accounts",
-      "escopo": "autenticação, accounts e armazenamento local",
+      "autoridade": "setup, schema de configuração, cofre e resolução de perfis",
+      "escopo": "autenticação, perfis e armazenamento local",
       "natureza": "normativo"
     },
     "docs/user/hierarquia.md": {
@@ -74,8 +74,8 @@
       "natureza": "normativo"
     },
     "docs/user/instalacao.md": {
-      "autoridade": "package.json, launcher npm e pipeline de executáveis",
-      "escopo": "instalação do CLI para uso e desenvolvimento",
+      "autoridade": "pacote npm, GitHub Release e comandos de manutenção",
+      "escopo": "instalação do binário para uso e desenvolvimento",
       "natureza": "normativo"
     },
     "docs/user/mcp.md": {
@@ -84,43 +84,43 @@
       "natureza": "normativo"
     },
     "docs/user/primeiro-projeto.md": {
-      "autoridade": "agent install, escopo MCP e ferramentas públicas",
+      "autoridade": "agent install, mcp setup, escopo MCP e ferramentas públicas",
       "escopo": "primeira integração de um repositório com ClickUpfy e MCP",
       "natureza": "normativo"
     },
     "docs/user/referencia-cli-docs-agentes.md": {
-      "autoridade": "`src/cli.ts`, `src/agent-assets.ts`, `src/mcp.ts` e ajuda da versão instalada",
+      "autoridade": "`src/operations/cli.ts`, `src/clickup/docs.ts`, `src/agent/skills.ts`, `src/mcp/setup.ts` e a ajuda da versão instalada",
       "escopo": "comandos de Docs do ClickUp, skills distribuídas, inicialização de projeto e servidor MCP",
       "natureza": "referência"
     },
     "docs/user/referencia-cli-perfis-hierarquia.md": {
-      "autoridade": "`src/cli.ts`, `src/config.ts`, `src/context.ts` e ajuda da versão instalada",
+      "autoridade": "`src/cli/commands/setup.ts`, `src/cli/commands/account.ts`, `src/cli/commands/workspace.ts`, `src/clickup/accounts.ts`, `src/clickup/hierarchy.ts` e a ajuda da versão instalada",
       "escopo": "comandos globais, perfis locais, autenticação e descoberta da hierarquia do ClickUp",
       "natureza": "referência"
     },
     "docs/user/referencia-cli-sprints.md": {
-      "autoridade": "`src/cli.ts`, `src/sprints.ts` e endpoints públicos do ClickUp usados pelo ClickUpfy",
+      "autoridade": "`src/operations/cli.ts`, `src/clickup/sprints.ts` e os endpoints públicos do ClickUp usados pelo ClickUpfy",
       "escopo": "consulta, relatório, associação de tarefas e Sprint Points no terminal",
       "natureza": "referência"
     },
     "docs/user/referencia-cli-tarefas.md": {
-      "autoridade": "`src/cli.ts`, `src/work-items.ts`, `src/clickup.ts` e ajuda da versão instalada",
-      "escopo": "comandos de consulta e alteração de tarefas, checklists, comentários e time tracking",
+      "autoridade": "`src/operations/cli.ts`, `src/clickup/tasks.ts`, `src/clickup/checklists.ts`, `src/clickup/comments.ts`, `src/clickup/time.ts`, `src/clickup/tags.ts` e a ajuda da versão instalada",
+      "escopo": "comandos de consulta e alteração de tarefas, checklists, comentários, time tracking e tags",
       "natureza": "referência"
     },
     "docs/user/referencia-mcp-contexto-hierarquia.md": {
-      "autoridade": "schemas e handlers de `src/mcp.ts`",
+      "autoridade": "`src/operations/mcp.ts`, `src/clickup/accounts.ts`, `src/clickup/hierarchy.ts`, `src/clickup/scope.ts` e os schemas registrados em `src/mcp/server.ts`",
       "escopo": "ferramentas MCP de identificação do projeto, perfis e navegação na hierarquia do ClickUp",
       "natureza": "referência"
     },
     "docs/user/referencia-mcp-docs-administracao.md": {
-      "autoridade": "schemas e handlers de `src/mcp.ts` e cliente de Docs em `src/clickup.ts`",
+      "autoridade": "`src/operations/mcp.ts`, `src/clickup/docs.ts`, `src/clickup/scope.ts` e os schemas registrados em `src/mcp/server.ts`",
       "escopo": "ferramentas MCP de Docs do ClickUp, seleção de perfil e seleção de workspace",
       "natureza": "referência"
     },
     "docs/user/referencia-mcp-trabalho.md": {
-      "autoridade": "schemas e handlers de `src/mcp.ts`, `src/work-items.ts` e `src/sprints.ts`",
-      "escopo": "ferramentas MCP de trabalho em tarefas, Sprints, checklists, comentários e time tracking",
+      "autoridade": "`src/operations/mcp.ts`, `src/clickup/tasks.ts`, `src/clickup/sprints.ts`, `src/clickup/checklists.ts`, `src/clickup/comments.ts`, `src/clickup/time.ts`, `src/clickup/tags.ts` e os schemas registrados em `src/mcp/server.ts`",
+      "escopo": "ferramentas MCP de trabalho em tarefas, Sprints, checklists, comentários, time tracking e tags",
       "natureza": "referência"
     },
     "docs/user/solucao-de-problemas.md": {
@@ -146,12 +146,12 @@
   },
   "artifacts": {
     "pdf": {
-      "file": "ClickUpfy-Guia-do-Usuario-v1.2.3.pdf",
-      "sha256": "35f0499b46d4b545b825b4bf50ae06a038007b017750f4ffde7043e3ea053068"
+      "file": "ClickUpfy-Guia-do-Usuario-v2.0.0.pdf",
+      "sha256": "0e36b8a1106f38470833e0b817ab9bf563b23cbca4924adffd261bc62f544992"
     },
     "epub": {
-      "file": "ClickUpfy-Guia-do-Usuario-v1.2.3.epub",
-      "sha256": "23229bb01b51e57a7fb6e95c1f05d4c75827acaa5f5d08ef4739fca16b98e69d"
+      "file": "ClickUpfy-Guia-do-Usuario-v2.0.0.epub",
+      "sha256": "68c045689b804a321cd437bd835464f246a3693c56dd1592659544b2c35aae90"
     }
   }
 }

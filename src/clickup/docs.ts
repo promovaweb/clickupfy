@@ -6,8 +6,7 @@
  * Docs and list, read, create and update their pages, with page content in
  * Markdown (`text/md`, the API default) or plain text. In the CLI the page
  * content can come from `--content`, from a file with `--file <path>` or
- * from stdin with `--file -`. Same calls as ClickUpfy 0.9.0
- * (`legacy/src/clickup.ts`).
+ * from stdin with `--file -`. Same calls as ClickUpfy 0.9.0.
  */
 import { readFile } from "node:fs/promises";
 import { classifyFsError, error } from "../app/errors.ts";

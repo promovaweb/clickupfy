@@ -53,8 +53,8 @@ Nenhuma mudança de superfície.
 - [x] Scripts e skills do Hub leem `.data` do envelope `--json` `#termfy-docs`
 - [x] README, CHANGELOG 1.0.0 e `docs/release.md` `#termfy-docs`
 - [x] Skills do ClickUpfy atualizadas `#termfy-docs`
-- [ ] Manual `docs/user/` portado e ebook 2.0.0 `#termfy-docs`
-- [ ] Remover `legacy/` `#termfy-docs`
+- [x] Manual `docs/user/` portado e ebook 2.0.0 `#termfy-docs`
+- [x] Remover `legacy/` `#termfy-docs`
 - [ ] Merge na `main` e release 1.0.0 `#termfy-release`
 
 ## Tests
@@ -63,7 +63,7 @@ Nenhuma mudança de superfície.
   code (`tests/npm-wrapper.test.ts`)
 - [x] Hash divergente sai com 1 sem gravar o binário
 - [x] Versões de `package.json` e `npm/package.json` iguais
-- [ ] `bun run validate` verde sem `legacy/`
+- [x] `bun run validate` verde sem `legacy/`
 - [ ] `npm i -g @promovaweb/clickupfy@1.0.0` instala e roda
   `clickupfy --version`
 
@@ -74,3 +74,6 @@ Nenhuma mudança de superfície.
   o da plataforma em vez de embutir os cinco.
 - 2026-11-13: o Release Please do 0.9.0 sai; a versão passa a ser definida à
   mão em `package.json` e `npm/package.json`, com tag e workflow do Termfy.
+- 2026-11-13: manual portado pelo OpenCode em duas abas e revisado; os 285
+  exemplos `clickupfy ...` de `docs/user/` passam pelo parser e as 47 tools
+  citadas existem. Ebook 2.0.0 gerado. `legacy/` removido.
