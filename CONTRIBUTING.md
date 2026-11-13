@@ -155,8 +155,9 @@ O CI roda `bun run validate` em pull request e em push para `main`
 A publicação segue [docs/release.md](docs/release.md): mesma versão em
 `package.json` e `npm/package.json`, entrada no `CHANGELOG.md`, commit
 `release: clickupfy vX.Y.Z`, tag `vX.Y.Z` e push da tag. O workflow publica a
-GitHub Release com os binários e o pacote npm. Tags publicadas nunca são
-movidas.
+GitHub Release com os binários. O pacote npm é publicado depois, só pela
+máquina local, com `npm pack` e `npm publish` dentro de `npm/`. Tags
+publicadas nunca são movidas.
 
 ## Licença
 

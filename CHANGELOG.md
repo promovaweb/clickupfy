@@ -4,6 +4,15 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.1.1](https://github.com/promovaweb/clickupfy/compare/v1.1.0...v1.1.1) (2026-11-13)
+
+### Release
+
+- A publicação no npm passa a ser feita só pela máquina local; o workflow de
+  release não publica mais no npm.
+- `docs/release.md`, `CONTRIBUTING.md` e a skill `clickupfy-release`
+  descrevem o fluxo local com `npm pack` e `npm publish`.
+
 ## [1.1.0](https://github.com/promovaweb/clickupfy/compare/v1.0.4...v1.1.0) (2026-11-13)
 
 ### Licença

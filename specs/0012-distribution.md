@@ -85,3 +85,6 @@ Nenhuma mudança de superfície.
 - 2026-11-13: com o `NPM_TOKEN` renovado, a 1.0.1 e depois a 1.0.2 foram
   publicadas no npm; a 1.0.2 traz o README próprio do pacote e o
   `CONTRIBUTING.md`. Spec fechada.
+- 2026-11-13: na 1.1.1 o job npm sai do `release.yml` e o `NPM_TOKEN` é
+  apagado; o pacote passa a ser publicado só pela máquina local, conforme
+  `docs/release.md`.

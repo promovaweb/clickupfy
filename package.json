@@ -1,6 +1,6 @@
 {
   "name": "clickupfy",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
   "type": "module",
   "private": true,

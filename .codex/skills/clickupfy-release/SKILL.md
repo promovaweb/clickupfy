@@ -8,8 +8,9 @@ description: Prepara e valida releases do ClickUpfy com SemVer, changelog, tag, 
 O ClickUpfy é um binário Bun feito com o Termfy. Cada release sai de uma tag
 `vMAJOR.MINOR.PATCH` empurrada para o GitHub. O workflow `release.yml`
 valida o projeto, compila os binários, gera o `SHA256SUMS`, publica a GitHub
-Release com as notas do `CHANGELOG.md` e publica o pacote npm
-`@promovaweb/clickupfy`, que só traz o launcher e baixa o binário da release.
+Release com as notas do `CHANGELOG.md`. O pacote npm `@promovaweb/clickupfy`,
+que só traz o launcher e baixa o binário da release, é publicado depois pela
+máquina local; o workflow não publica no npm.
 O passo a passo está em `docs/release.md`.
 
 ## Cobertura documental da release
@@ -54,9 +55,17 @@ Empurre só a tag desta entrega. Acompanhe o workflow `Release` até:
 
 - GitHub Release `vX.Y.Z` com `clickupfy-linux-x64`, `clickupfy-linux-arm64`,
   `clickupfy-darwin-x64`, `clickupfy-darwin-arm64`,
-  `clickupfy-windows-x64.exe` e `SHA256SUMS`;
-- `@promovaweb/clickupfy@X.Y.Z` no registry npm (`npm view
-  @promovaweb/clickupfy version`).
+  `clickupfy-windows-x64.exe` e `SHA256SUMS`.
+
+Depois publique o pacote npm localmente, logado como `contatopromovaweb`:
+
+```bash
+git checkout vX.Y.Z
+cd npm
+npm pack
+npm publish promovaweb-clickupfy-X.Y.Z.tgz --access public
+npm view @promovaweb/clickupfy version license
+```
 
 ## Validar localmente
 
@@ -73,8 +82,8 @@ bun run build:all
 - Workflow recusou a tag: a versão de `package.json` ou de
   `npm/package.json` difere da tag. Corrija numa versão nova.
 - Release sem binários: reexecute os jobs falhos da mesma execução.
-- Publicação npm falhou: confirme o secret `NPM_TOKEN` e reexecute o job
-  `npm`.
+- Publicação npm falhou: confirme o login (`npm whoami` deve mostrar
+  `contatopromovaweb`) e repita o `npm publish` do tarball do commit da tag.
 - `npm install -g` instalou, mas o primeiro uso falha: confira se a GitHub
   Release da mesma versão tem o binário da plataforma e o `SHA256SUMS`.
 
