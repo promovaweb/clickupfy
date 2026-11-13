@@ -46,6 +46,19 @@ export interface OptionDefinition {
   default?: string | boolean;
   /** Hidden from `--help`, still accepted by the parser. */
   hidden?: boolean;
+  /**
+   * Accepts several occurrences (`--file a=x --file b=y`). The parsed value
+   * joins them with `REPEAT_SEPARATOR`; split it with `repeatedValues()`.
+   */
+  repeatable?: boolean;
+}
+
+/** Separator of the values of a repeatable option (NUL never appears in argv). */
+export const REPEAT_SEPARATOR = "\u0000";
+
+/** Splits the parsed value of a repeatable option into its occurrences. */
+export function repeatedValues(value: string | boolean | undefined): string[] {
+  return typeof value === "string" ? value.split(REPEAT_SEPARATOR) : [];
 }
 
 /** Parsed option values, keyed by long name without hyphens. */

@@ -29,6 +29,12 @@ jobs:
       - name: Instalar pacotes nativos do OpenTUI para todos os alvos
         run: bun install --frozen-lockfile --os="*" --cpu="*" --libc="*"
 
+      - name: Conferir versão da tag
+        run: |
+          versao="${GITHUB_REF_NAME#v}"
+          test "$(jq -r .version package.json)" = "$versao"
+          test "$(jq -r .version npm/package.json)" = "$versao"
+
       - name: Validar projeto
         run: bun run validate
 
@@ -54,3 +60,24 @@ jobs:
           body_path: notas.md
           files: |
             dist/*
+
+  npm:
+    name: Publicar pacote npm
+    needs: binarios
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # O pacote é só o launcher: o binário vem da GitHub Release publicada acima.
+      - name: Publicar @promovaweb/clickupfy
+        working-directory: npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public

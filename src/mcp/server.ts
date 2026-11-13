@@ -18,6 +18,7 @@ import { registerResources } from "./resources/base.ts";
 import { registerPrompts } from "./prompts.ts";
 import { registerDoctorTools } from "./tools/doctor.ts";
 import { registerAccountTools } from "./tools/accounts.ts";
+import { registerApiTools } from "./tools/api.ts";
 import { registerOperations } from "../operations/mcp.ts";
 import { operations } from "../operations/index.ts";
 import type { Scope } from "../clickup/scope.ts";
@@ -59,6 +60,7 @@ function registerAll(r: Registrar, scope: Scope): void {
   registerDoctorTools(r);
   registerAccountTools(r, scope);
   registerOperations(r, operations, scope);
+  registerApiTools(r, scope);
   registerResources(r);
   registerPrompts(r);
 }

@@ -19,6 +19,9 @@ import { statusCommand } from "./commands/status.ts";
 import { accountCommand } from "./commands/account.ts";
 import { workspaceCommand } from "./commands/workspace.ts";
 import { whoamiCommand } from "./commands/whoami.ts";
+import { apiCommand } from "./commands/api.ts";
+import { agentCommand } from "./commands/agent.ts";
+import { upgradeCommand } from "./commands/upgrade.ts";
 import { buildCommands } from "../operations/cli.ts";
 import { groups, operations } from "../operations/index.ts";
 import type { Command } from "./registry.ts";
@@ -33,7 +36,18 @@ export const root: Command = {
     workspaceCommand,
     whoamiCommand,
     ...buildCommands(operations, groups),
-    tuiCommand, aboutCommand, configCommand, credentialsCommand, mcpCommand, createSkillCommand(() => root), doctorCommand, createCompletionCommand(() => root)],
+    apiCommand,
+    agentCommand,
+    upgradeCommand,
+    tuiCommand,
+    aboutCommand,
+    configCommand,
+    credentialsCommand,
+    mcpCommand,
+    createSkillCommand(() => root),
+    doctorCommand,
+    createCompletionCommand(() => root),
+  ],
   examples: [
     `${manifest.bin}`,
     `${manifest.bin} about --json`,

@@ -8,7 +8,7 @@ encerra com exit code 8.
 
 | Aba | Conteúdo |
 | --- | --- |
-| Overview | Environment (binary, runtime, platform, terminal, data directory), estado de settings.json e do cofre, settings em vigor e next steps. |
+| Overview | Painel ClickUp com o perfil resolvido, usuário, workspace e o cronômetro em execução (carregado ao abrir a aba e com `r`), estado de `accounts.json`, do cofre e da master key, lista de perfis e next steps. Só leitura; sem perfil, orienta `{{bin}} setup`. |
 | About | Binary, project, license, credits e standards seguidos. |
 
 A aba inicial vem de `tui.initialTab` em settings.json ou de `--tab`.

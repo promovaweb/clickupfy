@@ -32,6 +32,7 @@
     "skills:update": "npx -y skills update -y -p",
     "skills:check": "bun run scripts/check-skills.ts",
     "init": "bun run scripts/init.ts",
+    "api:generate": "bun run scripts/generate-api.ts",
     "validate": "bun run typecheck && bun test && bun run skills:check && bun run opencli:check && bun run docs:check && bun run build",
     "docs:check": "bun run scripts/check-docs.ts"
   },

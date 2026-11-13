@@ -1,67 +1,53 @@
 # ClickUpfy
 
-Esqueleto de binário em [Bun](https://bun.sh) para construir ferramentas de
-terminal com três modos no mesmo executável. É o template do GitHub do
-framework [Termfy](https://github.com/promovaweb/termfy), e já vem com as
-skills do framework instaladas em `.agents/skills/`.
+CLI, TUI e servidor MCP da Promovaweb para trabalhar no ClickUp sem abrir o
+navegador: tarefas, subtarefas, tags, checklists, comentários, Sprints, Docs
+e time tracking, para pessoas no terminal, scripts com `--json` e agentes de
+IA pelo MCP. É um binário único em [Bun](https://bun.sh), feito com o
+framework [Termfy](https://github.com/promovaweb/termfy).
 
 | Modo | Entrada | Para quem |
 | --- | --- | --- |
-| TUI | `clickupfy` sem argumentos, em terminal interativo | pessoas |
-| CLI | `clickupfy <command> [options]`, saída em texto ou `--json` | pessoas, scripts e agentes |
-| MCP | `clickupfy mcp`, servidor Model Context Protocol via stdio | agentes de IA |
+| TUI | `clickupfy` sem argumentos, em terminal interativo | perfil, workspace e cronômetro de relance |
+| CLI | `clickupfy <command> [options]`, saída em texto ou `--json` | pessoas e scripts |
+| MCP | `clickupfy mcp` ou `clickupfy mcp serve --list <id>`, via stdio | agentes de IA (Claude Code, Codex, OpenCode, Gemini) |
 
-Os três modos compartilham identidade, configuração (`~/.clickupfy/settings.json`),
-cofre de credenciais cifrado (`~/.clickupfy/credentials.json`) e a tabela de
-exit codes. A TUI usa o [OpenTUI](https://opentui.com); o CLI publica sua
-interface no formato [OpenCLI](https://opencli.org); o MCP usa o
-[SDK oficial](https://github.com/modelcontextprotocol/typescript-sdk).
+As API keys ficam cifradas em `~/.clickupfy/credentials.json`, uma por
+perfil, e os perfis em `~/.clickupfy/accounts.json`. Nenhum command, tool ou
+tela mostra uma chave.
 
-Todo o código é em inglês: arquivos, identificadores, comentários, mensagens,
-commands, options, keys e campos do `--json`. A documentação é em português.
+## Instalação
 
-```text
- ▌ ClickUpfy v0.9.2  │  CLI, TUI and MCP stdio server skeleton in Bun, with the  linux-x64 • Bun 1.4.4
- ──────────────────────────────────────────────────────────────────────────────────────────────────
- Overview      About
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬
- ╭─ Environment ────────────────────────────────────╮╭─ State ────────────────────────────────────╮
- │ Binary    clickupfy v0.9.2                          ││ settings.json     • defaults               │
- │ Runtime   Bun 1.4.4                              ││ credentials.json  • empty                  │
- │ Platform  linux-x64                              ││ master key        not created              │
- │ Terminal  100×24  xterm-256color                 ││ MCP               clickupfy mcp               │
- │ Data      ~/.clickupfy                              ││                                            │
- ╰──────────────────────────────────────────────────╯╰────────────────────────────────────────────╯
- ╭─ Settings in effect ─────────────────────────────╮╭─ Next steps ───────────────────────────────╮
- │ output.colors      true                          ││ In the terminal                            │
- │ output.format      "text"                        ││ → clickupfy --help                            │
- │ telemetry.enabled  false                         ││ → clickupfy credentials set <name>            │
- │ tui.initialTab     "overview"                    ││ → clickupfy config set tui.theme day          │
- │ tui.theme          "night"                       ││ → clickupfy --skill                           │
- │                                                  ││                                            │
- │                                                  ││ For agents                                 │
- │                                                  ││ MCP client: { "command": "clickupfy", "args": │
- │                                                  ││ ["mcp"] }                                  │
- │                                                  ││                                            │
- ╰──────────────────────────────────────────────────╯╰────────────────────────────────────────────╯
-  ←/→  tab   1-9  go   ?  help   q  quit
+```bash
+npm install -g @promovaweb/clickupfy   # baixa o binário da plataforma na primeira execução
+clickupfy setup                         # API key pessoal do ClickUp e workspace
+clickupfy whoami
 ```
 
-## Sobre o template
+Sem npm, baixe o binário da plataforma (`clickupfy-linux-x64`,
+`clickupfy-darwin-arm64`, `clickupfy-windows-x64.exe`...) na
+[GitHub Release](https://github.com/promovaweb/clickupfy/releases), confira
+o `SHA256SUMS` e coloque o arquivo no `PATH`. `clickupfy upgrade` atualiza
+as duas instalações.
 
-Este repositório é um template do GitHub. Clique em **Use this template**,
-abra o clone no agente e peça: "Use termfy-init para fazer o setup deste
-projeto". Informe o nome do executável e o propósito da ferramenta. O agente
-conduz a configuração e as verificações pela skill.
+## Vindo do ClickUpfy 0.9.0
 
-O guia completo está em [docs/customize-template.md](docs/customize-template.md).
-Para atualizar ou reparar as skills, use `termfy-init` no modo de
-manutenção. O guia do método e o ebook ficam no
-[framework](https://github.com/promovaweb/termfy).
+A versão 1.0 refaz o CLI sobre o Termfy com os mesmos commands e as mesmas
+tools `clickupfy_*`. Na primeira execução, os perfis de
+`~/clickupfy/config.json` são importados para o cofre cifrado; o arquivo
+antigo não é alterado. `clickupfy account import --force` repete a
+importação. As configs MCP com `clickupfy mcp serve --account ... --list ...`
+continuam valendo. Duas mudanças pedem atenção:
+
+- o `--json` agora usa o envelope `{ ok, command, data }` (ou
+  `{ ok: false, command, error }`), com exit codes estáveis; scripts que
+  liam o objeto cru passam a ler `.data`;
+- as mensagens, options e campos do `--json` estão em inglês.
 
 ## Requisitos
 
-Bun 1.4.4 ou superior. Node.js não é usado.
+Para usar: nenhum (binário compilado) ou Node.js 18.17+ pelo pacote npm.
+Para desenvolver: Bun 1.4.4 ou superior.
 
 ## Rodar em desenvolvimento
 

@@ -8,7 +8,7 @@
  * so the process exits with code 2.
  */
 import { error } from "../app/errors.ts";
-import { GLOBAL_OPTIONS, optionKey, findSubcommand, type Command, type OptionDefinition, type Options } from "./registry.ts";
+import { GLOBAL_OPTIONS, REPEAT_SEPARATOR, optionKey, findSubcommand, type Command, type OptionDefinition, type Options } from "./registry.ts";
 
 /** Parse result: target command, path, arguments and options. */
 export interface Parsed {
@@ -65,7 +65,7 @@ export function parse(root: Command, argv: readonly string[]): Parsed {
         let value = inlineValue;
         if (value === undefined) {
           const next = argv[i + 1];
-          const nextIsValue = next !== undefined && !next.startsWith("-");
+          const nextIsValue = next !== undefined && (!next.startsWith("-") || next === "-");
           if (nextIsValue) {
             value = next;
             i += 1;
@@ -80,7 +80,9 @@ export function parse(root: Command, argv: readonly string[]): Parsed {
             accepted: def.argument.values,
           });
         }
-        options[key] = value === undefined ? true : value;
+        const previous = options[key];
+        options[key] =
+          value === undefined ? true : def.repeatable && typeof previous === "string" ? `${previous}${REPEAT_SEPARATOR}${value}` : value;
       } else {
         if (inlineValue !== undefined) {
           throw error.usage(`Option ${def.name} does not take a value.`, { option: def.name });

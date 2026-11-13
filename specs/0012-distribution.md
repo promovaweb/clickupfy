@@ -1,6 +1,6 @@
 # 0012 Distribuição, documentação e merge
 
-Status: draft
+Status: in_progress
 
 ## Goal
 

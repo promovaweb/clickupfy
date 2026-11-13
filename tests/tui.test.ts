@@ -33,8 +33,9 @@ describe("tui", () => {
     expect(frame).toContain(`v${manifest.version}`);
     expect(frame).toContain("Overview");
     expect(frame).toContain("About");
-    expect(frame).toContain("Environment");
-    expect(frame).toContain("Settings in effect");
+    expect(frame).toContain("ClickUp");
+    expect(frame).toContain("Profiles");
+    expect(frame).toContain("clickupfy setup");
     expect(frame).toContain("quit");
   });
 
