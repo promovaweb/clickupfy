@@ -1,8 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
 dist/
+*.tsbuildinfo
+
+# Logs and temporary files
+*.log
+.DS_Store
+tmp/
+
+# Local variables
+.env
+.env.*
+!.env.example
+
+# Local development data (the real directory is ~/.<bin>/)
+.termfy-home/
+
+# Skills are versioned in .agents/skills/ and skills-lock.json.
+# Per-agent links (.claude/skills etc.) are committed too.
+# Legacy build outputs (Node CLI, kept until the merge)
 artifacts/
 build/
 vendor/
-node_modules/
 coverage/
-*.log
-.env

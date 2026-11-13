@@ -1,92 +1,81 @@
-/**
- * Testes do diagnóstico local do setup e dos arquivos de agentes.
- */
-
-import { mkdir, mkdtemp } from "node:fs/promises";
+/** Verifies diagnostic health, redaction and MCP parity. */
+import { afterEach, beforeEach, expect, test } from "bun:test";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
-import {
-  configurarCodexProjeto,
-  configurarMcpProjeto,
-} from "../src/agent-assets.js";
-import { executarDoctor } from "../src/doctor.js";
-import {
-  criarConfiguracaoVazia,
-  salvarConfiguracao,
-} from "../src/config.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { collectDoctorChecks, doctorCommand } from "../src/cli/commands/doctor.ts";
+import { HOME_VARIABLE, MASTER_KEY_VARIABLE, paths } from "../src/config/paths.ts";
+import { setCredential } from "../src/config/credentials.ts";
+import { registerDoctorTools } from "../src/mcp/tools/doctor.ts";
+import { ExitCode } from "../src/app/exit-codes.ts";
+import type { Context } from "../src/cli/registry.ts";
 
-const originalConfig = process.env.PROMOVAWEB_CLICKUPFY_CONFIG;
-
+let dir: string;
+let home: string | undefined;
+let key: string | undefined;
+beforeEach(() => {
+  home = process.env[HOME_VARIABLE]; key = process.env[MASTER_KEY_VARIABLE];
+  dir = mkdtempSync(join(tmpdir(), "doctor-")); process.env[HOME_VARIABLE] = dir; delete process.env[MASTER_KEY_VARIABLE];
+});
 afterEach(() => {
-  if (originalConfig === undefined) {
-    delete process.env.PROMOVAWEB_CLICKUPFY_CONFIG;
-  } else {
-    process.env.PROMOVAWEB_CLICKUPFY_CONFIG = originalConfig;
-  }
+  rmSync(dir, { recursive: true, force: true });
+  if (home === undefined) delete process.env[HOME_VARIABLE]; else process.env[HOME_VARIABLE] = home;
+  if (key === undefined) delete process.env[MASTER_KEY_VARIABLE]; else process.env[MASTER_KEY_VARIABLE] = key;
+});
+test("fresh installation only warns; old Bun and loose permissions fail", () => {
+  const data = collectDoctorChecks({ version: "1.4.4", stdin: false, stdout: false });
+  expect(data.ok).toBe(true);
+  expect(data.checks.find((c) => c.name === "master-key")?.detail).toBe("none");
+  expect(collectDoctorChecks({ version: "1.4.3", stdin: true, stdout: true }).ok).toBe(false);
+  chmodSync(dir, 0o755);
+  expect(collectDoctorChecks().checks.find((c) => c.name === "directory")?.status).toBe("fail");
+});
+test("corrupt settings and undecryptable vault fail without exposing content", async () => {
+  setCredential("test.token", "private-token-value");
+  const original = readFileSync(paths.credentials(), "utf8");
+  expect(collectDoctorChecks().ok).toBe(true);
+  writeFileSync(paths.settings(), "private-invalid-json");
+  process.env[MASTER_KEY_VARIABLE] = "00".repeat(32);
+  const data = collectDoctorChecks();
+  expect(data.ok).toBe(false);
+  expect(data.checks.find((c) => c.name === "credentials")?.status).toBe("fail");
+  expect(JSON.stringify(data)).not.toContain("private");
+  expect(readFileSync(paths.credentials(), "utf8")).toBe(original);
+  const result = await doctorCommand.run!({} as Context);
+  expect(result.code).toBe(ExitCode.CONFIG);
+  expect(result.text).toContain("✗ settings");
+});
+test("MCP returns the shared checks and marks failures", async () => {
+  const server = new McpServer({ name: "test", version: "1" });
+  const catalog = { name: "test", version: "1", tools: [], resources: [], prompts: [] };
+  registerDoctorTools({ server, catalog });
+  const client = new Client({ name: "test", version: "1" });
+  const [left, right] = InMemoryTransport.createLinkedPair();
+  await server.connect(left); await client.connect(right);
+  try {
+    expect((await client.listTools()).tools.map((t) => t.name)).toContain("doctor");
+    const result = await client.callTool({ name: "doctor", arguments: {} });
+    expect(result.structuredContent).toEqual(collectDoctorChecks());
+    expect(result.isError).toBe(false);
+    writeFileSync(paths.settings(), "[]");
+    expect((await client.callTool({ name: "doctor", arguments: {} })).isError).toBe(true);
+  } finally { await client.close(); await server.close(); }
 });
 
-describe("clickupfy doctor", () => {
-  it("confirma o JSON global e os arquivos MCP sem expor a API key", async () => {
-    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-doctor-"));
-    const caminho = join(pasta, "clickupfy", "config.json");
-    process.env.PROMOVAWEB_CLICKUPFY_CONFIG = caminho;
-    const agora = new Date().toISOString();
-    const configuracao = criarConfiguracaoVazia();
-    configuracao.accounts.dev = {
-      name: "Dev",
-      apiKey: "pk_secreta_do_teste",
-      user: { id: 1, username: "luiz" },
-      workspace: { id: "123", name: "Produto" },
-      createdAt: agora,
-      updatedAt: agora,
-    };
-    configuracao.activeAccount = "dev";
-    await salvarConfiguracao(configuracao);
-
-    await configurarMcpProjeto({
-      path: join(pasta, ".mcp.json"),
-      account: "dev",
-      space: "space-1",
-      list: "list-1",
-    });
-    await configurarCodexProjeto({
-      path: join(pasta, ".codex", "config.toml"),
-      account: "dev",
-      space: "space-1",
-      list: "list-1",
-    });
-
-    const resultado = await executarDoctor(pasta, {
-      // O teste verifica o diagnóstico local, sem baixar o gerenciador no npm.
-      skillsCli: { command: process.execPath, args: ["-e", "console.log('[]')", "--"] },
-    });
-    const texto = JSON.stringify(resultado);
-
-    expect(resultado.ok).toBe(true);
-    expect(resultado.checks.some((check) => check.id === "config-schema")).toBe(
-      true,
-    );
-    expect(resultado.checks.filter((check) => check.id === "mcp-server")).toHaveLength(
-      2,
-    );
-    expect(texto).not.toContain("pk_secreta_do_teste");
+test("CLI without a TTY exits successfully with warnings and fails only for failed checks", () => {
+  const run = () => Bun.spawnSync([process.execPath, "run", "src/main.ts", "doctor", "--json"], {
+    env: { ...process.env }, stdin: "ignore",
   });
-
-  it("identifica setup ausente sem lançar uma exceção", async () => {
-    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-doctor-empty-"));
-    const caminho = join(pasta, "clickupfy", "config.json");
-    process.env.PROMOVAWEB_CLICKUPFY_CONFIG = caminho;
-    await mkdir(join(pasta, ".codex"), { recursive: true });
-
-    const resultado = await executarDoctor(pasta, {
-      // O teste verifica o diagnóstico local, sem baixar o gerenciador no npm.
-      skillsCli: { command: process.execPath, args: ["-e", "console.log('[]')", "--"] },
-    });
-
-    expect(resultado.ok).toBe(false);
-    expect(
-      resultado.checks.find((check) => check.id === "config-file"),
-    ).toMatchObject({ estado: "error" });
-  });
+  const success = run();
+  expect(success.exitCode).toBe(ExitCode.SUCCESS);
+  const data = JSON.parse(success.stdout.toString()).data;
+  expect(data.ok).toBe(true);
+  for (const name of ["stdin", "stdout"]) expect(data.checks.find((c: { name: string }) => c.name === name).status).toBe("warn");
+  writeFileSync(paths.settings(), "invalid");
+  const failure = run();
+  expect(failure.exitCode).toBe(ExitCode.CONFIG);
+  expect(JSON.parse(failure.stdout.toString()).data.ok).toBe(false);
 });

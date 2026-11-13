@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "fix/issue-*"
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    name: Validar Node.js
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v7
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Validar projeto
+        run: npm run validar
+
+      - name: Repetir suíte no Windows (cinco execuções no total)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          1..4 | ForEach-Object {
+            npm test
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Validar executável nativo
+        run: npm run build:executable

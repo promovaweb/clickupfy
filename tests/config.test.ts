@@ -1,72 +1,108 @@
-/**
- * Testes da persistência segura e da resolução multi-account.
- */
-
-import { mkdtemp, stat } from "node:fs/promises";
-import { homedir, tmpdir } from "node:os";
+/** settings.json and credentials.json in a temporary directory. */
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdtempSync, rmSync, readFileSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
-import {
-  criarConfiguracaoVazia,
-  caminhoConfiguracao,
-  lerConfiguracao,
-  resolverAccount,
-  salvarConfiguracao,
-} from "../src/config.js";
+import { MASTER_KEY_VARIABLE, HOME_VARIABLE, paths } from "../src/config/paths.ts";
+import { convertValue, writeSettings, readSettings, getPath, setPath, removePath, flatten } from "../src/config/settings.ts";
+import { setCredential, listCredentials, mask, getCredential, removeCredential, vaultStatus, validateName } from "../src/config/credentials.ts";
+import { encrypt, decrypt } from "../src/config/crypto.ts";
+import { AppError } from "../src/app/errors.ts";
+import { ExitCode } from "../src/app/exit-codes.ts";
 
-const originalConfig = process.env.PROMOVAWEB_CLICKUPFY_CONFIG;
+let dir: string;
 
-afterEach(() => {
-  if (originalConfig === undefined) {
-    delete process.env.PROMOVAWEB_CLICKUPFY_CONFIG;
-  } else {
-    process.env.PROMOVAWEB_CLICKUPFY_CONFIG = originalConfig;
-  }
+// The previous values are restored after each test, so the suite leaves the
+// environment as it found it.
+const previousHome = process.env[HOME_VARIABLE];
+const previousKey = process.env[MASTER_KEY_VARIABLE];
+
+beforeEach(() => {
+  dir = mkdtempSync(join(tmpdir(), "termfy-test-"));
+  process.env[HOME_VARIABLE] = dir;
+  delete process.env[MASTER_KEY_VARIABLE];
 });
 
-describe("configuração", () => {
-  it("usa ~/clickupfy/config.json por padrão", () => {
-    delete process.env.PROMOVAWEB_CLICKUPFY_CONFIG;
+afterEach(() => {
+  rmSync(dir, { recursive: true, force: true });
+  if (previousHome === undefined) delete process.env[HOME_VARIABLE]; else process.env[HOME_VARIABLE] = previousHome;
+  if (previousKey === undefined) delete process.env[MASTER_KEY_VARIABLE]; else process.env[MASTER_KEY_VARIABLE] = previousKey;
+});
 
-    expect(caminhoConfiguracao()).toBe(
-      join(homedir(), "clickupfy", "config.json"),
-    );
+describe("settings", () => {
+  test("reads defaults without a file and writes with dot notation", () => {
+    const s = readSettings();
+    expect(getPath(s, "output.format")).toBe("text");
+    setPath(s, "output.format", "json");
+    writeSettings(s);
+    expect(getPath(readSettings(), "output.format")).toBe("json");
+    expect(paths.settings()).toBe(join(dir, "settings.json"));
   });
 
-  it("grava o JSON com permissão 0600 e preserva múltiplas accounts", async () => {
-    const pasta = await mkdtemp(join(tmpdir(), "clickupfy-config-"));
-    const caminho = join(pasta, "dados", "config.json");
-    process.env.PROMOVAWEB_CLICKUPFY_CONFIG = caminho;
-    const config = criarConfiguracaoVazia();
-    const agora = new Date().toISOString();
-    config.accounts.dev = {
-      name: "Dev",
-      apiKey: "pk_teste",
-      user: { id: 1, username: "luiz" },
-      workspace: { id: "123", name: "Produto" },
-      createdAt: agora,
-      updatedAt: agora,
-    };
-    config.accounts.consultoria = {
-      name: "Consultoria",
-      apiKey: "pk_teste_2",
-      user: { id: 2, username: "equipe" },
-      workspace: { id: "456", name: "Clientes" },
-      createdAt: agora,
-      updatedAt: agora,
-    };
-    config.activeAccount = "dev";
+  test("converts types and rejects invalid enum values", () => {
+    expect(convertValue("output.colors", "no")).toBe(false);
+    expect(convertValue("output.colors", "1")).toBe(true);
+    expect(() => convertValue("tui.theme", "purple")).toThrow(/accepts only/);
+    expect(convertValue("free.key", "x")).toBe("x");
+  });
 
-    await salvarConfiguracao(config);
+  test("removes and flattens", () => {
+    const s = { a: { b: 1, c: 2 }, d: true };
+    expect(removePath(s, "a.b")).toBe(true);
+    expect(removePath(s, "a.b")).toBe(false);
+    expect(flatten(s)).toEqual([["a.c", 2], ["d", true]]);
+  });
+});
 
-    expect(await lerConfiguracao()).toEqual(config);
-    expect(
-      (await stat(caminho)).mode &
-        (process.platform === "win32" ? 0o200 : 0o777),
-    ).toBe(process.platform === "win32" ? 0o200 : 0o600);
-    expect(resolverAccount(config).id).toBe("dev");
-    expect(resolverAccount(config, "consultoria").account.workspace.id).toBe(
-      "456",
-    );
+describe("crypto", () => {
+  test("encrypts and decrypts with the same key; a wrong key fails with CREDENTIALS", () => {
+    const key = Buffer.alloc(32, 7);
+    const env = encrypt("secret", key);
+    expect(env.algorithm).toBe("aes-256-gcm");
+    expect(decrypt(env, key)).toBe("secret");
+    try {
+      decrypt(env, Buffer.alloc(32, 8));
+      throw new Error("should fail");
+    } catch (e) {
+      expect((e as AppError).code).toBe(ExitCode.CREDENTIALS);
+    }
+  });
+});
+
+describe("credentials", () => {
+  test("saves encrypted, lists, reads, masks and removes", () => {
+    setCredential("openai.api_key", "sk-1234567890abcdef");
+    const raw = readFileSync(paths.credentials(), "utf8");
+    expect(raw).not.toContain("sk-1234567890abcdef");
+    expect(JSON.parse(raw).algorithm).toBe("aes-256-gcm");
+    expect(listCredentials()).toEqual(["openai.api_key"]);
+    expect(getCredential("openai.api_key")).toBe("sk-1234567890abcdef");
+    expect(mask("sk-1234567890abcdef")).toMatch(/^sk-1\*+ef$/);
+    expect(vaultStatus().masterKeySource).toBe("file");
+    expect(statSync(paths.masterKey()).mode & 0o777).toBe(0o600);
+    expect(removeCredential("openai.api_key")).toBe(true);
+    expect(listCredentials()).toEqual([]);
+  });
+
+  test("a missing credential exits with code 4", () => {
+    setCredential("a.b", "x");
+    try {
+      getCredential("does.not.exist");
+      throw new Error("should fail");
+    } catch (e) {
+      expect((e as AppError).code).toBe(ExitCode.CREDENTIALS);
+    }
+  });
+
+  test("uses the environment key when set", () => {
+    process.env[MASTER_KEY_VARIABLE] = "ab".repeat(32);
+    setCredential("x.y", "value");
+    expect(vaultStatus().masterKeySource).toBe("env");
+    expect(getCredential("x.y")).toBe("value");
+  });
+
+  test("validates names", () => {
+    expect(validateName("GitHub.Token")).toBe("github.token");
+    expect(() => validateName("with space")).toThrow(/Invalid/);
   });
 });
