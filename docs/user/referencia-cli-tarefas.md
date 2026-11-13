@@ -5,70 +5,78 @@
 | Campo | Valor |
 | --- | --- |
 | Natureza | referência |
-| Escopo | comandos de consulta e alteração de tarefas, checklists, comentários e time tracking |
-| Autoridade | `src/cli.ts`, `src/work-items.ts`, `src/clickup.ts` e ajuda da versão instalada |
+| Escopo | comandos de consulta e alteração de tarefas, checklists, comentários, time tracking e tags |
+| Autoridade | `src/operations/cli.ts`, `src/clickup/tasks.ts`, `src/clickup/checklists.ts`, `src/clickup/comments.ts`, `src/clickup/time.ts`, `src/clickup/tags.ts` e a ajuda da versão instalada |
 
 Os IDs deste capítulo são fictícios. Use `list get` para obter a grafia dos
-status e `task get --json` para encontrar IDs de checklist items. Uma chamada
-de escrita deve ser seguida por uma nova leitura do recurso alterado; a ausência
-de erro não confirma que o ClickUp persistiu o valor esperado.
+status e `task get --json` para encontrar IDs de checklist items. Uma chamada de
+escrita deve ser seguida por uma nova leitura do recurso alterado; a ausência de
+erro não confirma que o ClickUp persistiu o valor esperado.
+
+Duas convenções valem para todos os comandos abaixo. Valores múltiplos de
+`--status` e `--assignee` são separados por vírgula, sem espaço, como em
+`--status "to do,review"` e `--assignee 42,57`. E o `--json` devolve sempre o
+envelope `{ ok, command, data }`, com listas dentro de um objeto, como
+`{ "tasks": [] }`.
 
 ## Leitura de tarefas
 
 ### `clickupfy task list --list <id>`
 
-Lista tarefas de uma List em uma página. `--list` é obrigatório porque o CLI
-não lê o `.mcp.json` do projeto. `--status` aceita um ou mais nomes de status;
-`--assignee` recebe um ou mais IDs de responsáveis; `--page` começa em zero.
+Lista uma página de até 100 tarefas de uma List. `--list` é obrigatório porque o
+CLI não lê o `.mcp.json` do projeto. `--status` aceita um ou mais nomes de
+status, `--assignee` recebe um ou mais IDs de responsáveis e `--page` começa em
+zero.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
 | `--list <id>` | sim | List consultada. |
-| `--status <status...>` | não | Restringe aos status informados. |
-| `--assignee <ids...>` | não | Restringe aos responsáveis. |
+| `--status <valores>` | não | Restringe aos status informados, separados por vírgula. |
+| `--assignee <valores>` | não | Restringe aos responsáveis, separados por vírgula. |
 | `--include-closed` | não | Inclui tarefas concluídas. |
 | `--page <n>` | não | Página, iniciando em `0`. |
 
 Exemplos:
 
 ```bash
-clickupfy task list --list 3001
+clickupfy task list --list 901328052926
 ```
 
 ```bash
-clickupfy task list --list 3001 --status "em andamento"
+clickupfy task list --list 901328052926 --status "in progress"
 ```
 
 ```bash
-clickupfy task list --list 3001 --status aberta "em andamento" --assignee 42
+clickupfy task list --list 901328052926 --status "to do,in progress" --assignee 42
 ```
 
 ```bash
-clickupfy task list --list 3001 --include-closed --page 0
+clickupfy task list --list 901328052926 --include-closed --page 0
 ```
 
 ```bash
-clickupfy --account produto --json task list --list 3001 --page 2
+clickupfy task list --list 901328052926 --page 2 --account produto --json
 ```
 
 A saída comum é uma tabela com ID, nome, status, prioridade, pontos, pessoas e
-link. Use `--json` quando um script precisar de todos os campos retornados pela
-API. Para encontrar uma tarefa fora de uma List conhecida, use `task search`.
+link. Com `--json`, `data` traz `{ tasks: [] }` e o CLI devolve as tarefas
+completas da API. Para encontrar uma tarefa fora de uma List conhecida, use
+`task search`.
 
 ### `clickupfy task get <task-id>`
 
-Obtém uma tarefa e prepara uma fila chamada `execution`, que inclui tarefa,
-subtarefas e checklist items em uma ordem estável. Sem opção de formato, imprime
-uma tabela compacta da fila. `--json` mostra a estrutura; `--markdown` junta
-metadados, descrição e itens em um documento; `--raw` mostra apenas a resposta
-original da API. Escolha exatamente um desses formatos.
+Obtém uma tarefa e monta uma fila chamada `execution`, que inclui a tarefa, suas
+subtarefas e seus checklist items em uma ordem estável. Sem opção de formato,
+imprime uma tabela compacta da fila. Com `--json`, `data` traz
+`{ task, execution: { summary, items[] } }`. `--markdown` junta metadados,
+descrição e itens em um documento; `--raw` devolve apenas a resposta original da
+API.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
 | `<task-id>` | sim | Tarefa raiz a consultar. |
 | `--raw` | não | Retorna somente a resposta original do ClickUp. |
 | `--markdown` | não | Renderiza descrição e fila em Markdown. |
-| `--json` | não | Opção global que devolve tarefa e fila estruturada. |
 
 Exemplos:
 
@@ -85,29 +93,31 @@ clickupfy task get 86abc123 --raw
 ```
 
 ```bash
-clickupfy --json task get 86abc123
+clickupfy task get 86abc123 --json
 ```
 
 ```bash
-clickupfy --account produto task get 86abc123 --markdown
+clickupfy task get 86abc123 --markdown --account produto
 ```
 
-`execution.items` usa `task:<id>` para tarefas e subtarefas e
-`checklist:<checklist-id>:<item-id>` para itens de checklist. `parentKey` e
-`depth` preservam a relação de parentesco. Não tente combinar `--raw`,
-`--markdown` e `--json`: o CLI recusa a ambiguidade de formato.
+Cada item de `execution.items` traz `key` estável (`task:<id>` ou
+`checklist:<checklist-id>:<item-id>`), `type`, `parentKey`, `depth`, `name`,
+`done`, `state` (`done` ou `pending`) e `action.complete` com o comando do CLI e
+a chamada MCP que conclui o item. A ordem segue a tarefa, seus checklists e as
+subtarefas, pelo `orderindex`. `--raw` junto de `--markdown` sai com `2`.
 
 ### `clickupfy task search`
 
-Busca tarefas em todo o workspace associado ao perfil. É uma consulta
-paginada, limitada por `--max-pages`, que começa em uma e aceita no máximo cem
-páginas. O texto de `--query` procura nome, descrição ou ID.
+Busca tarefas em todo o workspace associado ao perfil. É uma consulta paginada,
+limitada por `--max-pages`, que aceita de `1` a `100` páginas de 100 tarefas e
+usa `100` como padrão. O texto de `--query` procura ID, ID personalizado, nome
+ou descrição.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
-| `--query <texto>` | não | Termo de busca no nome, descrição ou ID. |
-| `--status <status...>` | não | Filtra por status. |
-| `--assignee <ids...>` | não | Filtra por responsáveis. |
+| `--query <texto>` | não | Termo de busca em ID, nome ou descrição. |
+| `--status <valores>` | não | Filtra por status, separados por vírgula. |
+| `--assignee <valores>` | não | Filtra por responsáveis, separados por vírgula. |
 | `--include-closed` | não | Inclui tarefas concluídas. |
 | `--max-pages <n>` | não | Limite entre `1` e `100`; o padrão é `100`. |
 
@@ -122,7 +132,7 @@ clickupfy task search --query 86abc123
 ```
 
 ```bash
-clickupfy task search --query "API" --status "em andamento"
+clickupfy task search --query "API" --status "in progress"
 ```
 
 ```bash
@@ -130,106 +140,114 @@ clickupfy task search --assignee 42 --include-closed --max-pages 5
 ```
 
 ```bash
-clickupfy --account cliente-a --json task search --query "checkout" --max-pages 10
+clickupfy task search --query "checkout" --max-pages 10 --account cliente-a --json
 ```
 
 Se mais de uma tarefa corresponder ao pedido, apresente os IDs e nomes para a
-pessoa escolher a correta antes de executar uma escrita. Em MCP de projeto, use
-`clickupfy_tasks_search`: essa ferramenta é limitada à List fixa, enquanto este
-comando percorre o workspace inteiro.
+pessoa escolher a correta antes de executar uma escrita. Em um MCP de projeto, a
+tool `clickupfy_tasks_search` percorre somente a List fixada; sem List fixada,
+percorre o workspace, como o CLI.
 
 ## Criação e atualização de tarefas
 
 ### `clickupfy task create`
 
-Cria tarefa ou subtarefa na List indicada. `--list` e `--name` são obrigatórios.
-Use `--description` para texto simples ou `--markdown-content` quando a
-descrição precisa preservar Markdown. O CLI não impõe uma regra de prioridade,
-status ou pontos do seu time; ele transmite valores válidos para a API.
+Cria tarefa ou subtarefa na List indicada. `--name` é obrigatório e `--list` é
+obrigatória no CLI; no MCP a List fixada é o padrão. Use `--description` para
+texto simples ou `--markdown-content` quando a descrição precisa preservar
+Markdown. O comando não impõe uma regra de prioridade, status ou pontos do seu
+time; ele transmite valores válidos para a API.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
-| `--list <id>` | sim | List de destino. |
+| `--list <id>` | condicional | List de destino. |
 | `--name <nome>` | sim | Nome da tarefa. |
-| `--description <texto>` | não | Descrição em texto. |
+| `--description <texto>` | não | Descrição em texto simples. |
 | `--markdown-content <markdown>` | não | Descrição em Markdown. |
 | `--status <status>` | não | Status inicial existente na List. |
 | `--priority <n>` | não | `1` urgente, `2` alta, `3` normal, `4` baixa. |
-| `--assignee <ids...>` | não | IDs numéricos das pessoas responsáveis. |
+| `--assignee <valores>` | não | IDs numéricos das pessoas responsáveis, separados por vírgula. |
 | `--parent <task-id>` | não | Cria como subtarefa da tarefa informada. |
-| `--start-date <AAAA-MM-DD>` | não | Data de início. |
-| `--due-date <AAAA-MM-DD>` | não | Data de entrega. |
+| `--start-date <AAAA-MM-DD>` | não | Data de início, gravada no começo do dia no fuso local. |
+| `--due-date <AAAA-MM-DD>` | não | Data de entrega, gravada no começo do dia no fuso local. |
 | `--points <n>` | não | Sprint Points iguais ou maiores que zero. |
 
 Exemplos:
 
 ```bash
-clickupfy task create --list 3001 --name "Corrigir retorno da API"
+clickupfy task create --list 901328052926 --name "Corrigir retorno da API"
 ```
 
 ```bash
 clickupfy task create \
-  --list 3001 \
+  --list 901328052926 \
   --name "Documentar autenticação" \
   --description "Explicar o fluxo de login."
 ```
 
 ```bash
 clickupfy task create \
-  --list 3001 \
+  --list 901328052926 \
   --name "Criar testes" \
   --markdown-content "## Casos\n\n- Login válido\n- Senha inválida"
 ```
 
 ```bash
 clickupfy task create \
-  --list 3001 \
+  --list 901328052926 \
   --name "Implementar refresh token" \
-  --status "em andamento" \
+  --status "in progress" \
   --priority 2 \
-  --assignee 42 57 \
-  --start-date 2026-08-10 \
-  --due-date 2026-08-14 \
+  --assignee 42,57 \
+  --start-date 2026-11-16 \
+  --due-date 2026-11-20 \
   --points 5
 ```
 
 ```bash
-clickupfy --account produto task create \
-  --list 3001 \
+clickupfy task create \
+  --list 901328052926 \
   --parent 86abc123 \
   --name "Cobrir expiração de sessão" \
-  --markdown-content "Adicionar casos de teste para sessão expirada."
+  --markdown-content "Adicionar casos de teste para sessão expirada." \
+  --account produto
 ```
 
+As datas `--start-date` e `--due-date` viram o início do dia no fuso local da
+máquina e são enviadas com `start_date_time` e `due_date_time` iguais a `false`,
+para o ClickUp mostrar só a data. A versão 0.9.0 gravava meia-noite UTC, então
+uma tarefa criada agora pode aparecer com um horário diferente do que aparecia
+antes.
+
 Consulte `clickupfy list get <list-id>` para copiar o status exato. Depois da
-criação, guarde o ID devolvido e chame `task get` para confirmar pai, datas,
-responsáveis e conteúdo. Não use `--parent` para mover uma tarefa existente;
-ele só define o pai na criação.
+criação, guarde o `id` devolvido e chame `task get` para confirmar pai, datas,
+responsáveis e conteúdo. `--parent` só define o pai na criação; ele não move uma
+tarefa existente.
 
 ### `clickupfy task update <task-id>`
 
 Atualiza campos de uma tarefa existente. Pelo menos um campo é obrigatório.
-`--clear-start-date` e `--clear-due-date` removem as respectivas datas; quando
-uma flag de remoção e uma nova data aparecem juntas, a remoção prevalece.
+`--clear-start-date` e `--clear-due-date` removem as respectivas datas; informar
+a flag de remoção e a data nova na mesma chamada sai com `2`.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
 | `<task-id>` | sim | Tarefa a alterar. |
 | `--name <nome>` | não | Novo nome. |
-| `--description <texto>` | não | Nova descrição textual. |
+| `--description <texto>` | não | Nova descrição em texto simples. |
 | `--markdown-content <markdown>` | não | Nova descrição em Markdown. |
 | `--status <status>` | não | Status existente na List. |
 | `--priority <n>` | não | Prioridade de `1` a `4`. |
-| `--start-date <AAAA-MM-DD>` | não | Nova data de início. |
+| `--start-date <AAAA-MM-DD>` | não | Nova data de início, no começo do dia local. |
 | `--clear-start-date` | não | Remove a data de início. |
-| `--due-date <AAAA-MM-DD>` | não | Nova data de entrega. |
+| `--due-date <AAAA-MM-DD>` | não | Nova data de entrega, no começo do dia local. |
 | `--clear-due-date` | não | Remove a data de entrega. |
 | `--points <n>` | não | Sprint Points não negativos. |
 
 Exemplos:
 
 ```bash
-clickupfy task update 86abc123 --status "em andamento"
+clickupfy task update 86abc123 --status "in progress"
 ```
 
 ```bash
@@ -241,11 +259,14 @@ clickupfy task update 86abc123 --priority 1 --points 8
 ```
 
 ```bash
-clickupfy task update 86abc123 --start-date 2026-08-10 --due-date 2026-08-14
+clickupfy task update 86abc123 --start-date 2026-11-16 --due-date 2026-11-20
 ```
 
 ```bash
-clickupfy --account produto task update 86abc123 --markdown-content "## Entrega\n\nPublicar a documentação atualizada." --clear-due-date
+clickupfy task update 86abc123 \
+  --markdown-content "## Entrega\n\nPublicar a documentação atualizada." \
+  --clear-due-date \
+  --account produto
 ```
 
 `--description` e `--markdown-content` representam alternativas de conteúdo;
@@ -255,10 +276,11 @@ compare cada campo solicitado com o estado devolvido.
 
 ### `clickupfy task delete <task-id>`
 
-Exclui permanentemente uma tarefa. Em terminal interativo, pede confirmação;
-em automação, exige `--yes`. Leia nome, List e relação com Sprint antes de
-executar. A exclusão não é uma forma de retirar a tarefa de uma Sprint: use
-`sprint remove-task` para remover apenas a associação.
+Exclui permanentemente uma tarefa. Em terminal interativo, pede confirmação; em
+automação, exige `--yes`, senão sai com `2`. Leia nome, List e relação com
+Sprint antes de executar. A exclusão não é uma forma de retirar a tarefa de uma
+Sprint: use `sprint remove-task` para remover apenas a associação. Em JSON,
+`data` traz `{ deleted, taskId }`.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -276,11 +298,11 @@ clickupfy task delete 86abc123 --yes
 ```
 
 ```bash
-clickupfy --account produto task delete 86abc123
+clickupfy task delete 86abc123 --account produto --yes
 ```
 
 ```bash
-clickupfy --account cliente-a task delete 77def456 --yes
+clickupfy task delete 77def456 --yes --account cliente-a
 ```
 
 ```bash
@@ -288,8 +310,8 @@ clickupfy task get 86abc123 && clickupfy task delete 86abc123 --yes
 ```
 
 O último exemplo lê a tarefa no mesmo terminal, mas ainda exige que você
-compare o resultado e tenha autorização explícita. No MCP, a ferramenta
-equivalente exige o campo literal `confirm: true`.
+compare o resultado e tenha autorização explícita. Recusar a confirmação sai com
+`130`. No MCP, a tool equivalente exige o campo literal `confirm: true`.
 
 ## Checklists e comentários
 
@@ -319,60 +341,62 @@ clickupfy checklist create 77def456 --name "Publicação"
 ```
 
 ```bash
-clickupfy --account produto checklist create 86abc123 --name "Aceite"
+clickupfy checklist create 86abc123 --name "Aceite" --account produto
 ```
 
 ```bash
-clickupfy --json checklist create 86abc123 --name "Regressão"
+clickupfy checklist create 86abc123 --name "Regressão" --json
 ```
 
-Guarde o ID retornado: `item-create` usa o ID do checklist, não o ID da tarefa.
-Crie o checklist na tarefa que realmente possui os itens; uma subtarefa pode
-ter checklist próprio e não deve receber os itens da tarefa pai por acidente.
+Guarde o ID retornado em `{ checklist }`: `item-create` usa o ID do checklist,
+não o ID da tarefa. Crie o checklist na tarefa que realmente possui os itens;
+uma subtarefa pode ter checklist próprio e não deve receber os itens da tarefa
+pai por acidente.
 
 ### `clickupfy checklist item-create <checklist-id> --name <nome>`
 
-Acrescenta um item aberto a um checklist. `--assignee` é opcional e recebe um
-ID numérico. O comando não aceita o ID da tarefa porque o checklist já define
-seu proprietário.
+Acrescenta um item aberto a um checklist. `--assignee` é opcional e recebe um ID
+numérico. O comando não aceita o ID da tarefa porque o checklist já define seu
+proprietário.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
 | `<checklist-id>` | sim | Checklist que receberá o item. |
 | `--name <nome>` | sim | Texto do item. |
-| `--assignee <id>` | não | Pessoa responsável pelo item. |
+| `--assignee <id>` | não | ID numérico da pessoa responsável. |
 
 Exemplos:
 
 ```bash
-clickupfy checklist item-create check-1 --name "Executar testes unitários"
+clickupfy checklist item-create b955c4dc --name "Executar testes unitários"
 ```
 
 ```bash
-clickupfy checklist item-create check-1 --name "Executar build"
+clickupfy checklist item-create b955c4dc --name "Executar build"
 ```
 
 ```bash
-clickupfy checklist item-create check-1 --name "Revisar documentação" --assignee 42
+clickupfy checklist item-create b955c4dc --name "Revisar documentação" --assignee 42
 ```
 
 ```bash
-clickupfy --account produto checklist item-create check-2 --name "Conferir changelog"
+clickupfy checklist item-create 3f1a7c22 --name "Conferir changelog" --account produto
 ```
 
 ```bash
-clickupfy --json checklist item-create check-3 --name "Validar publicação" --assignee 57
+clickupfy checklist item-create 3f1a7c22 --name "Validar publicação" --assignee 57 --json
 ```
 
 Um item deve descrever uma verificação observável, não uma promessa genérica.
 Depois de criar itens, execute `task get --json` para localizar o `item-id` e
-confirmar que todos começam abertos.
+confirmar que todos começam abertos. `--assignee` que não é inteiro sai com `2`.
 
 ### `clickupfy checklist set <task-id> <checklist-id> <item-id>`
 
 Marca um item como concluído com `--resolved` ou o reabre com `--open`. Escolha
 exatamente uma flag. O ClickUpfy primeiro confirma que o item pertence à tarefa
-raiz informada, grava o estado e relê a tarefa para confirmar o resultado.
+raiz informada ou a uma subtarefa dela, grava o estado e relê a tarefa para
+confirmar o resultado.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -385,34 +409,41 @@ raiz informada, grava o estado e relê a tarefa para confirmar o resultado.
 Exemplos:
 
 ```bash
-clickupfy checklist set 86abc123 check-1 item-1 --resolved
+clickupfy checklist set 86abc123 b955c4dc 21e08dc8 --resolved
 ```
 
 ```bash
-clickupfy checklist set 86abc123 check-1 item-1 --open
+clickupfy checklist set 86abc123 b955c4dc 21e08dc8 --open
 ```
 
 ```bash
-clickupfy --account produto checklist set 86abc123 check-2 item-4 --resolved
+clickupfy checklist set 86abc123 3f1a7c22 8b2d7e10 --resolved --account produto
 ```
 
 ```bash
-clickupfy --json checklist set 77def456 check-3 item-2 --resolved
+clickupfy checklist set 77def456 3f1a7c22 8b2d7e10 --resolved --json
 ```
 
 ```bash
-clickupfy checklist set 77def456 check-3 item-2 --open
+clickupfy checklist set 77def456 3f1a7c22 8b2d7e10 --open
 ```
 
-Não use `--resolved --open` nem omita ambas: o CLI recusa as duas situações.
-Um `item-id` de outro checklist também é recusado pela releitura. Marque o
-item somente depois da validação correspondente.
+O `data` do `--json` traz o item na forma da fila de `task get`: `key`, `type`,
+`taskId`, `parentKey`, `depth`, `name`, `done`, `state`, `checklistId`,
+`checklistName` e `action`. Não use `--resolved --open` nem omita as duas: o
+comando sai com `2`. Item que não pertence ao checklist da tarefa sai com `6`, e
+estado não confirmado na releitura sai com `5`.
 
 ### `clickupfy comment list --task <id>`
 
-Lista os comentários de uma tarefa com autoria, data e texto. A API pode
-representar o conteúdo em formatos diferentes; o ClickUpfy o normaliza para a
-coluna `text` na tabela compacta.
+Lista os comentários de uma tarefa com autoria, data e texto, percorrendo todas
+as páginas da API. O ClickUpfy normaliza o conteúdo para o campo `text` da
+tabela compacta. Com `--json`, `data` traz `{ comments: [] }` com `id`, `user`,
+`date` e `text`.
+
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `--task <id>` | sim | Tarefa cujos comentários serão lidos. |
 
 Exemplos:
 
@@ -425,20 +456,20 @@ clickupfy comment ls --task 86abc123
 ```
 
 ```bash
-clickupfy --json comment list --task 86abc123
+clickupfy comment list --task 86abc123 --json
 ```
 
 ```bash
-clickupfy --account produto comment list --task 86abc123
+clickupfy comment list --task 86abc123 --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json comment list --task 77def456
+clickupfy comment list --task 77def456 --account cliente-a --json
 ```
 
-Leia os comentários antes de atualizar status ou publicar outro progresso,
-pois podem conter uma orientação nova. Nunca publique credenciais, dados
-pessoais, URLs assinadas ou logs extensos em um comentário.
+Leia os comentários antes de atualizar status ou publicar outro progresso, pois
+podem conter uma orientação nova. Nunca publique credenciais, dados pessoais,
+URLs assinadas ou logs extensos em um comentário.
 
 ### `clickupfy comment create --task <id> --text <texto>`
 
@@ -450,7 +481,7 @@ mudança de escopo ou conclusão, sempre com informação verificável.
 | --- | --- | --- |
 | `--task <id>` | sim | Tarefa que receberá o comentário. |
 | `--text <texto>` | sim | Conteúdo do comentário. |
-| `--notify-all` | não | Notifica participantes da tarefa. |
+| `--notify-all` | não | Notifica os participantes da tarefa. |
 
 Exemplos:
 
@@ -467,15 +498,17 @@ clickupfy comment create --task 86abc123 --text "Aguardando acesso ao ambiente d
 ```
 
 ```bash
-clickupfy --account produto comment create --task 86abc123 --text "Documentação e ebook foram atualizados."
+clickupfy comment create --task 86abc123 --text "Documentação e ebook foram atualizados." --account produto
 ```
 
 ```bash
-clickupfy --json comment create --task 77def456 --text "Validação final concluída." --notify-all
+clickupfy comment create --task 77def456 --text "Validação final concluída." --notify-all --json
 ```
 
-Reler `comment list` confirma que o comentário ficou na tarefa pretendida e
-que o texto chegou completo. O comando não modifica status, timer ou checklist.
+O `data` do `--json` traz `{ id, hist_id, date }`. Reler `comment list` confirma
+que o comentário ficou na tarefa pretendida e que o texto chegou completo. O
+comando não modifica status, timer ou checklist. Obrigatória ausente sai com
+`2`.
 
 ## Time tracking
 
@@ -483,7 +516,8 @@ que o texto chegou completo. O comando não modifica status, timer ou checklist.
 
 Consulta o time entry em execução no workspace associado ao perfil. Chame este
 comando antes de `time start` para não iniciar outro registro sem saber qual
-tarefa já está em andamento.
+tarefa já está em andamento. Sem cronômetro ativo, `data` traz `{ entry: null }`
+com exit code `0`.
 
 Exemplos:
 
@@ -492,15 +526,15 @@ clickupfy time current
 ```
 
 ```bash
-clickupfy --json time current
+clickupfy time current --json
 ```
 
 ```bash
-clickupfy --account produto time current
+clickupfy time current --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json time current
+clickupfy time current --account cliente-a --json
 ```
 
 ```bash
@@ -515,6 +549,11 @@ Se houver entrada ativa para outra tarefa, pare e peça orientação antes de us
 Inicia um time entry associado à tarefa. A descrição é opcional e deve dizer o
 trabalho em curso. O registro pertence ao usuário autenticado pelo perfil e ao
 workspace desse perfil.
+
+O ClickUp mantém um cronômetro por pessoa. Quando já existe um em outra tarefa,
+o ClickUp troca o cronômetro; antes de iniciar, o comando consulta o atual,
+avisa no stderr e devolve a tarefa anterior em `previous`, sem impedir a troca.
+`previous` traz `id`, `taskId`, `taskName`, `description` e `start`.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -536,22 +575,23 @@ clickupfy time start --task 86abc123 --description "Testes de regressão"
 ```
 
 ```bash
-clickupfy --account produto time start --task 86abc123 --description "Revisão de documentação"
+clickupfy time start --task 86abc123 --description "Revisão de documentação" --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a time start --task 77def456 --description "Correção da integração"
+clickupfy time start --task 77def456 --description "Correção da integração" --account cliente-a
 ```
 
-Depois da chamada, execute `time current` para confirmar o item ativo. Iniciar
-um timer não muda o status da tarefa nem avisa participantes; essas ações usam
-`task update` e `comment create` separadamente.
+Em JSON, `data` traz `{ entry, previous? }`. Depois da chamada, execute
+`time current` para confirmar o item ativo. Iniciar um cronômetro não muda o
+status da tarefa nem avisa participantes; essas ações usam `task update` e
+`comment create` separadamente. `--task` ausente sai com `2`.
 
 ### `clickupfy time stop`
 
-Encerra o time entry em execução no workspace do perfil. Não recebe argumento
-de tarefa: ele para o registro atual. Por isso a consulta anterior é necessária
-em trabalhos paralelos ou quando mais de uma pessoa usa o mesmo perfil local.
+Encerra o time entry em execução no workspace do perfil. Não recebe argumento de
+tarefa: ele para o registro atual. Por isso a consulta anterior é necessária em
+trabalhos paralelos ou quando mais de uma pessoa usa o mesmo perfil local.
 
 Exemplos:
 
@@ -560,11 +600,11 @@ clickupfy time stop
 ```
 
 ```bash
-clickupfy --account produto time stop
+clickupfy time stop --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a time stop
+clickupfy time stop --account cliente-a
 ```
 
 ```bash
@@ -572,13 +612,14 @@ clickupfy time stop && clickupfy time current
 ```
 
 ```bash
-clickupfy --json time stop
+clickupfy time stop --json
 ```
 
 O quarto exemplo verifica que não há entrada em execução após o encerramento.
-Parar o tempo não fecha tarefa, não altera seus pontos e não resolve checklist
-items. Registre a conclusão do trabalho nas interfaces próprias se elas também
-forem autorizadas.
+Sem cronômetro ativo, o comando sai com `5` e a mensagem do ClickUp. Parar o
+tempo não fecha tarefa, não altera seus pontos e não resolve checklist items.
+Registre a conclusão do trabalho nas interfaces próprias se elas também forem
+autorizadas.
 
 ## Tags de tarefas
 
@@ -586,35 +627,28 @@ forem autorizadas.
 
 Adiciona uma tag a uma tarefa existente pela API do ClickUp. As demais tags
 permanecem na tarefa. Cada execução adiciona um único nome; coloque nomes com
-espaços entre aspas. O comando não gerencia as cores ou o catálogo de tags do Space.
+espaços entre aspas. O comando não gerencia as cores ou o catálogo de tags do
+Space.
 
 | Parâmetro | Tipo | Obrigatório | Padrão e uso |
 | --- | --- | --- | --- |
 | `<task-id>` | string | sim | ID da tarefa ou subtarefa. |
 | `<tag>` | string | sim | Nome exato da tag, sem valor padrão; nomes vazios são recusados. |
-| `--custom-task-id` | boolean | não | Desativado; quando presente, usa o workspace do perfil para resolver o ID personalizado. |
+| `--custom-task-id` | booleano | não | Desativado; quando presente, usa o workspace do perfil para resolver o ID personalizado. |
 | `--account <perfil>` | string | não | Perfil ativo por padrão. |
-| `--json` | boolean | não | Desativado; imprime `added`, `taskId` e `tagName` em JSON. |
-
-A API key do perfil precisa ter permissão para alterar a tarefa. Erros de
-permissão, tarefa inexistente e outras recusas do ClickUp são propagados sem
-imprimir sucesso. A saída comum confirma a associação, e a saída JSON contém
-`{"added":true,"taskId":"task-1","tagName":"bug"}`. Essa confirmação indica
-que a API aceitou a chamada; confira as tags persistidas com `task get --raw`.
-Para IDs personalizados, use o ID interno retornado pela tarefa nessa leitura.
 
 Exemplos:
 
 Adicione uma tag pelo ID interno:
 
 ```bash
-clickupfy task add-tag task-1 bug
+clickupfy task add-tag 86abc123 bug
 ```
 
 Preserve um nome com espaço e acento:
 
 ```bash
-clickupfy task add-tag task-1 "em revisão"
+clickupfy task add-tag 86abc123 "em revisão"
 ```
 
 Use o workspace do perfil ativo com um ID personalizado:
@@ -626,15 +660,20 @@ clickupfy task add-tag DEV-42 backend --custom-task-id
 Selecione o perfil para uma tarefa de outro workspace:
 
 ```bash
-clickupfy --account produto task add-tag task-2 documentação
+clickupfy task add-tag 77def456 documentação --account produto
 ```
 
 Capture o resultado em um script e consulte a tarefa:
 
 ```bash
-clickupfy --json task add-tag task-1 "QA / revisão"
-clickupfy task get task-1 --raw
+clickupfy --json task add-tag 86abc123 "QA / revisão"
 ```
+
+O `data` do `--json` traz `{ added, taskId, tagName }`. Essa confirmação indica
+que a API aceitou a chamada; confira as tags persistidas com
+`task get --raw`. Para IDs personalizados, use o ID interno retornado pela
+tarefa nessa leitura. Erros de permissão, tarefa inexistente e outras recusas do
+ClickUp são propagados sem imprimir sucesso.
 
 O endpoint usado é [Add Tag To Task](https://developer.clickup.com/reference/addtagtotask),
 com `POST /task/{task_id}/tag/{tag_name}`. Nomes e IDs são codificados na URL;
@@ -642,150 +681,172 @@ IDs personalizados enviam `custom_task_ids=true` e `team_id` na query.
 
 ## Gestão do catálogo de tags
 
-As operações usam o perfil ativo ou `--account` no CLI e `account` no MCP.
-A API key precisa ter acesso ao Space ou à tarefa. Falhas do ClickUp são
-propagadas; no MCP, retornam `isError: true`. Ferramentas de escrita não ficam
-disponíveis em modo somente leitura. O MCP aceita `spaceId` ou usa o Space
-fixado na configuração; o CLI exige `--space` nos comandos `tag`.
+As operações usam o perfil ativo ou `--account` no CLI e `account` no MCP. A API
+key precisa ter acesso ao Space ou à tarefa. Falhas do ClickUp são propagadas;
+no MCP, retornam `isError: true`. Ferramentas de escrita não ficam disponíveis em
+modo somente leitura. O MCP aceita `spaceId` ou usa o Space fixado na
+configuração; o CLI exige `--space` nos comandos `tag`.
 
 ### `clickupfy tag list --space <id>`
 
-Lista nomes e cores das tags de um Space. A saída JSON é um array; o terminal mostra uma tabela. A consulta não altera tags.
+Lista nomes e cores das tags de um Space. Com `--json`, `data` traz
+`{ tags: [] }` com `name`, `tag_fg` e `tag_bg`; o terminal mostra uma tabela. A
+consulta não altera tags.
 
-`spaceId` é string, opcional quando o MCP fixa o Space. No CLI, `--space` é obrigatório.
+`spaceId` é string, opcional quando o MCP fixa o Space. No CLI, `--space` é
+obrigatória.
 
 Exemplos:
 
 ```bash
-clickupfy tag list --space 123
+clickupfy tag list --space 90070363783
 ```
 
 ```bash
-clickupfy --json tag list --space 123
+clickupfy tag list --space 90070363783 --json
 ```
 
 ```bash
-clickupfy --account dev tag list --space 123
+clickupfy tag list --space 90070363783 --account dev
 ```
 
 ```bash
-clickupfy --account produto --json tag list --space 456
+clickupfy tag list --space 9007154145 --account produto --json
 ```
 
 ```bash
-clickupfy --json tag list --space 456 > tags.json
+clickupfy tag list --space 9007154145 --json > tags.json
 ```
 
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo ou
+`task get <task-id> --raw` para conferir as associações da tarefa.
 
 ### `clickupfy tag create <name> --space <id>`
 
-Cria uma tag no catálogo do Space com nome e cores. Retorna `created`, `spaceId` e `name`. A associação a tarefas é feita separadamente com `task add-tag`.
+Cria uma tag no catálogo do Space com nome e cores. O `data` traz
+`{ created, spaceId, name }`. A associação a tarefas é feita separadamente com
+`task add-tag`.
 
-`name`, `foreground` e `background` são strings obrigatórias. As cores usam `#RRGGBB`. No CLI, use `--foreground` e `--background`. Nome vazio e cores inválidas são recusados.
+`name`, `foreground` e `background` são obrigatórios. As cores usam `#RRGGBB`.
+No CLI, use `--foreground` e `--background`. Nome vazio e cor fora do formato são
+recusados com `2`.
 
 Exemplos:
 
 ```bash
-clickupfy tag create bug --space 123 --foreground "#ffffff" --background "#cc0000"
+clickupfy tag create bug --space 90070363783 --foreground "#ffffff" --background "#cc0000"
 ```
 
 ```bash
-clickupfy tag create "em revisão" --space 123 --foreground "#000000" --background "#ffcc00"
+clickupfy tag create "em revisão" --space 90070363783 --foreground "#000000" --background "#ffcc00"
 ```
 
 ```bash
-clickupfy --json tag create backend --space 123 --foreground "#ffffff" --background "#112233"
+clickupfy tag create backend --space 90070363783 --foreground "#ffffff" --background "#112233" --json
 ```
 
 ```bash
-clickupfy --account produto tag create documentação --space 456 --foreground "#ffffff" --background "#336699"
+clickupfy tag create documentação --space 9007154145 --foreground "#ffffff" --background "#336699" --account produto
 ```
 
 ```bash
-clickupfy tag create "QA / revisão" --space 123 --foreground "#ffffff" --background "#663399"
+clickupfy tag create "QA / revisão" --space 90070363783 --foreground "#ffffff" --background "#663399"
 ```
 
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
+Sem `--space` no CLI, o comando sai com `2`. Após uma escrita, consulte
+`tag list --space <id>` para conferir o catálogo ou `task get <task-id> --raw`
+para conferir as associações da tarefa.
 
 ### `clickupfy tag update <tag> --space <id>`
 
-Renomeia a tag ou altera suas cores no Space. Consulta a definição atual e preserva os campos omitidos. Retorna `updated`, `spaceId` e `name`. Tag ausente e atualização sem campos são recusadas.
+Renomeia a tag ou altera suas cores no Space. O comando consulta a definição
+atual e preserva os campos omitidos. O `data` traz `{ updated, spaceId, name }`.
+Tag ausente sai com `6`; atualização sem nenhum campo de alteração sai com `2`.
 
-`tagName` é o nome atual obrigatório; no CLI, é o argumento `<tag>`. `name`, `foreground` e `background` são strings opcionais, com pelo menos um campo informado. No CLI, use `--name`, `--foreground` e `--background`.
+`tagName` é o nome atual obrigatório; no CLI, é o argumento `<tag>`. `name`,
+`foreground` e `background` são opcionais, com pelo menos um campo informado. No
+CLI, use `--name`, `--foreground` e `--background`.
 
 Exemplos:
 
 ```bash
-clickupfy tag update bug --space 123 --name defeito
+clickupfy tag update bug --space 90070363783 --name defeito
 ```
 
 ```bash
-clickupfy tag update bug --space 123 --foreground "#ffffff"
+clickupfy tag update bug --space 90070363783 --foreground "#ffffff"
 ```
 
 ```bash
-clickupfy tag update bug --space 123 --background "#cc0000"
+clickupfy tag update bug --space 90070363783 --background "#cc0000"
 ```
 
 ```bash
-clickupfy tag update "em revisão" --space 123 --name revisada --background "#00aa00"
+clickupfy tag update "em revisão" --space 90070363783 --name revisada --background "#00aa00"
 ```
 
 ```bash
-clickupfy --account produto --json tag update backend --space 456 --foreground "#ffffff" --background "#112233"
+clickupfy tag update backend --space 9007154145 --foreground "#ffffff" --background "#112233" --account produto --json
 ```
 
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo ou
+`task get <task-id> --raw` para conferir as associações da tarefa.
 
 ### `clickupfy tag delete <tag> --space <id>`
 
-Exclui a tag do Space. Consulte as tarefas que a utilizam antes de executar essa alteração. Retorna `deleted`, `spaceId` e `name`. Para remover somente a associação a uma tarefa, use `task remove-tag`.
+Exclui a tag do Space e de todas as tarefas que a usavam. Consulte as tarefas que
+a utilizam antes de executar essa alteração. O `data` traz
+`{ deleted, spaceId, name }`. Para remover somente a associação a uma tarefa, use
+`task remove-tag`.
 
-`tagName` é string obrigatória. No MCP, `confirm: true` é obrigatório. No CLI, `--yes` dispensa o prompt; sem terminal interativo, a confirmação precisa ser explícita. O cliente consulta a definição da tag para enviar o corpo DELETE exigido pela API.
+`tagName` é obrigatório. No MCP, `confirm: true` é obrigatório. No CLI, `--yes`
+dispensa o prompt; sem terminal interativo, a confirmação precisa ser explícita.
+Recusar a confirmação sai com `130`. O cliente consulta a definição da tag para
+enviar o corpo DELETE exigido pela API.
 
 Exemplos:
 
 ```bash
-clickupfy tag delete bug --space 123 --yes
+clickupfy tag delete bug --space 90070363783 --yes
 ```
 
 ```bash
-clickupfy tag delete "em revisão" --space 123 --yes
+clickupfy tag delete "em revisão" --space 90070363783 --yes
 ```
 
 ```bash
-clickupfy --json tag delete backend --space 123 --yes
+clickupfy tag delete backend --space 90070363783 --yes --json
 ```
 
 ```bash
-clickupfy --account produto tag delete documentação --space 456 --yes
+clickupfy tag delete documentação --space 9007154145 --yes --account produto
 ```
 
 ```bash
-clickupfy tag delete "QA / revisão" --space 123 --yes
+clickupfy tag delete "QA / revisão" --space 90070363783 --yes
 ```
 
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo ou
+`task get <task-id> --raw` para conferir as associações da tarefa.
 
 ### `clickupfy task remove-tag <task-id> <tag>`
 
-Remove uma tag da tarefa e mantém a definição no Space. Retorna `removed`, `taskId` e `tagName`. As outras associações da tarefa permanecem intactas.
+Remove uma tag da tarefa e mantém a definição no Space. O `data` traz
+`{ removed, taskId, tagName }`. As outras associações da tarefa permanecem
+intactas.
 
-`taskId` e `tagName` são strings obrigatórias. `customTaskId` é boolean opcional, desativado por padrão; no CLI, use `--custom-task-id`. IDs personalizados usam o workspace do perfil.
+`taskId` e `tagName` são obrigatórios. `customTaskId` é booleano opcional,
+desativado por padrão; no CLI, use `--custom-task-id`. IDs personalizados usam o
+workspace do perfil.
 
 Exemplos:
 
 ```bash
-clickupfy task remove-tag task-1 bug
+clickupfy task remove-tag 86abc123 bug
 ```
 
 ```bash
-clickupfy task remove-tag task-1 "em revisão"
+clickupfy task remove-tag 86abc123 "em revisão"
 ```
 
 ```bash
@@ -793,12 +854,12 @@ clickupfy task remove-tag DEV-42 backend --custom-task-id
 ```
 
 ```bash
-clickupfy --account produto --json task remove-tag task-2 documentação
+clickupfy task remove-tag 77def456 documentação --account produto --json
 ```
 
 ```bash
 clickupfy task remove-tag sub-1 "QA / revisão"
 ```
 
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
+Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo ou
+`task get <task-id> --raw` para conferir as associações da tarefa.

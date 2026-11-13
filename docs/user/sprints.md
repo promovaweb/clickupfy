@@ -12,8 +12,11 @@
 
 No ClickUp, uma Sprint é uma List dentro de um Sprint Folder. O ClickUpfy
 considera Sprint uma List que possua `start_date` e `due_date`. Lists comuns
-do mesmo Folder ficam fora do resultado, salvo quando
-`--include-regular` for usado.
+do mesmo Folder ficam fora do resultado, salvo quando `--include-regular` for
+usado.
+
+O status (`planned`, `active` ou `completed`) é calculado contra a data de
+referência: hoje ou o valor de `--at <AAAA-MM-DD>`.
 
 O CLI não cria Sprints nem habilita o Sprint ClickApp. Essas operações
 continuam na interface do ClickUp.
@@ -33,7 +36,8 @@ clickupfy sprint list \
 ```
 
 Confira nome, ID, início e término. Um período ausente indica uma List comum ou
-uma Sprint ainda não configurada corretamente.
+uma Sprint ainda não configurada corretamente. `--archived` inclui Lists
+arquivadas.
 
 ## Encontre a Sprint atual
 
@@ -45,6 +49,12 @@ O comando espera uma única Sprint ativa na data atual. Nenhuma Sprint ativa ou
 mais de uma sobreposta produz uma falha explícita. Corrija o calendário no
 ClickUp antes de automatizar a seleção.
 
+Para calcular o estado em outra data, use `--at`:
+
+```bash
+clickupfy sprint current --folder <sprint-folder-id> --at 2026-11-13
+```
+
 ## Leia o relatório
 
 ```bash
@@ -53,9 +63,14 @@ clickupfy sprint tasks <sprint-id>
 clickupfy sprint tasks <sprint-id> --open-only
 ```
 
-O relatório percorre todas as páginas e inclui tarefas concluídas. O avanço é
-calculado por quantidade de tarefas e por Sprint Points. Uma tarefa sem Points
-participa da quantidade de itens, mas não acrescenta peso ao cálculo por pontos.
+O relatório percorre todas as páginas e inclui tarefas concluídas. Ele traz
+`totalTasks`, `completedTasks`, `openTasks`, `totalPoints`,
+`completedPoints`, `unestimatedTasks`, `taskCompletionPercent`,
+`pointsCompletionPercent` e `tasksByStatus`.
+
+O avanço é calculado por quantidade de tarefas e por Sprint Points. Uma tarefa
+sem Points participa da quantidade de itens, mas não acrescenta peso ao
+cálculo por pontos.
 
 Use `--open-only` para a fila de trabalho corrente, não para o relatório final
 da Sprint.

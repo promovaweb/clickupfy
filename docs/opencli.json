@@ -1,0 +1,5516 @@
+{
+  "$schema": "https://opencli.org/draft.json",
+  "opencli": "0.1",
+  "info": {
+    "title": "ClickUpfy",
+    "version": "1.0.0",
+    "summary": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
+    "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking. Without arguments it opens the TUI; \"clickupfy mcp\" starts the MCP server over stdio; any other command runs as a CLI with text or --json output.",
+    "contact": {
+      "name": "Promovaweb",
+      "url": "https://promovaweb.com/docs/clickupfy"
+    },
+    "license": {
+      "name": "UNLICENSED"
+    }
+  },
+  "conventions": {
+    "groupOptions": false,
+    "optionSeparator": " "
+  },
+  "command": {
+    "name": "clickupfy",
+    "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
+    "options": [
+      {
+        "name": "--help",
+        "description": "Show help for the current command and exit with code 0.",
+        "aliases": [
+          "-h"
+        ],
+        "recursive": true
+      },
+      {
+        "name": "--version",
+        "description": "Print the version and exit with code 0.",
+        "aliases": [
+          "-V"
+        ],
+        "recursive": true
+      },
+      {
+        "name": "--json",
+        "description": "Return JSON output with the envelope { ok, command, data } or { ok, command, error }. Errors are JSON too.",
+        "recursive": true
+      },
+      {
+        "name": "--skill",
+        "description": "Print the full documentation embedded in the binary, written for AI agents. With a topic, print only that section.",
+        "recursive": true,
+        "arguments": [
+          {
+            "name": "topic",
+            "required": false,
+            "arity": {
+              "minimum": 0,
+              "maximum": 1
+            },
+            "acceptedValues": [
+              "cli",
+              "tui",
+              "mcp",
+              "config",
+              "exit-codes",
+              "reference"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "--opencli",
+        "description": "Print the OpenCLI description (JSON) of the whole command tree.",
+        "recursive": true
+      },
+      {
+        "name": "--account",
+        "description": "ClickUp profile to use. Defaults to PROMOVAWEB_CLICKUPFY_ACCOUNT, then to the active profile.",
+        "recursive": true,
+        "arguments": [
+          {
+            "name": "profile",
+            "required": true,
+            "arity": {
+              "minimum": 1,
+              "maximum": 1
+            }
+          }
+        ]
+      },
+      {
+        "name": "--no-color",
+        "description": "Disable ANSI colors in text output. Same as NO_COLOR=1.",
+        "recursive": true
+      }
+    ],
+    "commands": [
+      {
+        "name": "setup",
+        "description": "Configure a ClickUp API key and bind the profile to a workspace.",
+        "aliases": [
+          "install"
+        ],
+        "options": [
+          {
+            "name": "--api-key",
+            "description": "Personal ClickUp API key (pk_...). Asked without echo on a terminal.",
+            "arguments": [
+              {
+                "name": "key",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--token",
+            "description": "Compatible alias for --api-key.",
+            "arguments": [
+              {
+                "name": "key",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--name",
+            "description": "Local profile name, normalized to kebab-case. Defaults to the ClickUp username.",
+            "arguments": [
+              {
+                "name": "name",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--workspace",
+            "description": "Workspace to bind. Required off a TTY when the key reaches several.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--non-interactive",
+            "description": "Never prompt; fail with exit code 2 when a value is missing."
+          }
+        ],
+        "examples": [
+          "clickupfy setup",
+          "clickupfy setup --api-key \"$CLICKUP_API_KEY\" --name work --workspace 9007154145 --non-interactive --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 4,
+            "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+          },
+          {
+            "code": 5,
+            "description": "NETWORK_OR_API: Network failure or unexpected API response."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          },
+          {
+            "code": 7,
+            "description": "PERMISSION: Permission denied on the file system."
+          },
+          {
+            "code": 130,
+            "description": "INTERRUPTED: Input cancelled or process interrupted."
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "description": "Show the resolved profile and its configuration.",
+        "examples": [
+          "clickupfy status",
+          "clickupfy status --account work --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 3,
+            "description": "CONFIG: settings.json missing, invalid or unknown key."
+          },
+          {
+            "code": 4,
+            "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          }
+        ]
+      },
+      {
+        "name": "account",
+        "description": "Manage local ClickUp profiles.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List profiles without API keys.",
+            "aliases": [
+              "ls"
+            ],
+            "examples": [
+              "clickupfy account list",
+              "clickupfy account ls --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              }
+            ]
+          },
+          {
+            "name": "show",
+            "description": "Show safe metadata of a profile, with the API key masked.",
+            "arguments": [
+              {
+                "name": "profile",
+                "description": "Profile id. Defaults to the resolved profile.",
+                "required": false
+              }
+            ],
+            "examples": [
+              "clickupfy account show",
+              "clickupfy account show work --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "use",
+            "description": "Set the active profile.",
+            "arguments": [
+              {
+                "name": "profile",
+                "description": "Profile id.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy account use work"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          },
+          {
+            "name": "remove",
+            "description": "Remove a profile and its API key from the vault.",
+            "aliases": [
+              "rm"
+            ],
+            "arguments": [
+              {
+                "name": "profile",
+                "description": "Profile id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--yes",
+                "description": "Confirm without a prompt. Required off a TTY."
+              }
+            ],
+            "examples": [
+              "clickupfy account remove old-profile --yes"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "import",
+            "description": "Import profiles from the ClickUpfy 0.9.0 config file into the vault.",
+            "options": [
+              {
+                "name": "--force",
+                "description": "Replace profiles that already exist instead of skipping them."
+              }
+            ],
+            "examples": [
+              "clickupfy account import",
+              "clickupfy account import --force --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy account list",
+          "clickupfy account use work"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "workspace",
+        "description": "Query and bind ClickUp workspaces.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List workspaces the API key can reach.",
+            "aliases": [
+              "ls"
+            ],
+            "examples": [
+              "clickupfy workspace list",
+              "clickupfy workspace ls --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "use",
+            "description": "Bind an authorized workspace to the profile.",
+            "arguments": [
+              {
+                "name": "workspace-id",
+                "description": "Workspace id from workspace list.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy workspace use 9007154145"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy workspace list"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "whoami",
+        "description": "Validate the API key and show the authenticated user.",
+        "examples": [
+          "clickupfy whoami",
+          "clickupfy whoami --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 3,
+            "description": "CONFIG: settings.json missing, invalid or unknown key."
+          },
+          {
+            "code": 4,
+            "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+          },
+          {
+            "code": 5,
+            "description": "NETWORK_OR_API: Network failure or unexpected API response."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          }
+        ]
+      },
+      {
+        "name": "space",
+        "description": "Query ClickUp spaces.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the spaces of the workspace bound to the profile.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--archived",
+                "description": "Include archived spaces."
+              }
+            ],
+            "examples": [
+              "clickupfy space list",
+              "clickupfy space ls --archived --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy space list"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "folder",
+        "description": "Query ClickUp folders.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the folders of a space.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--space",
+                "description": "Space id. In MCP, defaults to the pinned space.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--archived",
+                "description": "Include archived folders."
+              }
+            ],
+            "examples": [
+              "clickupfy folder list --space 90070363783"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy folder list --space <id>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "list",
+        "description": "Query ClickUp lists.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the lists of a folder, or the folderless lists of a space.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--folder",
+                "description": "Folder id. Takes precedence over the space.",
+                "arguments": [
+                  {
+                    "name": "folder-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--space",
+                "description": "Space id, for lists without a folder.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--archived",
+                "description": "Include archived lists."
+              }
+            ],
+            "examples": [
+              "clickupfy list list --folder 123",
+              "clickupfy list ls --space 90070363783 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "description": "Get a list and the statuses available for its tasks.",
+            "arguments": [
+              {
+                "name": "list-id",
+                "description": "List id.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy list get 901328052926"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy list list --folder <id>",
+          "clickupfy list get <list-id>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "task",
+        "description": "Manage ClickUp tasks and their tags.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the tasks of a list.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--list",
+                "description": "List id. In MCP, defaults to the pinned list.",
+                "arguments": [
+                  {
+                    "name": "list-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--status",
+                "description": "Accepted statuses. Comma-separated.",
+                "arguments": [
+                  {
+                    "name": "values",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--assignee",
+                "description": "Assignee user ids. Comma-separated.",
+                "arguments": [
+                  {
+                    "name": "values",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--include-closed",
+                "description": "Include closed tasks."
+              },
+              {
+                "name": "--page",
+                "description": "Page number, starting at zero.",
+                "arguments": [
+                  {
+                    "name": "page",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy task list --list 901328052926",
+              "clickupfy task ls --list 901328052926 --status \"to do,in progress\" --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "description": "Get a task and its addressable queue of subtasks and checklist items.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--raw",
+                "description": "Return only the original ClickUp response."
+              },
+              {
+                "name": "--markdown",
+                "description": "Join the task and its items in one Markdown document."
+              }
+            ],
+            "examples": [
+              "clickupfy task get 86abc123",
+              "clickupfy task get 86abc123 --markdown",
+              "clickupfy task get 86abc123 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "search",
+            "description": "Search tasks by text, status and assignee.",
+            "options": [
+              {
+                "name": "--query",
+                "description": "Text in the name, description or id.",
+                "arguments": [
+                  {
+                    "name": "query",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--status",
+                "description": "Accepted statuses. Comma-separated.",
+                "arguments": [
+                  {
+                    "name": "values",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--assignee",
+                "description": "Assignee user ids. Comma-separated.",
+                "arguments": [
+                  {
+                    "name": "values",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--include-closed",
+                "description": "Include closed tasks."
+              },
+              {
+                "name": "--max-pages",
+                "description": "Maximum pages of 100 tasks to read (1 to 100, default 100).",
+                "arguments": [
+                  {
+                    "name": "max-pages",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy task search --query login",
+              "clickupfy task search --query \"checkout\" --include-closed --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "create",
+            "description": "Create a task in a list.",
+            "options": [
+              {
+                "name": "--list",
+                "description": "List id. In MCP, defaults to the pinned list.",
+                "arguments": [
+                  {
+                    "name": "list-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--name",
+                "description": "Task name. Required.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--description",
+                "description": "Plain text description.",
+                "arguments": [
+                  {
+                    "name": "description",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--markdown-content",
+                "description": "Description kept as Markdown.",
+                "arguments": [
+                  {
+                    "name": "markdown-content",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--status",
+                "description": "Initial status.",
+                "arguments": [
+                  {
+                    "name": "status",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--priority",
+                "description": "Priority: 1 urgent, 2 high, 3 normal, 4 low.",
+                "arguments": [
+                  {
+                    "name": "priority",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--assignee",
+                "description": "Numeric assignee user ids. Comma-separated.",
+                "arguments": [
+                  {
+                    "name": "values",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--parent",
+                "description": "Parent task id; creates a subtask.",
+                "arguments": [
+                  {
+                    "name": "parent",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--start-date",
+                "description": "Start date, YYYY-MM-DD (local start of day).",
+                "arguments": [
+                  {
+                    "name": "start-date",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--due-date",
+                "description": "Due date, YYYY-MM-DD (local start of day).",
+                "arguments": [
+                  {
+                    "name": "due-date",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--points",
+                "description": "Sprint Points.",
+                "arguments": [
+                  {
+                    "name": "points",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy task create --list 901328052926 --name \"Fix login\" --priority 2",
+              "clickupfy task create --list 901328052926 --name \"Subtask\" --parent 86abc123 --start-date 2026-11-13 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "update",
+            "description": "Update the name, description, status, priority, dates or points of a task.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--name",
+                "description": "New name.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--description",
+                "description": "New plain text description.",
+                "arguments": [
+                  {
+                    "name": "description",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--markdown-content",
+                "description": "New description as Markdown.",
+                "arguments": [
+                  {
+                    "name": "markdown-content",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--status",
+                "description": "New status.",
+                "arguments": [
+                  {
+                    "name": "status",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--priority",
+                "description": "Priority: 1 urgent, 2 high, 3 normal, 4 low.",
+                "arguments": [
+                  {
+                    "name": "priority",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--start-date",
+                "description": "New start date, YYYY-MM-DD (local start of day).",
+                "arguments": [
+                  {
+                    "name": "start-date",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--clear-start-date",
+                "description": "Remove the start date."
+              },
+              {
+                "name": "--due-date",
+                "description": "New due date, YYYY-MM-DD (local start of day).",
+                "arguments": [
+                  {
+                    "name": "due-date",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--clear-due-date",
+                "description": "Remove the due date."
+              },
+              {
+                "name": "--points",
+                "description": "Sprint Points.",
+                "arguments": [
+                  {
+                    "name": "points",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy task update 86abc123 --status \"in progress\"",
+              "clickupfy task update 86abc123 --due-date 2026-11-20 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "delete",
+            "description": "Delete a task permanently.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--yes",
+                "description": "Confirm without a prompt. Required off a TTY."
+              }
+            ],
+            "examples": [
+              "clickupfy task delete 86abc123 --yes"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "add-tag",
+            "description": "Add a tag to a task without replacing its other tags.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              },
+              {
+                "name": "tag-name",
+                "description": "Tag name.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--custom-task-id",
+                "description": "Treat the task id as a custom id of the profile workspace."
+              }
+            ],
+            "examples": [
+              "clickupfy task add-tag 86abc123 backend",
+              "clickupfy task add-tag DEV-42 backend --custom-task-id"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "remove-tag",
+            "description": "Remove a tag from a task, keeping the tag in the space catalog.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              },
+              {
+                "name": "tag-name",
+                "description": "Tag name.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--custom-task-id",
+                "description": "Treat the task id as a custom id of the profile workspace."
+              }
+            ],
+            "examples": [
+              "clickupfy task remove-tag 86abc123 backend"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy task list --list <id>",
+          "clickupfy task get <task-id>",
+          "clickupfy task create --list <id> --name <name>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "tag",
+        "description": "Manage the tag catalog of a space.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the names and colors of the tags of a space.",
+            "options": [
+              {
+                "name": "--space",
+                "description": "Space id. In MCP, defaults to the pinned space.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy tag list --space 90070363783"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "create",
+            "description": "Create a tag with a name and colors in a space.",
+            "arguments": [
+              {
+                "name": "name",
+                "description": "Tag name.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--space",
+                "description": "Space id. In MCP, defaults to the pinned space.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--foreground",
+                "description": "Text color as #RRGGBB. Required.",
+                "arguments": [
+                  {
+                    "name": "foreground",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--background",
+                "description": "Background color as #RRGGBB. Required.",
+                "arguments": [
+                  {
+                    "name": "background",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy tag create backend --space 90070363783 --foreground \"#ffffff\" --background \"#336699\""
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "update",
+            "description": "Rename a tag or change its colors, preserving the omitted fields.",
+            "arguments": [
+              {
+                "name": "tag-name",
+                "description": "Current tag name.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--space",
+                "description": "Space id. In MCP, defaults to the pinned space.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--name",
+                "description": "New name.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--foreground",
+                "description": "New text color as #RRGGBB.",
+                "arguments": [
+                  {
+                    "name": "foreground",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--background",
+                "description": "New background color as #RRGGBB.",
+                "arguments": [
+                  {
+                    "name": "background",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy tag update backend --space 90070363783 --name api"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "delete",
+            "description": "Delete a tag from a space.",
+            "arguments": [
+              {
+                "name": "tag-name",
+                "description": "Current tag name.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--space",
+                "description": "Space id. In MCP, defaults to the pinned space.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--yes",
+                "description": "Confirm without a prompt. Required off a TTY."
+              }
+            ],
+            "examples": [
+              "clickupfy tag delete backend --space 90070363783 --yes"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy tag list --space <id>",
+          "clickupfy tag create <name> --space <id> --foreground <color> --background <color>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "checklist",
+        "description": "Manage task checklists and their items.",
+        "commands": [
+          {
+            "name": "create",
+            "description": "Create a checklist on a task.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--name",
+                "description": "Checklist name. Required.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy checklist create 86abc123 --name \"Plan\"",
+              "clickupfy --json checklist create 86abc123 --name \"Plugin steps\""
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "item-create",
+            "description": "Add an item to an existing checklist.",
+            "arguments": [
+              {
+                "name": "checklist-id",
+                "description": "Checklist id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--name",
+                "description": "Item name. Required.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--assignee",
+                "description": "Numeric user id of the assignee.",
+                "arguments": [
+                  {
+                    "name": "assignee",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy checklist item-create b955c4dc --name \"Write tests\"",
+              "clickupfy checklist item-create b955c4dc --name \"Review\" --assignee 183"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "set",
+            "description": "Mark or reopen a checklist item and confirm the state in a new read of the task.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Root task used to validate the item.",
+                "required": true
+              },
+              {
+                "name": "checklist-id",
+                "description": "Checklist id.",
+                "required": true
+              },
+              {
+                "name": "item-id",
+                "description": "Checklist item id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--resolved",
+                "description": "Mark the item as done."
+              },
+              {
+                "name": "--open",
+                "description": "Reopen the item."
+              }
+            ],
+            "examples": [
+              "clickupfy checklist set 86abc123 b955c4dc 21e08dc8 --resolved",
+              "clickupfy checklist set 86abc123 b955c4dc 21e08dc8 --open --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy checklist create <task-id> --name <name>",
+          "clickupfy checklist set <task-id> <checklist-id> <item-id> --resolved"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "comment",
+        "description": "Read and publish task comments.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "Read the comment history of a task.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--task",
+                "description": "Task id. Required.",
+                "arguments": [
+                  {
+                    "name": "task-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy comment list --task 86abc123",
+              "clickupfy comment ls --task 86abc123 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "create",
+            "description": "Publish a progress comment on a task.",
+            "options": [
+              {
+                "name": "--task",
+                "description": "Task id. Required.",
+                "arguments": [
+                  {
+                    "name": "task-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--text",
+                "description": "Comment text. Required.",
+                "arguments": [
+                  {
+                    "name": "text",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--notify-all",
+                "description": "Notify every participant of the task."
+              }
+            ],
+            "examples": [
+              "clickupfy comment create --task 86abc123 --text \"Plan: ...\"",
+              "clickupfy comment create --task 86abc123 --text \"Done\" --notify-all --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy comment list --task <id>",
+          "clickupfy comment create --task <id> --text <text>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "time",
+        "description": "Track time on tasks.",
+        "commands": [
+          {
+            "name": "current",
+            "description": "Show the running time entry of the workspace.",
+            "examples": [
+              "clickupfy time current",
+              "clickupfy time current --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "start",
+            "description": "Start a time entry on a task.",
+            "options": [
+              {
+                "name": "--task",
+                "description": "Task id. Required.",
+                "arguments": [
+                  {
+                    "name": "task-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--description",
+                "description": "Description of the work.",
+                "arguments": [
+                  {
+                    "name": "description",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy time start --task 86abc123",
+              "clickupfy time start --task 86abc123 --description \"Implement the parser\" --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "stop",
+            "description": "Stop the running time entry of the workspace.",
+            "examples": [
+              "clickupfy time stop",
+              "clickupfy time stop --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy time current",
+          "clickupfy time start --task <id>",
+          "clickupfy time stop"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "sprint",
+        "description": "Query and plan existing Sprints.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the Sprints of a Sprint folder, identified by their period.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--folder",
+                "description": "Sprint folder id. Required in the CLI; in MCP, defaults to the pinned Sprint folder.",
+                "arguments": [
+                  {
+                    "name": "folder-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--archived",
+                "description": "Include archived lists."
+              },
+              {
+                "name": "--include-regular",
+                "description": "Include regular lists of the Sprint folder."
+              },
+              {
+                "name": "--at",
+                "description": "Reference date (YYYY-MM-DD) used to compute the Sprint status. Defaults to today.",
+                "arguments": [
+                  {
+                    "name": "at",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy sprint list --folder 123",
+              "clickupfy sprint ls --folder 123 --at 2026-11-13 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "current",
+            "description": "Get the only active Sprint of a Sprint folder.",
+            "options": [
+              {
+                "name": "--folder",
+                "description": "Sprint folder id. Required in the CLI; in MCP, defaults to the pinned Sprint folder.",
+                "arguments": [
+                  {
+                    "name": "folder-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--at",
+                "description": "Reference date (YYYY-MM-DD) used to find the Sprint. Defaults to today.",
+                "arguments": [
+                  {
+                    "name": "at",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy sprint current --folder 123",
+              "clickupfy sprint current --folder 123 --at 2026-11-13 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "description": "Show the period, progress, status distribution and Sprint Points of a Sprint.",
+            "arguments": [
+              {
+                "name": "sprint-id",
+                "description": "Sprint (list) id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--at",
+                "description": "Reference date (YYYY-MM-DD) used to compute the Sprint status. Defaults to today.",
+                "arguments": [
+                  {
+                    "name": "at",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy sprint get 901328052926",
+              "clickupfy sprint get 901328052926 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "tasks",
+            "description": "List every task associated with a Sprint, closed tasks included.",
+            "arguments": [
+              {
+                "name": "sprint-id",
+                "description": "Sprint (list) id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--open-only",
+                "description": "Omit closed tasks."
+              }
+            ],
+            "examples": [
+              "clickupfy sprint tasks 901328052926",
+              "clickupfy sprint tasks 901328052926 --open-only --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "add-task",
+            "description": "Add a task to a Sprint without changing its main list.",
+            "arguments": [
+              {
+                "name": "sprint-id",
+                "description": "Sprint (list) id.",
+                "required": true
+              },
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy sprint add-task 901328052926 86abc123"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "remove-task",
+            "description": "Remove the association between a task and a Sprint without deleting the task.",
+            "arguments": [
+              {
+                "name": "sprint-id",
+                "description": "Sprint (list) id.",
+                "required": true
+              },
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy sprint remove-task 901328052926 86abc123"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "set-points",
+            "description": "Set the Sprint Points estimate of a task.",
+            "arguments": [
+              {
+                "name": "task-id",
+                "description": "Task id.",
+                "required": true
+              },
+              {
+                "name": "points",
+                "description": "Sprint Points, zero or more.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy sprint set-points 86abc123 3"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy sprint list --folder <id>",
+          "clickupfy sprint current --folder <id>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "doc",
+        "description": "Manage ClickUp Docs.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "Search the Docs of the workspace bound to the profile.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--query",
+                "description": "Text in the Doc name or id.",
+                "arguments": [
+                  {
+                    "name": "query",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--parent-id",
+                "description": "Only Docs created under this location.",
+                "arguments": [
+                  {
+                    "name": "parent-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--parent-type",
+                "description": "Location type: 4 Space, 5 Folder, 6 List, 7 Everything, 12 Task.",
+                "arguments": [
+                  {
+                    "name": "parent-type",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--deleted",
+                "description": "Include deleted Docs."
+              },
+              {
+                "name": "--archived",
+                "description": "Include archived Docs."
+              },
+              {
+                "name": "--creator",
+                "description": "Numeric id of the creator.",
+                "arguments": [
+                  {
+                    "name": "creator",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--max-pages",
+                "description": "Maximum cursor pages read, 1 to 50 (default 50).",
+                "arguments": [
+                  {
+                    "name": "max-pages",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy doc list",
+              "clickupfy doc ls --query roadmap --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "description": "Get the metadata of a Doc.",
+            "arguments": [
+              {
+                "name": "doc-id",
+                "description": "Doc id.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy doc get 8cdu8-123"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "create",
+            "description": "Create a Doc in the bound workspace, optionally under a Space, Folder, List or task.",
+            "options": [
+              {
+                "name": "--name",
+                "description": "Doc name. Required.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--parent-id",
+                "description": "Id of the location where the Doc is created. Requires parentType.",
+                "arguments": [
+                  {
+                    "name": "parent-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--parent-type",
+                "description": "Location type: 4 Space, 5 Folder, 6 List, 7 Everything, 12 Task.",
+                "arguments": [
+                  {
+                    "name": "parent-type",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--visibility",
+                "description": "Doc visibility: PRIVATE or PUBLIC.",
+                "arguments": [
+                  {
+                    "name": "visibility",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--create-page",
+                "description": "Also create the first blank page."
+              }
+            ],
+            "examples": [
+              "clickupfy doc create --name \"Project notes\"",
+              "clickupfy doc create --name Specs --parent-id 90070363783 --parent-type 4 --create-page"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "page",
+            "description": "Manage the pages of a Doc.",
+            "commands": [
+              {
+                "name": "list",
+                "description": "List the pages of a Doc with their content.",
+                "aliases": [
+                  "ls"
+                ],
+                "arguments": [
+                  {
+                    "name": "doc-id",
+                    "description": "Doc id.",
+                    "required": true
+                  }
+                ],
+                "options": [
+                  {
+                    "name": "--max-page-depth",
+                    "description": "Maximum depth of sub-pages.",
+                    "arguments": [
+                      {
+                        "name": "max-page-depth",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--content-format",
+                    "description": "Content format: text/md (default) or text/plain.",
+                    "arguments": [
+                      {
+                        "name": "content-format",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "examples": [
+                  "clickupfy doc page list 8cdu8-123 --json"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  },
+                  {
+                    "code": 3,
+                    "description": "CONFIG: settings.json missing, invalid or unknown key."
+                  },
+                  {
+                    "code": 4,
+                    "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+                  },
+                  {
+                    "code": 5,
+                    "description": "NETWORK_OR_API: Network failure or unexpected API response."
+                  },
+                  {
+                    "code": 6,
+                    "description": "NOT_FOUND: Requested resource does not exist."
+                  }
+                ]
+              },
+              {
+                "name": "get",
+                "description": "Get one page of a Doc with its content.",
+                "arguments": [
+                  {
+                    "name": "doc-id",
+                    "description": "Doc id.",
+                    "required": true
+                  },
+                  {
+                    "name": "page-id",
+                    "description": "Page id.",
+                    "required": true
+                  }
+                ],
+                "options": [
+                  {
+                    "name": "--content-format",
+                    "description": "Content format: text/md (default) or text/plain.",
+                    "arguments": [
+                      {
+                        "name": "content-format",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "examples": [
+                  "clickupfy doc page get 8cdu8-123 8cdu8-456",
+                  "clickupfy doc page get 8cdu8-123 8cdu8-456 --json"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  },
+                  {
+                    "code": 3,
+                    "description": "CONFIG: settings.json missing, invalid or unknown key."
+                  },
+                  {
+                    "code": 4,
+                    "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+                  },
+                  {
+                    "code": 5,
+                    "description": "NETWORK_OR_API: Network failure or unexpected API response."
+                  },
+                  {
+                    "code": 6,
+                    "description": "NOT_FOUND: Requested resource does not exist."
+                  }
+                ]
+              },
+              {
+                "name": "tree",
+                "description": "Show the page tree of a Doc, without content.",
+                "arguments": [
+                  {
+                    "name": "doc-id",
+                    "description": "Doc id.",
+                    "required": true
+                  }
+                ],
+                "examples": [
+                  "clickupfy doc page tree 8cdu8-123"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  },
+                  {
+                    "code": 3,
+                    "description": "CONFIG: settings.json missing, invalid or unknown key."
+                  },
+                  {
+                    "code": 4,
+                    "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+                  },
+                  {
+                    "code": 5,
+                    "description": "NETWORK_OR_API: Network failure or unexpected API response."
+                  },
+                  {
+                    "code": 6,
+                    "description": "NOT_FOUND: Requested resource does not exist."
+                  }
+                ]
+              },
+              {
+                "name": "create",
+                "description": "Create a page, or a sub-page, in an existing Doc.",
+                "arguments": [
+                  {
+                    "name": "doc-id",
+                    "description": "Doc id.",
+                    "required": true
+                  }
+                ],
+                "options": [
+                  {
+                    "name": "--name",
+                    "description": "Page title. Required.",
+                    "arguments": [
+                      {
+                        "name": "name",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--content",
+                    "description": "Initial content.",
+                    "arguments": [
+                      {
+                        "name": "content",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--file",
+                    "description": "Read the page content from a file; use - for stdin. Replaces --content.",
+                    "arguments": [
+                      {
+                        "name": "file",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--sub-title",
+                    "description": "Page subtitle.",
+                    "arguments": [
+                      {
+                        "name": "sub-title",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--parent-page",
+                    "description": "Create as a sub-page of this page id.",
+                    "arguments": [
+                      {
+                        "name": "parent-page-id",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--orderindex",
+                    "description": "Position among the sibling pages.",
+                    "arguments": [
+                      {
+                        "name": "orderindex",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--content-format",
+                    "description": "Content format: text/md (default) or text/plain.",
+                    "arguments": [
+                      {
+                        "name": "content-format",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "examples": [
+                  "clickupfy doc page create 8cdu8-123 --name Overview --content \"# Overview\"",
+                  "clickupfy doc page create 8cdu8-123 --name Plan --file plan.md",
+                  "cat notes.md | clickupfy doc page create 8cdu8-123 --name Notes --file -"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  },
+                  {
+                    "code": 3,
+                    "description": "CONFIG: settings.json missing, invalid or unknown key."
+                  },
+                  {
+                    "code": 4,
+                    "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+                  },
+                  {
+                    "code": 5,
+                    "description": "NETWORK_OR_API: Network failure or unexpected API response."
+                  },
+                  {
+                    "code": 6,
+                    "description": "NOT_FOUND: Requested resource does not exist."
+                  }
+                ]
+              },
+              {
+                "name": "update",
+                "description": "Update the title, subtitle and/or content of an existing page.",
+                "arguments": [
+                  {
+                    "name": "doc-id",
+                    "description": "Doc id.",
+                    "required": true
+                  },
+                  {
+                    "name": "page-id",
+                    "description": "Page id.",
+                    "required": true
+                  }
+                ],
+                "options": [
+                  {
+                    "name": "--name",
+                    "description": "New title.",
+                    "arguments": [
+                      {
+                        "name": "name",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--sub-title",
+                    "description": "New subtitle.",
+                    "arguments": [
+                      {
+                        "name": "sub-title",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--content",
+                    "description": "New content.",
+                    "arguments": [
+                      {
+                        "name": "content",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--file",
+                    "description": "Read the page content from a file; use - for stdin. Replaces --content.",
+                    "arguments": [
+                      {
+                        "name": "file",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--content-edit-mode",
+                    "description": "replace (default), append or prepend.",
+                    "arguments": [
+                      {
+                        "name": "content-edit-mode",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        },
+                        "acceptedValues": [
+                          "replace",
+                          "append",
+                          "prepend"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "--content-format",
+                    "description": "Content format: text/md (default) or text/plain.",
+                    "arguments": [
+                      {
+                        "name": "content-format",
+                        "required": true,
+                        "arity": {
+                          "minimum": 1,
+                          "maximum": 1
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "examples": [
+                  "clickupfy doc page update 8cdu8-123 8cdu8-456 --name \"New title\"",
+                  "cat log.md | clickupfy doc page update 8cdu8-123 8cdu8-456 --file - --content-edit-mode append"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  },
+                  {
+                    "code": 3,
+                    "description": "CONFIG: settings.json missing, invalid or unknown key."
+                  },
+                  {
+                    "code": 4,
+                    "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+                  },
+                  {
+                    "code": 5,
+                    "description": "NETWORK_OR_API: Network failure or unexpected API response."
+                  },
+                  {
+                    "code": 6,
+                    "description": "NOT_FOUND: Requested resource does not exist."
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy doc page tree <doc-id>",
+              "clickupfy doc page update <doc-id> <page-id> --file -"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy doc list",
+          "clickupfy doc create --name <name>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "api",
+        "description": "Reach every endpoint of the public ClickUp API v2 and v3 specifications.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the catalog operations with method, path, version, group and MCP tool.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--group",
+                "description": "Only operations of this catalog group (case-insensitive).",
+                "arguments": [
+                  {
+                    "name": "group",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--read-only",
+                "description": "Only operations that do not change ClickUp."
+              }
+            ],
+            "examples": [
+              "clickupfy api list --group Tasks",
+              "clickupfy api list --read-only --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              }
+            ]
+          },
+          {
+            "name": "describe",
+            "description": "Show parameters, body formats and the input JSON Schema of an operation.",
+            "arguments": [
+              {
+                "name": "operation",
+                "description": "operationId, CLI name (v2-get-task) or tool name.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy api describe GetTask",
+              "clickupfy api describe v2-get-task --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "call",
+            "description": "Validate the input and send one request to a catalog operation.",
+            "arguments": [
+              {
+                "name": "operation",
+                "description": "operationId, CLI name (v2-get-task) or tool name.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--path",
+                "description": "Path parameters as a JSON object.",
+                "arguments": [
+                  {
+                    "name": "json",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--query",
+                "description": "Query parameters as a JSON object.",
+                "arguments": [
+                  {
+                    "name": "json",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--body",
+                "description": "Request body as JSON.",
+                "arguments": [
+                  {
+                    "name": "json",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--body-file",
+                "description": "JSON file with the request body.",
+                "arguments": [
+                  {
+                    "name": "file",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--input",
+                "description": "JSON envelope with path, query, headers, body, contentType and files; use - to read stdin.",
+                "arguments": [
+                  {
+                    "name": "file",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--content-type",
+                "description": "Documented format of the body, when the operation accepts more than one.",
+                "arguments": [
+                  {
+                    "name": "type",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--file",
+                "description": "Multipart file, read and sent as the given field. Repeatable.",
+                "arguments": [
+                  {
+                    "name": "field=path",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--yes",
+                "description": "Confirm a deletion or removal without a prompt. Required off a TTY."
+              },
+              {
+                "name": "--dry-run",
+                "description": "Validate the input without sending the request."
+              }
+            ],
+            "examples": [
+              "clickupfy api call v2-get-task --path '{\"task_id\":\"abc123\"}'",
+              "clickupfy api call GetTasks --path '{\"list_id\":\"901\"}' --query '{\"statuses\":[\"to do\"]}' --json",
+              "clickupfy api call v2-create-task-attachment --path '{\"task_id\":\"abc123\"}' --file attachment[0]=./report.pdf",
+              "clickupfy api call v2-delete-task --path '{\"task_id\":\"abc123\"}' --yes --dry-run"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy api list",
+          "clickupfy api describe GetTask",
+          "clickupfy api call v2-get-task --path '{\"task_id\":\"abc123\"}'"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "agent",
+        "description": "Integrate ClickUpfy with coding agents: skills and project MCP server.",
+        "commands": [
+          {
+            "name": "skill",
+            "description": "Manage the ClickUpfy skills for coding agents.",
+            "commands": [
+              {
+                "name": "list",
+                "description": "List the skills embedded in the binary.",
+                "aliases": [
+                  "ls"
+                ],
+                "examples": [
+                  "clickupfy agent skill list --json"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  }
+                ]
+              },
+              {
+                "name": "show",
+                "description": "Print the instructions (SKILL.md) of one skill.",
+                "arguments": [
+                  {
+                    "name": "skill",
+                    "description": "Skill name, as shown by agent skill list.",
+                    "required": true,
+                    "acceptedValues": [
+                      "clickupfy-setup",
+                      "clickupfy-dev",
+                      "clickup-issue-create",
+                      "clickup-issue-implement",
+                      "clickupfy-release"
+                    ]
+                  }
+                ],
+                "examples": [
+                  "clickupfy agent skill show clickupfy-dev"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  }
+                ]
+              },
+              {
+                "name": "install",
+                "description": "Install skills with the official manager (npx skills add).",
+                "arguments": [
+                  {
+                    "name": "skills",
+                    "description": "Skills to install; omit to install all.",
+                    "required": false,
+                    "arity": {
+                      "minimum": 0
+                    }
+                  }
+                ],
+                "options": [
+                  {
+                    "name": "--global",
+                    "description": "Install in the user's global catalog instead of the current project."
+                  },
+                  {
+                    "name": "--force",
+                    "description": "Kept for compatibility with 0.9.0; reinstalling is always allowed."
+                  }
+                ],
+                "examples": [
+                  "clickupfy agent skill install",
+                  "clickupfy agent skill install clickupfy-dev --global"
+                ],
+                "exitCodes": [
+                  {
+                    "code": 0,
+                    "description": "SUCCESS: Operation completed."
+                  },
+                  {
+                    "code": 1,
+                    "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+                  },
+                  {
+                    "code": 2,
+                    "description": "USAGE: Invalid arguments, options or subcommand."
+                  },
+                  {
+                    "code": 6,
+                    "description": "NOT_FOUND: Requested resource does not exist."
+                  }
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy agent skill list",
+              "clickupfy agent skill install --global"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              }
+            ]
+          },
+          {
+            "name": "install",
+            "description": "Install the skills and add the pinned MCP server to .mcp.json and .codex/config.toml.",
+            "aliases": [
+              "init"
+            ],
+            "options": [
+              {
+                "name": "--global",
+                "description": "Install the skills globally."
+              },
+              {
+                "name": "--workspace",
+                "description": "Workspace expected by the MCP server; must be the profile's workspace.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--space",
+                "description": "Space pinned by the project MCP server. Required.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--folder",
+                "description": "Folder pinned by the project MCP server.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--list",
+                "description": "List pinned by the project MCP server. Required.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--sprint-folder",
+                "description": "Sprint folder pinned by the MCP server.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--force",
+                "description": "Kept for compatibility with 0.9.0; existing skills are updated."
+              }
+            ],
+            "examples": [
+              "clickupfy agent install --space 901 --list 902",
+              "clickupfy agent init --account work --space 901 --list 902 --sprint-folder 903"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy agent skill list",
+          "clickupfy agent install --space 901 --list 902"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "upgrade",
+        "description": "Update ClickUpfy to the latest release or to a given version.",
+        "arguments": [
+          {
+            "name": "target",
+            "description": "latest, next (npm only) or a SemVer version. Default: latest.",
+            "required": false
+          }
+        ],
+        "examples": [
+          "clickupfy upgrade",
+          "clickupfy upgrade 1.0.1"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 5,
+            "description": "NETWORK_OR_API: Network failure or unexpected API response."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          },
+          {
+            "code": 7,
+            "description": "PERMISSION: Permission denied on the file system."
+          }
+        ]
+      },
+      {
+        "name": "tui",
+        "description": "Open the terminal interface (Overview and About). Requires a TTY.",
+        "options": [
+          {
+            "name": "--tab",
+            "description": "Initial tab. Overrides tui.initialTab from settings.json.",
+            "arguments": [
+              {
+                "name": "tab",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                },
+                "acceptedValues": [
+                  "overview",
+                  "about"
+                ]
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy",
+          "clickupfy tui --tab about"
+        ],
+        "interactive": true,
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 8,
+            "description": "NO_TTY: The TUI requires an interactive terminal (TTY)."
+          }
+        ]
+      },
+      {
+        "name": "about",
+        "description": "Show version, executable, runtime, platform and credits.",
+        "examples": [
+          "clickupfy about",
+          "clickupfy about --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "config",
+        "description": "Read and write preferences in ~/.clickupfy/settings.json.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List every key with its effective value (file merged with defaults).",
+            "aliases": [
+              "ls"
+            ],
+            "examples": [
+              "clickupfy config list",
+              "clickupfy config list --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "description": "Show the value of a key.",
+            "arguments": [
+              {
+                "name": "key",
+                "description": "Key in dot notation, e.g. output.format.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy config get tui.initialTab"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          },
+          {
+            "name": "set",
+            "description": "Write a value to settings.json, converting the type according to the schema.",
+            "arguments": [
+              {
+                "name": "key",
+                "description": "Key in dot notation.",
+                "required": true
+              },
+              {
+                "name": "value",
+                "description": "Value as text. Booleans accept true/false, yes/no, 1/0, on/off.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy config set output.format json",
+              "clickupfy config set output.colors false"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          },
+          {
+            "name": "unset",
+            "description": "Remove a key from the file. The key falls back to its default, if any.",
+            "aliases": [
+              "rm"
+            ],
+            "arguments": [
+              {
+                "name": "key",
+                "description": "Key in dot notation.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy config unset telemetry.enabled"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          },
+          {
+            "name": "path",
+            "description": "Print the data directory and file paths.",
+            "examples": [
+              "clickupfy config path"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              }
+            ]
+          },
+          {
+            "name": "schema",
+            "description": "List the known keys with type, default and description.",
+            "examples": [
+              "clickupfy config schema --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              }
+            ]
+          }
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 3,
+            "description": "CONFIG: settings.json missing, invalid or unknown key."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          },
+          {
+            "code": 7,
+            "description": "PERMISSION: Permission denied on the file system."
+          }
+        ]
+      },
+      {
+        "name": "credentials",
+        "description": "Store encrypted secrets (AES-256-GCM) in ~/.clickupfy/credentials.json.",
+        "aliases": [
+          "cred"
+        ],
+        "commands": [
+          {
+            "name": "set",
+            "description": "Save or replace a credential. The value is read without echo or from stdin.",
+            "arguments": [
+              {
+                "name": "name",
+                "description": "Credential identifier: lower-case letters, digits, dot, hyphen and underscore (e.g. openai.api_key).",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--stdin",
+                "description": "Force reading the value from the first stdin line, even on an interactive terminal."
+              }
+            ],
+            "examples": [
+              "clickupfy credentials set openai.api_key",
+              "printf '%s' \"$TOKEN\" | clickupfy credentials set github.token --stdin"
+            ],
+            "interactive": true,
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "description": "Show a masked credential. Use --reveal for the full value.",
+            "arguments": [
+              {
+                "name": "name",
+                "description": "Credential identifier.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--reveal",
+                "description": "Print the value in clear. In --json the field becomes `value`."
+              }
+            ],
+            "examples": [
+              "clickupfy credentials get openai.api_key",
+              "clickupfy credentials get openai.api_key --reveal"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "list",
+            "description": "List saved names. Never shows values.",
+            "aliases": [
+              "ls"
+            ],
+            "examples": [
+              "clickupfy credentials list --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "remove",
+            "description": "Remove a credential from the vault.",
+            "aliases": [
+              "rm"
+            ],
+            "arguments": [
+              {
+                "name": "name",
+                "description": "Credential identifier.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy credentials remove github.token"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "status",
+            "description": "Show file, master key source and number of credentials.",
+            "examples": [
+              "clickupfy credentials status"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              }
+            ]
+          },
+          {
+            "name": "clear",
+            "description": "Delete credentials.json entirely. Keeps master.key. Asks for confirmation on a terminal.",
+            "options": [
+              {
+                "name": "--yes",
+                "description": "Skip the confirmation.",
+                "aliases": [
+                  "-y"
+                ]
+              }
+            ],
+            "examples": [
+              "clickupfy credentials clear --yes"
+            ],
+            "interactive": true,
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "rotate-key",
+            "description": "Re-encrypt the existing vault with a new master key and write master.key with mode 0600.",
+            "options": [
+              {
+                "name": "--from-env",
+                "description": "Use CLICKUPFY_MASTER_KEY (64 hex characters) as the new key; read the current key from master.key."
+              }
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          }
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 4,
+            "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+          },
+          {
+            "code": 7,
+            "description": "PERMISSION: Permission denied on the file system."
+          },
+          {
+            "code": 130,
+            "description": "INTERRUPTED: Input cancelled or process interrupted."
+          }
+        ]
+      },
+      {
+        "name": "mcp",
+        "description": "Start the MCP server (stdio) with tools, resources and prompts for agents.",
+        "options": [
+          {
+            "name": "--list",
+            "description": "Instead of starting the server, list registered tools, resources and prompts and exit."
+          },
+          {
+            "name": "--list-id",
+            "description": "Pin the project list (same as --list <id> in mcp serve).",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--workspace",
+            "description": "Pin the workspace; the profile must be bound to it.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--space",
+            "description": "Pin the project space.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--folder",
+            "description": "Pin the project folder.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--sprint-folder",
+            "description": "Pin the Sprint folder.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--read-only",
+            "description": "Register only the tools that do not change ClickUp or the local profiles."
+          }
+        ],
+        "commands": [
+          {
+            "name": "serve",
+            "description": "Start the MCP server pinned to a project, as in ClickUpfy 0.9.0 client configs.",
+            "options": [
+              {
+                "name": "--list",
+                "description": "Pin the project list.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--workspace",
+                "description": "Pin the workspace; the profile must be bound to it.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--space",
+                "description": "Pin the project space.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--folder",
+                "description": "Pin the project folder.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--sprint-folder",
+                "description": "Pin the Sprint folder.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--read-only",
+                "description": "Register only the tools that do not change ClickUp or the local profiles."
+              },
+              {
+                "name": "--describe",
+                "description": "List the registered tools for this scope and exit."
+              }
+            ],
+            "examples": [
+              "clickupfy mcp serve --account work --space 90070363783 --list 901328052926",
+              "clickupfy mcp serve --list 901328052926 --read-only --describe"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 9,
+                "description": "MCP: The MCP server failed to start or lost the stdio transport."
+              }
+            ]
+          },
+          {
+            "name": "setup",
+            "description": "Write a pinned MCP server entry to the project files of Claude Code, Codex, Gemini and OpenCode.",
+            "options": [
+              {
+                "name": "--name",
+                "description": "Unique MCP server name in the project.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--space",
+                "description": "Space of the profile's workspace.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--list",
+                "description": "List inside the space (folderless or in a folder).",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--clients",
+                "description": "Comma-separated: claude-code, codex, gemini, opencode. Default: all.",
+                "arguments": [
+                  {
+                    "name": "clients",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--project",
+                "description": "Project directory. Default: the current directory.",
+                "arguments": [
+                  {
+                    "name": "dir",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--read-only",
+                "description": "Configure only read tools."
+              },
+              {
+                "name": "--force",
+                "description": "Replace an entry with the same name."
+              },
+              {
+                "name": "--non-interactive",
+                "description": "Never prompt; require --name, --account, --space and --list."
+              }
+            ],
+            "examples": [
+              "clickupfy mcp setup",
+              "clickupfy mcp setup --name website --account work --space 90070363783 --list 901328052926 --clients claude-code,codex --non-interactive"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy mcp",
+          "clickupfy mcp --list --json",
+          "clickupfy mcp --list-id 901328052926 --read-only"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 9,
+            "description": "MCP: The MCP server failed to start or lost the stdio transport."
+          }
+        ]
+      },
+      {
+        "name": "skill",
+        "description": "Print the embedded documentation, whole or by topic. Same effect as --skill.",
+        "arguments": [
+          {
+            "name": "topic",
+            "description": "Desired section. Without it, prints everything.",
+            "required": false,
+            "acceptedValues": [
+              "cli",
+              "tui",
+              "mcp",
+              "config",
+              "exit-codes",
+              "reference"
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy skill",
+          "clickupfy skill mcp",
+          "clickupfy --skill cli"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "doctor",
+        "description": "Check runtime, settings, vault, ClickUp profile, API key and project MCP files without changing files.",
+        "options": [
+          {
+            "name": "--online",
+            "description": "Also validate the API key in GET /user and the installed skills with npx skills list."
+          }
+        ],
+        "examples": [
+          "clickupfy doctor",
+          "clickupfy doctor --online --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 3,
+            "description": "CONFIG: settings.json missing, invalid or unknown key."
+          }
+        ]
+      },
+      {
+        "name": "completion",
+        "description": "Print a registry-generated completion script for bash, zsh or fish.",
+        "arguments": [
+          {
+            "name": "shell",
+            "description": "Shell to generate completion for: bash, zsh or fish.",
+            "required": true,
+            "acceptedValues": [
+              "bash",
+              "zsh",
+              "fish"
+            ]
+          }
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      }
+    ],
+    "examples": [
+      "clickupfy",
+      "clickupfy about --json",
+      "clickupfy config set output.format json",
+      "clickupfy setup",
+      "clickupfy status --json",
+      "clickupfy mcp",
+      "clickupfy --skill"
+    ],
+    "exitCodes": [
+      {
+        "code": 0,
+        "description": "SUCCESS: Operation completed."
+      },
+      {
+        "code": 1,
+        "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+      },
+      {
+        "code": 2,
+        "description": "USAGE: Invalid arguments, options or subcommand."
+      },
+      {
+        "code": 3,
+        "description": "CONFIG: settings.json missing, invalid or unknown key."
+      },
+      {
+        "code": 4,
+        "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+      },
+      {
+        "code": 5,
+        "description": "NETWORK_OR_API: Network failure or unexpected API response."
+      },
+      {
+        "code": 6,
+        "description": "NOT_FOUND: Requested resource does not exist."
+      },
+      {
+        "code": 7,
+        "description": "PERMISSION: Permission denied on the file system."
+      },
+      {
+        "code": 8,
+        "description": "NO_TTY: The TUI requires an interactive terminal (TTY)."
+      },
+      {
+        "code": 9,
+        "description": "MCP: The MCP server failed to start or lost the stdio transport."
+      },
+      {
+        "code": 130,
+        "description": "INTERRUPTED: Input cancelled or process interrupted."
+      }
+    ]
+  }
+}

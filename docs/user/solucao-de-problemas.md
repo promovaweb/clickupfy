@@ -10,14 +10,19 @@
 
 ## O comando não foi encontrado
 
-Execute:
+Executado pelo npm, confira o diretório global:
 
 ```bash
 npm prefix --global
 ```
 
-Confirme se a pasta de executáveis globais está no `PATH`. Em instalação
-standalone, confira permissão de execução e o nome do arquivo.
+Confirme se a pasta de executáveis globais está no `PATH`. Em instalação por
+binário avulso, confira permissão de execução e o nome do arquivo.
+
+```bash
+chmod +x clickupfy
+clickupfy --version
+```
 
 ## A API key foi recusada
 
@@ -27,10 +32,10 @@ Use:
 clickupfy whoami
 ```
 
-Se falhar, gere ou confira a chave no ClickUp e execute `clickupfy install`
-novamente. Uma chave revogada não pode ser recuperada pelo ClickUpfy.
+Se falhar, gere ou confira a chave no ClickUp e execute `clickupfy setup` de
+novo. Uma chave revogada não pode ser recuperada pelo ClickUpfy.
 
-Nunca publique a chave para pedir suporte. Informe apenas o account, o
+Nunca publique a chave para pedir suporte. Informe apenas o perfil, o
 workspace mascarado quando necessário e a mensagem de erro sem headers.
 
 ## O workspace está incorreto
@@ -42,7 +47,8 @@ clickupfy status
 ```
 
 Se o MCP fixa `--workspace`, atualize a configuração do projeto para o mesmo
-ID ou selecione o account correto.
+ID ou selecione o perfil correto. Um workspace diferente do perfil é recusado
+pelo servidor.
 
 ## Folder ou List não aparece
 
@@ -70,11 +76,18 @@ Execute manualmente o comando registrado no `.mcp.json` ou no
 `.codex/config.toml`. Os motivos mais comuns são:
 
 - `clickupfy` ausente no `PATH` do cliente
-- JSON inválido
-- account inexistente
-- `--list` sem valor
+- JSON ou TOML inválido
+- perfil inexistente
+- `--list` ou `--list-id` sem valor
 - workspace fixado diferente do perfil
 - cliente não reiniciado depois da edição.
+
+Rode o diagnóstico local antes de abrir o cliente:
+
+```bash
+clickupfy doctor
+clickupfy doctor --online
+```
 
 ## O MCP recusou um ID
 
@@ -129,10 +142,18 @@ Confira o item antes de encerrar. Depois inicie o registro correto.
 Repita com `--json`:
 
 ```bash
-clickupfy --json task get <task-id>
+clickupfy task get <task-id> --json
 ```
 
-Para uma tarefa longa consumida por agente, prefira `--markdown`.
+Leia o campo dentro de `data`, como `data.task` ou `data.tasks`. Para uma
+tarefa longa consumida por agente, prefira `--markdown`.
+
+## Um script antigo quebrou depois da migração
+
+O `--json` da versão 1.0 usa o envelope `{ ok, command, data }`. Scripts que
+liam o objeto cru passam a ler `.data`, e o código de erro fica em
+`error.code`. Veja a [referência do CLI](cli.md) e a tabela de exit codes no
+help.
 
 ## Diagnóstico seguro
 
@@ -142,7 +163,7 @@ Ao relatar um problema, inclua:
 - plataforma e forma de instalação
 - grupo e ação executados
 - mensagem de erro
-- se o modo era CLI ou MCP
+- se o modo era CLI, TUI ou MCP
 - escopo sem credenciais.
 
 Remova API keys, tokens, headers, conteúdo de clientes e dados pessoais.

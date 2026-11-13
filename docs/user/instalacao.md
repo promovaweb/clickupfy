@@ -5,14 +5,16 @@
 | Campo | Valor |
 | --- | --- |
 | Natureza | normativo |
-| Escopo | instalação do CLI para uso e desenvolvimento |
-| Autoridade | package.json, launcher npm e pipeline de executáveis |
+| Escopo | instalação do binário para uso e desenvolvimento |
+| Autoridade | pacote npm, GitHub Release e comandos de manutenção |
 
 ## Requisitos
 
-Para instalar pelo npm ou desenvolver, use Node.js `22.12.0` ou superior. Para
-usar um executável standalone, o Node.js não é necessário porque o runtime já
-está incorporado.
+Para usar, nenhum runtime: o ClickUpfy é um binário compilado. O pacote npm
+serve como launcher e exige Node.js 18.17 ou superior apenas para baixar e
+executar o binário da plataforma.
+
+Para desenvolver, use Bun 1.4.4 ou superior.
 
 Você também precisa de uma API key pessoal do ClickUp com acesso a pelo menos
 um workspace. A chave só será usada na etapa de
@@ -23,78 +25,91 @@ um workspace. A chave só será usada na etapa de
 O pacote oficial instala o comando global:
 
 ```bash
-npm install --global @promovaweb/clickupfy
+npm install -g @promovaweb/clickupfy
 clickupfy --version
 clickupfy --help
 ```
 
-O launcher seleciona o executável compilado em Linux x64, macOS Intel e macOS
-Apple Silicon. Em outras plataformas, inclusive Windows, usa o build
-JavaScript incluído no pacote.
-
-Uma versão válida na primeira linha confirma que o pacote e o launcher foram
-encontrados. Se o terminal não localizar `clickupfy`, confira o diretório
-global do npm:
+Na primeira execução, o launcher baixa o binário da plataforma, confere o
+SHA256 contra o `SHA256SUMS` da release e o mantém em cache. Uma versão válida
+na primeira linha confirma que o pacote e o binário foram encontrados. Se o
+terminal não localizar `clickupfy`, confira o diretório global do npm:
 
 ```bash
 npm prefix --global
-npm bin --global
 ```
 
-O segundo comando pode não existir em versões novas do npm. Nesse caso, o
-diretório de executáveis costuma ser `bin` dentro do prefixo em Linux e macOS.
+Em Linux e macOS, o diretório de executáveis costuma ser `bin` dentro do
+prefixo. No Windows, o prefixo contém `clickupfy.cmd`.
 
-## Atualize a instalação npm
+## Atualize a instalação
 
-Quando o ClickUpfy foi instalado globalmente pelo npm, o próprio comando inicia
-a instalação da versão nova e confirma o launcher que ficará disponível no
-terminal:
+O próprio comando atualiza as duas formas de instalação:
 
 ```bash
 clickupfy upgrade
 ```
 
-O alvo padrão é `latest`. Para testar um canal ou fixar uma versão, use
-`clickupfy upgrade next` ou `clickupfy upgrade 0.5.0`. O comando não substitui um
-executável standalone; nesse caso, baixe o archive correspondente na GitHub
-Release, confira `SHA256SUMS` e substitua o arquivo no `PATH`.
+O alvo padrão é `latest`. Para fixar uma versão, use
+`clickupfy upgrade 1.0.1`. Instalado pelo npm, o comando roda
+`npm install -g @promovaweb/clickupfy@<alvo>`. Como binário avulso, baixa o
+arquivo da plataforma e o `SHA256SUMS` da GitHub Release, confere o hash e
+troca o executável. Rodando direto do código-fonte, o comando sai com exit code
+2.
 
-## Instale um executável standalone
+## Instale um binário avulso
 
-Cada GitHub Release distribui archives para Linux x64, macOS Intel, macOS
-Apple Silicon e Windows x64. Baixe o archive da plataforma, extraia
-`clickupfy` ou `clickupfy.exe` e mova o arquivo para uma pasta presente no
+Cada GitHub Release publica um binário por plataforma, com o `SHA256SUMS`:
+
+| Arquivo | Plataforma |
+| --- | --- |
+| `clickupfy-linux-x64` | Linux x64 |
+| `clickupfy-linux-arm64` | Linux ARM64 |
+| `clickupfy-darwin-x64` | macOS Intel |
+| `clickupfy-darwin-arm64` | macOS Apple Silicon |
+| `clickupfy-windows-x64.exe` | Windows x64 |
+
+Baixe o arquivo da plataforma, confira o hash e mova para uma pasta presente no
 `PATH`.
 
 No Linux ou macOS:
 
 ```bash
-chmod +x clickupfy
-./clickupfy --version
+sha256sum clickupfy-linux-x64        # macOS: shasum -a 256 clickupfy-darwin-arm64
+chmod +x clickupfy-linux-x64
+mv clickupfy-linux-x64 ~/.local/bin/clickupfy
+clickupfy --version
 ```
 
-Antes de usar um binário baixado, confira o arquivo `SHA256SUMS` da mesma
-release. O nome e a versão do archive precisam corresponder à plataforma
-escolhida.
+Compare o hash impresso com a linha correspondente do `SHA256SUMS`.
 
-No macOS, o Gatekeeper pode impedir a abertura de um executável sem notarização. Confirme a
-origem no repositório oficial e siga a política de segurança da máquina. Não
-desative proteções globais para contornar o aviso.
+Antes de usar um binário baixado, confira o arquivo `SHA256SUMS` da mesma
+release. O nome do arquivo precisa corresponder à plataforma escolhida.
+
+No macOS, o Gatekeeper pode impedir a abertura de um executável sem
+notarização. Confirme a origem no repositório oficial e siga a política de
+segurança da máquina. Não desative proteções globais para contornar o aviso.
 
 ## Instale para desenvolvimento
 
 Clone o repositório independente do ClickUpfy e execute:
 
 ```bash
-npm install
-npm run build
-npm link
-clickupfy --version
+bun install
+bun run build
+./dist/clickupfy --version
 ```
 
-`npm link` aponta o comando global para o checkout atual. Use esse modo apenas
-quando precisar desenvolver ou validar uma mudança local. Para voltar ao pacote
-publicado, remova o link e reinstale a versão do npm.
+Para rodar sem compilar:
+
+```bash
+bun run dev -- --help
+bun run dev -- about --json
+bun run dev -- mcp --list
+```
+
+Use esse modo apenas quando precisar desenvolver ou validar uma mudança local.
+Para voltar ao pacote publicado, instale a versão do npm.
 
 ## Confirme a instalação
 
@@ -106,19 +121,19 @@ clickupfy --help
 clickupfy agent skill list
 ```
 
-O catálogo deve listar `clickupfy-dev`, `clickup-issue-create`,
-`clickup-issue-implement` e `clickupfy-release`. A presença das skills confirma
-que os assets foram empacotados junto ao CLI.
+O catálogo deve listar `clickupfy-setup`, `clickupfy-dev`,
+`clickup-issue-create`, `clickup-issue-implement` e `clickupfy-release`. A
+presença das skills confirma que os assets foram empacotados junto ao binário.
 
 Ainda não execute comandos remotos. Primeiro
 [configure um perfil](configuracao.md).
 
 ## Windows: PATH e PowerShell
 
-No Windows, `npm prefix --global` informa o diretório que contém
-`clickupfy.cmd`. Inclua esse diretório no PATH do seu usuário e abra outro
-terminal. Para o standalone, extraia `clickupfy.exe` para uma pasta própria,
-adicione essa pasta ao PATH em Variáveis de Ambiente e abra outro terminal.
+No Windows, inclua o diretório que contém `clickupfy.cmd` no PATH do seu usuário
+e abra outro terminal. Para o binário avulso, extraia `clickupfy-windows-x64.exe`
+para uma pasta própria, adicione essa pasta ao PATH em Variáveis de Ambiente e
+abra outro terminal.
 
 Se o PowerShell impedir a execução de `npm.ps1`, use `npm.cmd` e
 `clickupfy.cmd` explicitamente, ou execute pelo Prompt de Comando. Isso evita
@@ -132,12 +147,12 @@ pelo `cmd.exe`. No PowerShell 5.1, configure UTF-8 na sessão antes de capturar:
 clickupfy.cmd task list --list 30 --json | ConvertFrom-Json
 ```
 
-O ClickUpfy emite UTF-8. Alterar a codepage dentro do processo filho não corrige
-a leitura feita pelo PowerShell pai.
+O ClickUpfy emite UTF-8. Alterar a codepage dentro do processo filho não
+corrige a leitura feita pelo PowerShell pai.
 
-As permissões `0700`/`0600` são verificadas apenas em Linux e macOS. No Windows,
-o doctor marca essas verificações como não aplicáveis; as ACLs NTFS precisam
-ser conferidas separadamente. Arquivos JSON com BOM UTF-8 são aceitos.
+As permissões `0700` e `0600` são verificadas apenas em Linux e macOS. No
+Windows, o `doctor` marca essas verificações como não aplicáveis; as ACLs NTFS
+precisam ser conferidas separadamente.
 
 Se houver erro de escrita, feche programas que mantêm o arquivo aberto e
 confira o atributo somente leitura. As gravações usam substituição atômica e

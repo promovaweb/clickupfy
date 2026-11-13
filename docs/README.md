@@ -1,21 +1,47 @@
-# Documentação do ClickUpfy
+# Documentação do {{title}}
 
-A documentação pública do ClickUpfy é organizada por público e por
-responsabilidade.
+`{{bin}}` é um executável único com três modos de uso:
 
-- [`user/`](user/README.md) contém o percurso completo para instalar,
-  configurar e usar o CLI, as skills e o servidor MCP.
-- [`../README.md`](../README.md) apresenta o projeto e sua referência rápida.
-- [`../RELEASING.md`](../RELEASING.md) documenta o processo técnico de release
-  para mantenedores.
+| Modo | Como entrar | Para quem |
+| --- | --- | --- |
+| TUI | `{{bin}}` sem argumentos em um terminal interativo | pessoas |
+| CLI | `{{bin}} <command> [options]`, com saída em texto ou `--json` | pessoas, scripts e agentes |
+| MCP | `{{bin}} mcp`, servidor Model Context Protocol via stdio | agentes de IA |
 
-O conteúdo de `docs/user/` é a fonte editorial do
-[guia portátil](../ebook/README.md). PDF e EPUB são gerados na ordem declarada
-em `docs/user/reading-order.txt`.
+Os três modos compartilham a mesma identidade (`src/app/manifest.ts`), a
+mesma configuração (`~/.{{bin}}/settings.json`), o mesmo cofre de credenciais
+(`~/.{{bin}}/credentials.json`, cifrado) e a mesma tabela de exit codes.
 
-As referências em `user/referencia-*.md` detalham todos os comandos públicos e
-todas as ferramentas MCP, incluindo parâmetros, efeitos, limites e cinco
-exemplos por interface. O teste
-[`tests/documentation-coverage.test.ts`](../tests/documentation-coverage.test.ts)
-confere essa obrigação contra a lista de comandos e contra as ferramentas
-registradas em `src/mcp.ts`.
+## Mapa
+
+- [cli.md](cli.md): commands, opções globais, convenções de saída e a referência gerada do registry.
+- [tui.md](tui.md): abas, teclas, tema e como criar uma screen.
+- [mcp.md](mcp.md): tools, resources, prompts e configuração nos clientes.
+- [configuration.md](configuration.md): settings.json, credentials.json, master key e variáveis de ambiente.
+- [exit-codes.md](exit-codes.md): tabela de exit codes e como tratá-los.
+- [architecture.md](architecture.md): pastas, camadas e fluxo de execução.
+- [customize-template.md](customize-template.md): usar este repositório como ponto de partida de um novo binário.
+- [release.md](release.md): versão, changelog, tag, GitHub Release e binários.
+- [opencli.json](opencli.json): descrição OpenCLI gerada por `bun run opencli`.
+
+## Documentação embutida
+
+Toda esta pasta entra no binário. Um agente pode ler tudo sem acesso ao
+repositório:
+
+```bash
+{{bin}} --skill          # tudo
+{{bin}} --skill cli      # só a seção do CLI, com a referência gerada
+{{bin}} --skill mcp --json
+```
+
+Os tópicos aceitos são `cli`, `tui`, `mcp`, `config`, `exit-codes` e
+`reference`. O topic `reference` contém somente a referência gerada do
+registry, com commands, options e exit codes.
+
+## Idioma
+
+O código, os nomes de commands, options, keys de configuração, campos do
+`--json` e as mensagens do binário são em inglês. Esta documentação e as
+skills do framework são em português do Brasil, com os termos técnicos
+preservados em inglês.

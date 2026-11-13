@@ -1,74 +1,57 @@
 {
-  "name": "@promovaweb/clickupfy",
-  "version": "0.9.0",
-  "description": "CLI e servidor MCP para gerenciar Sprints e trabalho de desenvolvimento no ClickUp.",
+  "name": "clickupfy",
+  "version": "1.0.0",
+  "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
   "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
   "bin": {
-    "clickupfy": "bin/clickupfy.cjs"
+    "clickupfy": "src/main.ts"
   },
-  "files": [
-    ".codex/skills",
-    "bin",
-    "CHANGELOG.md",
-    "dist",
-    "README.md",
-    "RELEASING.md",
-    "vendor"
-  ],
+  "termfy": {
+    "bin": "clickupfy",
+    "title": "ClickUpfy",
+    "author": "Promovaweb",
+    "site": "https://promovaweb.com/docs/clickupfy",
+    "repository": "https://github.com/promovaweb/clickupfy",
+    "framework": "https://github.com/promovaweb/termfy",
+    "starterKit": "0.9.2"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "build:executable": "node scripts/build-executable.mjs",
-    "changelog:check": "node scripts/normalize-changelog.mjs --check",
-    "changelog:format": "node scripts/normalize-changelog.mjs",
-    "dev": "tsx src/cli.ts",
-    "ebook": "bash .ebook/build-ebook.sh",
-    "ebook:verify": "bash .ebook/build-ebook.sh --check",
-    "npm:stage": "node scripts/stage-npm-binaries.mjs",
-    "npm:validate-package": "node scripts/validate-npm-package.mjs",
-    "prepack": "npm run build",
-    "publish:npm": "node scripts/publish-npm-package.mjs",
-    "release:check": "node scripts/validate-release.mjs",
-    "start": "node dist/cli.js",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tests.json --noEmit",
-    "validar": "npm run api:check && npm run typecheck && npm run test && npm run build && npm run release:check && npm run changelog:check",
-    "api:generate": "node scripts/generate-api.mjs && node --import tsx scripts/generate-api-docs.mjs",
-    "api:check": "node scripts/generate-api.mjs --check && node --import tsx scripts/generate-api-docs.mjs --check",
-    "api:update": "node scripts/generate-api.mjs --fetch && node --import tsx scripts/generate-api-docs.mjs",
-    "api:upstream:check": "node scripts/generate-api.mjs --fetch --check"
+    "dev": "bun run src/main.ts",
+    "start": "bun run src/main.ts",
+    "tui": "bun run src/main.ts",
+    "mcp": "bun run src/main.ts mcp",
+    "build": "bun run scripts/build.ts",
+    "build:all": "bun run scripts/build.ts --all",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit",
+    "opencli": "bun run src/main.ts --opencli > docs/opencli.json",
+    "opencli:check": "bun run scripts/check-opencli.ts",
+    "skills:install": "npx -y skills add https://github.com/promovaweb/termfy -y -a universal -a claude-code -a codex -a opencode -a cursor -a gemini-cli",
+    "skills:update": "npx -y skills update -y -p",
+    "skills:check": "bun run scripts/check-skills.ts",
+    "init": "bun run scripts/init.ts",
+    "api:generate": "bun run scripts/generate-api.ts",
+    "validate": "bun run typecheck && bun test && bun run skills:check && bun run opencli:check && bun run docs:check && bun run build",
+    "docs:check": "bun run scripts/check-docs.ts"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "bun": ">=1.4.4"
   },
-  "keywords": [
-    "clickup",
-    "cli",
-    "mcp",
-    "sprints",
-    "desenvolvimento"
-  ],
-  "license": "UNLICENSED",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/promovaweb/clickupfy.git"
   },
   "dependencies": {
-    "@inquirer/prompts": "^8.5.2",
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "commander": "^15.0.0",
-    "cross-spawn": "^7.0.6",
-    "jsonc-parser": "^3.3.1",
-    "smol-toml": "^1.8.0",
-    "zod": "^4.4.3"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@opentui/core": "^0.8.4",
+    "jsonc-parser": "3.3.1",
+    "smol-toml": "1.6.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/cross-spawn": "^6.0.6",
-    "@types/node": "^24.10.0",
-    "esbuild": "0.28.1",
-    "postject": "1.0.0-alpha.6",
-    "tsx": "^4.20.6",
-    "typescript": "^7.0.2",
-    "vitest": "^4.1.0"
+    "@types/bun": "^1.4.4",
+    "typescript": "^7.0.2"
   }
 }

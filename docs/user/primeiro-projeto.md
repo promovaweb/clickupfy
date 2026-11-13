@@ -6,14 +6,14 @@
 | --- | --- |
 | Natureza | normativo |
 | Escopo | primeira integração de um repositório com ClickUpfy e MCP |
-| Autoridade | agent install, escopo MCP e ferramentas públicas |
+| Autoridade | agent install, mcp setup, escopo MCP e ferramentas públicas |
 
 ## O que você vai preparar
 
 Neste percurso, um repositório será ligado a uma List do ClickUp. O resultado
 são `.mcp.json` e `.codex/config.toml`, cada um no formato do cliente que os
-consome, iniciando o ClickUpfy com um account e IDs fixos, além das quatro
-skills instaladas no projeto.
+consome, iniciando o ClickUpfy com um perfil e IDs fixos, além das cinco skills
+instaladas no projeto.
 
 Antes de escrever qualquer tarefa, você vai:
 
@@ -29,7 +29,7 @@ clickupfy status
 clickupfy whoami
 ```
 
-Confirme o nome do account, o usuário e o workspace. Se qualquer dado estiver
+Confirme o nome do perfil, o usuário e o workspace. Se qualquer dado estiver
 errado, volte à [configuração](configuracao.md).
 
 ## Descubra a hierarquia
@@ -63,8 +63,8 @@ clickupfy --account promovaweb agent install \
 ```
 
 `space` e `list` são obrigatórios. Workspace e Folder podem ser omitidos
-quando não forem necessários ao escopo. Acrescente
-`--sprint-folder <id>` se o projeto usa Sprints.
+quando não forem necessários ao escopo. Acrescente `--sprint-folder <id>` se o
+projeto usa Sprints. `agent init` é o alias de `agent install`.
 
 O comando instala as skills e mescla o servidor no `.mcp.json` e no
 `.codex/config.toml` existentes sem remover outros servidores ou configurações.
@@ -100,6 +100,22 @@ No Codex, a entrada equivalente fica na tabela `mcp_servers`:
 [mcp_servers."promovaweb-clickupfy"]
 command = "clickupfy"
 args = ["mcp", "serve", "--account", "promovaweb", "--workspace", "123", "--space", "10", "--folder", "20", "--list", "30"]
+```
+
+Só o id do perfil vai para os arquivos, nunca a API key.
+
+Se o projeto usa outros clientes, `clickupfy mcp setup` grava a mesma entrada
+em `.mcp.json`, `.codex/config.toml`, `.gemini/settings.json` e
+`opencode.json`:
+
+```bash
+clickupfy mcp setup \
+  --name promovaweb-clickupfy \
+  --account promovaweb \
+  --space 10 \
+  --list 30 \
+  --clients claude-code,codex,gemini,opencode \
+  --non-interactive
 ```
 
 Antes de abrir o cliente MCP pela primeira vez, acrescente `--read-only` ao

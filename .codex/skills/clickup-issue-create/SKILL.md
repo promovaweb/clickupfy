@@ -14,7 +14,7 @@ arquivos do projeto, iniciar time tracking ou avançar status.
 Se a tarefa criada pedir mudança no ClickUpfy, inclua no corpo uma seção de
 documentação com os capítulos de `docs/user/` afetados, a referência de CLI ou
 MCP afetada, a atualização de `docs/user/reading-order.txt`, a versão do ebook
-e os comandos `npm run ebook` e `npm run ebook:verify`. Para cada comando ou
+e os comandos `bash .ebook/build-ebook.sh` e `bash .ebook/build-ebook.sh --check`. Para cada comando ou
 ferramenta MCP acrescentado ou alterado, registre a exigência de explicar todos
 os parâmetros, retorno, permissões, limites e cinco exemplos diferentes.
 

@@ -10,11 +10,12 @@
 <!-- markdownlint-enable MD033 -->
 
 O ClickUpfy conecta o trabalho mantido no ClickUp ao terminal e aos agentes de
-código. Um único executável configura vários perfis, percorre a hierarquia do
-ClickUp, administra tarefas, checklists, Sprints, comentários e time tracking,
-instala skills no projeto e oferece as mesmas operações por MCP.
+código. Um único executável em Bun configura vários perfis, percorre a
+hierarquia do ClickUp, administra tarefas, checklists, Sprints, Docs,
+comentários e time tracking, instala skills no projeto e oferece as mesmas
+operações por MCP.
 
-Este guia ensina essa jornada em sequência. Você começa instalando o CLI e
+Este guia ensina essa jornada em sequência. Você começa instalando o binário e
 associando uma API key a um workspace. Depois encontra os IDs do projeto,
 executa uma tarefa completa pelo terminal e prepara um MCP restrito para que o
 agente trabalhe somente na List autorizada.
@@ -25,11 +26,11 @@ agente trabalhe somente na List autorizada.
 | --- | --- |
 | Natureza | normativo |
 | Escopo | percurso completo do usuário do ClickUpfy |
-| Autoridade | interfaces públicas do CLI, servidor MCP e skills distribuídas |
+| Autoridade | interfaces públicas do CLI, TUI, servidor MCP e skills distribuídas |
 
 ## Leia online ou como ebook
 
-Estas páginas também formam o **ClickUpfy — Guia completo do usuário**. A
+Estas páginas também formam o **ClickUpfy, o guia completo do usuário**. A
 [pasta do ebook](../../ebook/README.md) publica a versão vigente em PDF e EPUB
 e registra os hashes que comprovam a origem comum dos formatos.
 
@@ -41,9 +42,10 @@ página desta documentação muda.
 
 Siga esta ordem na primeira leitura:
 
-1. [Entenda o ClickUpfy](conceitos.md) e os limites entre ClickUp, CLI, MCP e
+1. [Entenda o ClickUpfy](conceitos.md) e os limites entre ClickUp, CLI, TUI, MCP e
    skills.
-2. [Instale o CLI](instalacao.md) pelo npm ou por um executável standalone.
+2. [Instale o ClickUpfy](instalacao.md) pelo npm ou por um binário da GitHub
+   Release.
 3. [Configure perfis e credenciais](configuracao.md) sem colocar a API key no
    repositório.
 4. Consulte a [referência de perfis e hierarquia](referencia-cli-perfis-hierarquia.md)
@@ -53,7 +55,7 @@ Siga esta ordem na primeira leitura:
 6. [Navegue pela hierarquia](hierarquia.md) até encontrar Space, Folder, List
    e Sprint Folder.
 7. [Trabalhe com tarefas e checklists](tarefas.md), incluindo subtarefas,
-   Markdown, datas e comentários.
+   Markdown, datas, tags e comentários.
 8. Consulte a [referência de tarefas, checklists, comentários e tempo](referencia-cli-tarefas.md)
    para parâmetros, formatos e confirmações de escrita.
 9. [Planeje Sprints](sprints.md) e acompanhe avanço por tarefas e Sprint
@@ -79,9 +81,10 @@ Siga esta ordem na primeira leitura:
 
 ## O modelo mental em uma frase
 
-O arquivo global guarda credenciais. Os arquivos do projeto guardam somente o
-perfil e os IDs autorizados. O `.mcp.json` atende clientes que usam JSON; o
-`.codex/config.toml` atende o Codex.
+O arquivo global guarda os perfis e a API key cifrada. Os arquivos do projeto
+guardam somente o perfil e os IDs autorizados. O `.mcp.json`, o
+`.codex/config.toml`, o `.gemini/settings.json` e o `opencode.json` atendem
+cada cliente no seu próprio formato.
 
 Essa divisão permite usar o mesmo ClickUpfy em vários projetos sem duplicar a
 API key. Um projeto pode apontar para a List de um produto, enquanto outro

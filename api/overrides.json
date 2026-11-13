@@ -2,7 +2,7 @@
   "queryObjectFilters": ["GetTasks", "GetTask", "GetFilteredTeamTasks"],
   "nullableTaskDates": ["start_date", "due_date"],
   "notes": {
-    "queryObjectFilters": "Os exemplos oficiais de custom_fields usam arrays de objetos, embora o schema declare items:string. Aceitamos ambos, serializando o filtro como JSON.",
-    "nullableTaskDates": "O comando task update existente usa null para remover datas. O catálogo mantém esse contrato sem alterar a especificação original."
+    "queryObjectFilters": "The official custom_fields examples use arrays of objects, although the schema declares items:string. Both are accepted and the filter is serialized as JSON.",
+    "nullableTaskDates": "The task update command uses null to clear dates. The catalog keeps that contract without changing the original specification."
   }
 }

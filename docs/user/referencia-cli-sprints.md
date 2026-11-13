@@ -6,21 +6,28 @@
 | --- | --- |
 | Natureza | referência |
 | Escopo | consulta, relatório, associação de tarefas e Sprint Points no terminal |
-| Autoridade | `src/cli.ts`, `src/sprints.ts` e endpoints públicos do ClickUp usados pelo ClickUpfy |
+| Autoridade | `src/operations/cli.ts`, `src/clickup/sprints.ts` e os endpoints públicos do ClickUp usados pelo ClickUpfy |
 
 No ClickUpfy, uma Sprint é uma List dentro de um Sprint Folder que possui
 `start_date` e `due_date`. Uma List comum do mesmo Folder não entra no resultado
 por padrão. O CLI não cria Sprints, não habilita o ClickApp de Sprints e não
 altera datas de um ciclo: essas operações continuam na interface do ClickUp.
 
+O estado de cada Sprint (`planned`, `active` ou `completed`) é calculado contra
+uma data de referência: hoje ou o dia informado em `--at <AAAA-MM-DD>`. A data é
+lida ao meio-dia UTC, portanto o resultado não muda com o fuso da máquina.
+`--at` muda somente o cálculo; ele não altera a Sprint nem suas tarefas.
+
+Em JSON, as listas vêm dentro de um objeto, como `{ "sprints": [] }` e
+`{ "tasks": [] }`, e o erro carrega o exit code em `error.code`.
+
 ## Consulta de ciclos
 
 ### `clickupfy sprint list --folder <id>`
 
-Lista Sprints identificadas pelo período. `--folder` é obrigatório. Use
-`--include-regular` para diagnosticar um Folder misto e `--archived` para
-incluir Lists arquivadas. `--at` recebe uma data `AAAA-MM-DD` para calcular o
-estado do ciclo naquela data.
+Lista Sprints identificadas pelo período. `--folder` é obrigatória no CLI; no
+MCP, o Sprint Folder fixado é o padrão. Use `--include-regular` para diagnosticar
+um Folder misto e `--archived` para incluir Lists arquivadas.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -36,7 +43,7 @@ clickupfy sprint list --folder 4001
 ```
 
 ```bash
-clickupfy sprint list --folder 4001 --at 2026-08-10
+clickupfy sprint list --folder 4001 --at 2026-11-13
 ```
 
 ```bash
@@ -48,18 +55,22 @@ clickupfy sprint list --folder 4001 --archived --include-regular
 ```
 
 ```bash
-clickupfy --account produto --json sprint list --folder 4001 --at 2026-09-01
+clickupfy sprint list --folder 4001 --at 2026-12-01 --account produto --json
 ```
 
-Uma List sem início ou término aparece somente com `--include-regular`; ela não
-deve ser tratada como Sprint. Guarde o ID de uma Sprint retornada para os
-comandos de relatório e associação.
+Em `--json`, `data` traz `{ sprints: [] }` e cada Sprint tem `id`, `name`,
+`startDate`, `dueDate`, `status`, `taskCount` e `isSprint`. Uma List sem início
+ou término aparece somente com `--include-regular`; ela não deve ser tratada como
+Sprint. Guarde o ID de uma Sprint retornada para os comandos de relatório e
+associação. Sem `--folder`, o comando sai com `2`.
 
 ### `clickupfy sprint current --folder <id>`
 
 Encontra a única Sprint cujo período inclui a data atual ou a data indicada por
-`--at`. A consulta falha quando não existe ciclo ativo ou quando dois ciclos se
-sobrepõem; essa falha protege o planejamento contra uma seleção arbitrária.
+`--at`. Sem Sprint ativa, o comando sai com `6`. Com mais de uma Sprint ativa,
+sai com `2`, lista as candidatas na mensagem e devolve
+`error.details.candidates[]` no JSON. Essa falha protege o planejamento contra
+uma seleção arbitrária.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -73,28 +84,28 @@ clickupfy sprint current --folder 4001
 ```
 
 ```bash
-clickupfy sprint current --folder 4001 --at 2026-08-10
+clickupfy sprint current --folder 4001 --at 2026-11-13
 ```
 
 ```bash
-clickupfy sprint current --folder 4001 --at 2026-09-01
+clickupfy sprint current --folder 4001 --at 2026-12-01
 ```
 
 ```bash
-clickupfy --account produto sprint current --folder 4001
+clickupfy sprint current --folder 4001 --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json sprint current --folder 5001 --at 2026-10-15
+clickupfy sprint current --folder 5001 --at 2026-10-15 --account cliente-a --json
 ```
 
-Corrija datas sobrepostas no ClickUp quando o comando falhar. Não passe uma
-List comum para `sprint get` como alternativa: o relatório depende do período
-da Sprint.
+Corrija datas sobrepostas no ClickUp quando o comando falhar. Não passe uma List
+comum para `sprint get` como alternativa: o relatório depende do período da
+Sprint.
 
 ### `clickupfy sprint get <sprint-id>`
 
-Mostra período, estado temporal, total de tarefas, distribuição de status e
+Mostra período, estado temporal, total de tarefas, distribuição por status e
 progresso por quantidade e por Sprint Points. `--at` muda a leitura temporal,
 sem alterar a Sprint nem suas tarefas.
 
@@ -106,28 +117,31 @@ sem alterar a Sprint nem suas tarefas.
 Exemplos:
 
 ```bash
-clickupfy sprint get sprint-10
+clickupfy sprint get 901328052926
 ```
 
 ```bash
-clickupfy sprint get sprint-10 --at 2026-08-10
+clickupfy sprint get 901328052926 --at 2026-11-13
 ```
 
 ```bash
-clickupfy sprint get sprint-11
+clickupfy sprint get 901328060001
 ```
 
 ```bash
-clickupfy --account produto sprint get sprint-10
+clickupfy sprint get 901328052926 --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json sprint get sprint-22 --at 2026-09-01
+clickupfy sprint get 901328060002 --at 2026-12-01 --account cliente-a --json
 ```
 
-Uma tarefa sem Points entra no total de tarefas, mas não adiciona peso ao
-progresso por pontos. Consulte `sprint tasks` para inspecionar as tarefas que
-compõem esses números.
+O `data` traz a Sprint com `totalTasks`, `completedTasks`, `openTasks`,
+`totalPoints`, `completedPoints`, `unestimatedTasks`, `taskCompletionPercent`,
+`pointsCompletionPercent` e `tasksByStatus`. Uma tarefa sem Points entra no total
+de tarefas, mas não adiciona peso ao progresso por pontos. Consulte `sprint
+tasks` para inspecionar as tarefas que compõem esses números. Uma List sem
+período no lugar de `<sprint-id>` sai com `2`.
 
 ### `clickupfy sprint tasks <sprint-id>`
 
@@ -143,27 +157,30 @@ para conferir o resultado final do ciclo.
 Exemplos:
 
 ```bash
-clickupfy sprint tasks sprint-10
+clickupfy sprint tasks 901328052926
 ```
 
 ```bash
-clickupfy sprint tasks sprint-10 --open-only
+clickupfy sprint tasks 901328052926 --open-only
 ```
 
 ```bash
-clickupfy sprint tasks sprint-11
+clickupfy sprint tasks 901328060001
 ```
 
 ```bash
-clickupfy --account produto sprint tasks sprint-10 --open-only
+clickupfy sprint tasks 901328052926 --open-only --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json sprint tasks sprint-22
+clickupfy sprint tasks 901328060002 --account cliente-a --json
 ```
 
-O retorno é um resumo de tarefas. Para obter descrição, subtarefas e checklist
-items de uma tarefa, execute `clickupfy task get <task-id>`.
+O CLI devolve `{ tasks: [] }` com as tarefas completas da API. As tools MCP
+devolvem linhas compactas com `id`, `custom_id`, `name`, `status`, `priority`,
+`points`, `assignees`, `start_date`, `due_date` e `url`. Para obter descrição,
+subtarefas e checklist items de uma tarefa, execute
+`clickupfy task get <task-id>`.
 
 ## Alterações no planejamento
 
@@ -171,7 +188,8 @@ items de uma tarefa, execute `clickupfy task get <task-id>`.
 
 Associa uma tarefa existente a uma Sprint sem trocar sua List principal. Isso
 permite manter a tarefa no backlog e no ciclo atual ao mesmo tempo. A operação
-não cria cópia, não move a tarefa e não modifica status.
+não cria cópia, não move a tarefa e não modifica status. O `data` traz
+`{ sprintId, taskId, added }`.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -181,23 +199,23 @@ não cria cópia, não move a tarefa e não modifica status.
 Exemplos:
 
 ```bash
-clickupfy sprint add-task sprint-10 86abc123
+clickupfy sprint add-task 901328052926 86abc123
 ```
 
 ```bash
-clickupfy sprint add-task sprint-10 77def456
+clickupfy sprint add-task 901328052926 77def456
 ```
 
 ```bash
-clickupfy --account produto sprint add-task sprint-10 86abc123
+clickupfy sprint add-task 901328052926 86abc123 --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a sprint add-task sprint-22 55ghi789
+clickupfy sprint add-task 901328060002 55ghi789 --account cliente-a
 ```
 
 ```bash
-clickupfy --json sprint add-task sprint-10 99jkl012
+clickupfy sprint add-task 901328052926 99jkl012 --json
 ```
 
 Reler `sprint tasks <sprint-id>` confirma a associação. Só execute essa ação
@@ -206,7 +224,8 @@ quando o planejamento da Sprint estiver no escopo autorizado.
 ### `clickupfy sprint remove-task <sprint-id> <task-id>`
 
 Remove a associação entre tarefa e Sprint. A tarefa continua existindo na List
-principal e não perde seus comentários, checklist, tempo ou histórico.
+principal e não perde seus comentários, checklist, tempo ou histórico. O `data`
+traz `{ sprintId, taskId, removed }`.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -216,27 +235,27 @@ principal e não perde seus comentários, checklist, tempo ou histórico.
 Exemplos:
 
 ```bash
-clickupfy sprint remove-task sprint-10 86abc123
+clickupfy sprint remove-task 901328052926 86abc123
 ```
 
 ```bash
-clickupfy sprint remove-task sprint-10 77def456
+clickupfy sprint remove-task 901328052926 77def456
 ```
 
 ```bash
-clickupfy --account produto sprint remove-task sprint-10 86abc123
+clickupfy sprint remove-task 901328052926 86abc123 --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a sprint remove-task sprint-22 55ghi789
+clickupfy sprint remove-task 901328060002 55ghi789 --account cliente-a
 ```
 
 ```bash
-clickupfy --json sprint remove-task sprint-10 99jkl012
+clickupfy sprint remove-task 901328052926 99jkl012 --json
 ```
 
-Para excluir uma tarefa, use `task delete` apenas com autorização explícita.
-Para confirmar que a associação saiu, releia a Sprint e a tarefa depois desta
+Para excluir uma tarefa, use `task delete` apenas com autorização explícita. Para
+confirmar que a associação saiu, releia a Sprint e a tarefa depois desta
 operação.
 
 ### `clickupfy sprint set-points <task-id> <points>`
@@ -265,12 +284,13 @@ clickupfy sprint set-points 86abc123 3
 ```
 
 ```bash
-clickupfy --account produto sprint set-points 86abc123 5
+clickupfy sprint set-points 86abc123 5 --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json sprint set-points 77def456 8
+clickupfy sprint set-points 77def456 8 --account cliente-a --json
 ```
 
-`task update <task-id> --points <n>` atualiza o mesmo campo. Use apenas uma
-das interfaces por alteração e releia a tarefa para confirmar o valor salvo.
+Pontos negativos saem com `2`, sem chamar a API. O `data` traz a tarefa
+atualizada. `task update <task-id> --points <n>` altera o mesmo campo; use apenas
+uma das interfaces por alteração e releia a tarefa para confirmar o valor salvo.

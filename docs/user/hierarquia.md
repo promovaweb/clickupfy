@@ -23,7 +23,7 @@ Workspace
 Sprints também são Lists, mas vivem normalmente dentro de um Sprint Folder e
 possuem `start_date` e `due_date`.
 
-O account já conhece um workspace. Por isso, `space list` não exige esse ID. A
+O perfil já conhece um workspace. Por isso, `space list` não exige esse ID. A
 partir do Space, os comandos precisam do pai para evitar uma busca ambígua.
 
 ## Liste workspaces e Spaces
@@ -34,7 +34,7 @@ clickupfy space list
 clickupfy space list --archived
 ```
 
-O asterisco na saída compacta indica o workspace associado ao account. Use
+O asterisco na saída compacta indica o workspace associado ao perfil. Use
 `--archived` somente quando precisar localizar uma estrutura antiga.
 
 ## Liste Folders e Lists
@@ -51,7 +51,7 @@ clickupfy list list --space <space-id>
 ```
 
 Folder e Space são alternativas no comando de Lists. Não informe os dois ao
-mesmo tempo.
+mesmo tempo: sem nenhum deles o comando sai com exit code 2.
 
 ## Confira os status da List
 
@@ -75,15 +75,23 @@ clickupfy task search --query "autenticação"
 
 `task list` consulta uma List conhecida. `task search` procura no workspace,
 mas o MCP de projeto restringe a busca à List fixada para impedir vazamento de
-contexto entre projetos.
+contexto entre projetos. Vários valores de `--status` e `--assignee` são
+separados por vírgula:
+
+```bash
+clickupfy task list --list <list-id> --status "to do,in progress"
+clickupfy task list --list <list-id> --assignee 7,8
+```
 
 Use `--json` quando precisar inspecionar campos não exibidos na tabela:
 
 ```bash
-clickupfy --json task list --list <list-id>
+clickupfy task list --list <list-id> --json
 ```
 
-A opção global vem antes do grupo do comando.
+A resposta segue o envelope `{ ok, command, data }`, e as tarefas ficam em
+`data.tasks`. Options globais valem em qualquer posição, antes ou depois do
+comando.
 
 ## Escolha o menor escopo suficiente
 

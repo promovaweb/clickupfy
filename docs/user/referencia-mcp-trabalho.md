@@ -5,23 +5,31 @@
 | Campo | Valor |
 | --- | --- |
 | Natureza | referência |
-| Escopo | ferramentas MCP de trabalho em tarefas, Sprints, checklists, comentários e time tracking |
-| Autoridade | schemas e handlers de `src/mcp.ts`, `src/work-items.ts` e `src/sprints.ts` |
+| Escopo | ferramentas MCP de trabalho em tarefas, Sprints, checklists, comentários, time tracking e tags |
+| Autoridade | `src/operations/mcp.ts`, `src/clickup/tasks.ts`, `src/clickup/sprints.ts`, `src/clickup/checklists.ts`, `src/clickup/comments.ts`, `src/clickup/time.ts`, `src/clickup/tags.ts` e os schemas registrados em `src/mcp/server.ts` |
 
 As chamadas deste capítulo usam objetos JSON de argumentos. Valores como
-`3001`, `86abc123` e `sprint-10` são apenas exemplos. Ferramentas de escrita
-somem de `tools/list` quando o servidor é iniciado com `--read-only`; não há
-parâmetro que contorne essa ausência. Depois de cada escrita, faça uma leitura
+`901328052926`, `86abc123` e `8cdu8-123` são apenas exemplos. Ferramentas de
+escrita somem de `tools/list` quando o servidor é iniciado com `--read-only`; não
+há parâmetro que contorne essa ausência. Depois de cada escrita, faça uma leitura
 do recurso alterado para comparar o estado persistido.
+
+Toda falha esperada volta com `isError: true`, a mensagem e o exit code
+equivalente do CLI, como `[exit code 6]`. Toda tool aceita `account` opcional; em
+um servidor com perfil fixado, outro perfil é recusado. Os IDs fixados pelo
+servidor valem como padrão e um valor diferente é recusado.
+
+As listas de tarefas em MCP saem em linhas compactas com `id`, `custom_id`,
+`name`, `status`, `priority`, `points`, `assignees`, `start_date`, `due_date` e
+`url`. O CLI com `--json` devolve as tarefas completas da API.
 
 ## Tarefas: leitura e busca
 
 ### `clickupfy_tasks_list`
 
 Lista tarefas da List autorizada. Omitir `listId` usa a List fixada. Os filtros
-aceitam arrays: `status` é uma lista de nomes configurados na List e
-`assignees` contém IDs de pessoas. `page` deve ser inteiro maior ou igual a
-zero.
+aceitam arrays: `status` é uma lista de nomes configurados na List e `assignees`
+contém IDs de pessoas em texto. `page` deve ser inteiro maior ou igual a zero.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -39,7 +47,7 @@ Exemplos:
 ```
 
 ```json
-{"status":["em andamento"]}
+{"status":["in progress"]}
 ```
 
 ```json
@@ -51,20 +59,19 @@ Exemplos:
 ```
 
 ```json
-{"account":"produto","listId":"3001","status":["aberta","em andamento"]}
+{"account":"produto","listId":"901328052926","status":["to do","in progress"]}
 ```
 
-O retorno é compacto, com os campos usados para localizar trabalho. Para
-obter descrição, subtarefas e checklist items de uma tarefa, chame
-`clickupfy_task_get` com o `id` devolvido. Nunca use um `listId` diferente do
-fixado pelo projeto.
+Cada página traz até 100 tarefas. Para obter descrição, subtarefas e checklist
+items de uma tarefa, chame `clickupfy_task_get` com o `id` devolvido. Nunca use
+um `listId` diferente do fixado pelo projeto.
 
 ### `clickupfy_task_get`
 
 Obtém a tarefa e acrescenta `execution`, uma fila endereçável que preserva
 subtarefas e checklist items. `raw` devolve somente a resposta original da API.
-`markdown` devolve um texto único com descrição e itens; os dois formatos são
-mutuamente exclusivos.
+`markdown` devolve um texto único com descrição e itens; os dois campos são
+mutuamente exclusivos e, juntos, produzem erro.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -95,22 +102,23 @@ Exemplos:
 {"account":"cliente-a","taskId":"77def456","markdown":true}
 ```
 
-Os itens usam chaves como `task:86abc123` e `checklist:check-1:item-1`.
-`parentKey` e `depth` preservam a árvore. A ação `complete` de cada item mostra
-o comando CLI e a chamada MCP adequados, mas a autorização para executar essa
-ação continua vindo do pedido recebido pelo agente.
+Os itens usam chaves como `task:86abc123` e
+`checklist:b955c4dc:21e08dc8`. `parentKey` e `depth` preservam a árvore, e
+`state` vale `done` ou `pending`. A ação `complete` de cada item mostra o comando
+do CLI e a chamada MCP adequados, mas a autorização para executar essa ação
+continua vindo do pedido recebido pelo agente.
 
 ### `clickupfy_tasks_search`
 
-Busca somente dentro da List fixada, diferentemente do comando CLI `task
-search`, que percorre o workspace. `maxPages` aceita inteiro entre `1` e `100`.
-Omitir `query` lista de acordo com os outros filtros, portanto inclua um termo
-quando a intenção for uma busca nominal.
+Busca tarefas por texto, status e responsável. Com List fixada, percorre somente
+essa List, página por página; sem List fixada, percorre o workspace, como o CLI.
+`maxPages` aceita inteiro entre `1` e `100`. Omitir `query` lista de acordo com os
+outros filtros, portanto inclua um termo quando a intenção for uma busca nominal.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
 | `account` | string | não | Perfil a resolver. |
-| `query` | string | não | Texto no nome, descrição ou ID. |
+| `query` | string | não | Texto no ID, nome ou descrição. |
 | `status` | string[] | não | Filtra por status. |
 | `assignees` | string[] | não | Filtra por responsáveis. |
 | `includeClosed` | booleano | não | Inclui tarefas concluídas. |
@@ -127,7 +135,7 @@ Exemplos:
 ```
 
 ```json
-{"query":"API","status":["em andamento"]}
+{"query":"API","status":["in progress"]}
 ```
 
 ```json
@@ -144,10 +152,9 @@ busca para uma List não autorizada.
 
 ### `clickupfy_comments_list`
 
-Lê comentários de uma tarefa. O retorno normaliza usuário, data e texto para
-facilitar a leitura pelo agente. A ferramenta não aceita paginação nem filtro de
-autor; leia a lista completa retornada e não trate um comentário antigo como
-instrução mais recente sem conferir as datas.
+Lê os comentários de uma tarefa, com todas as páginas da API. O retorno normaliza
+usuário, data e texto para facilitar a leitura pelo agente, em
+`{ comments: [] }` com `id`, `user`, `date` e `text`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -177,7 +184,8 @@ Exemplos:
 ```
 
 Leia essa ferramenta antes de publicar mudança de status ou comentário de
-progresso. Ela não expõe anexos como conteúdo, não publica respostas e não
+progresso, e não trate um comentário antigo como instrução mais recente sem
+conferir as datas. Ela não expõe anexos como conteúdo, não publica respostas e não
 altera o campo de status.
 
 ## Sprints
@@ -185,9 +193,9 @@ altera o campo de status.
 ### `clickupfy_sprints_list`
 
 Lista Sprints dentro do Sprint Folder fixado. Uma Sprint é uma List que possui
-`start_date` e `due_date`; `includeRegular` acrescenta Lists comuns ao retorno
-de diagnóstico. `at` recebe uma data `AAAA-MM-DD` usada para classificar o
-estado do ciclo.
+`start_date` e `due_date`; `includeRegular` acrescenta Lists comuns ao retorno de
+diagnóstico. `at` recebe uma data `AAAA-MM-DD` usada para classificar o estado do
+ciclo.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -204,7 +212,7 @@ Exemplos:
 ```
 
 ```json
-{"at":"2026-08-10"}
+{"at":"2026-11-13"}
 ```
 
 ```json
@@ -212,22 +220,25 @@ Exemplos:
 ```
 
 ```json
-{"folderId":"4001","at":"2026-09-01"}
+{"folderId":"4001","at":"2026-12-01"}
 ```
 
 ```json
 {"account":"produto","folderId":"4001","includeRegular":false}
 ```
 
-O objeto vazio funciona somente se o servidor recebeu `--sprint-folder`. A
-ferramenta não cria Sprint nem altera datas: a API pública do ClickUp não oferece
-criação de Sprint por esse fluxo.
+O objeto vazio funciona somente se o servidor recebeu `--sprint-folder`; sem
+Sprint Folder fixado, `folderId` é obrigatório. O retorno é
+`{ sprints: [] }` com `id`, `name`, `startDate`, `dueDate`, `status`,
+`taskCount` e `isSprint`. A ferramenta não cria Sprint nem altera datas: a API
+pública do ClickUp não oferece criação de Sprint por esse fluxo.
 
 ### `clickupfy_sprint_current`
 
-Obtém a única Sprint cujo período contém a data informada ou a data atual. Se
-não houver Sprint ativa, ou se dois períodos se sobrepuserem, a ferramenta
-retorna erro em vez de escolher uma List arbitrariamente.
+Obtém a única Sprint cujo período contém a data informada ou a data atual. Se não
+houver Sprint ativa, a ferramenta retorna erro com o exit code `6`; se dois
+períodos se sobrepuserem, retorna erro com as candidatas em vez de escolher uma
+List arbitrariamente.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -242,7 +253,7 @@ Exemplos:
 ```
 
 ```json
-{"at":"2026-08-10"}
+{"at":"2026-11-13"}
 ```
 
 ```json
@@ -250,7 +261,7 @@ Exemplos:
 ```
 
 ```json
-{"folderId":"4001","at":"2026-09-01"}
+{"folderId":"4001","at":"2026-12-01"}
 ```
 
 ```json
@@ -262,9 +273,9 @@ datas e sobreposição no ClickUp, depois leia novamente a Sprint atual.
 
 ### `clickupfy_sprint_get`
 
-Produz relatório de uma Sprint informada. Inclui período, progresso por
-quantidade de tarefas, progresso por Sprint Points e distribuição de status.
-`at` muda somente o cálculo temporal da situação da Sprint.
+Produz o relatório de uma Sprint. Inclui período, progresso por quantidade de
+tarefas, progresso por Sprint Points e distribuição de status. `at` muda somente
+o cálculo temporal da situação da Sprint.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -275,34 +286,37 @@ quantidade de tarefas, progresso por Sprint Points e distribuição de status.
 Exemplos:
 
 ```json
-{"sprintId":"sprint-10"}
+{"sprintId":"901328052926"}
 ```
 
 ```json
-{"sprintId":"sprint-10","at":"2026-08-10"}
+{"sprintId":"901328052926","at":"2026-11-13"}
 ```
 
 ```json
-{"sprintId":"sprint-11"}
+{"sprintId":"901328060001"}
 ```
 
 ```json
-{"account":"produto","sprintId":"sprint-10"}
+{"account":"produto","sprintId":"901328052926"}
 ```
 
 ```json
-{"account":"cliente-a","sprintId":"sprint-22","at":"2026-09-01"}
+{"account":"cliente-a","sprintId":"901328060002","at":"2026-12-01"}
 ```
 
-Uma tarefa sem Points participa do total de tarefas, mas não adiciona peso ao
-cálculo por pontos. Leia `clickupfy_sprint_tasks` para obter os itens do
-relatório, não tente inferi-los apenas pelas porcentagens.
+O retorno tem `totalTasks`, `completedTasks`, `openTasks`, `totalPoints`,
+`completedPoints`, `unestimatedTasks`, `taskCompletionPercent`,
+`pointsCompletionPercent` e `tasksByStatus`. Uma tarefa sem Points participa do
+total de tarefas, mas não adiciona peso ao cálculo por pontos. Leia
+`clickupfy_sprint_tasks` para obter os itens do relatório, não tente inferi-los
+apenas pelas porcentagens.
 
 ### `clickupfy_sprint_tasks`
 
 Lista tarefas associadas a uma Sprint, incluindo concluídas por padrão.
-`openOnly: true` remove tarefas já concluídas e é útil para a fila presente,
-mas não substitui a lista integral usada na revisão final do ciclo.
+`openOnly: true` remove tarefas já concluídas e é útil para a fila presente, mas
+não substitui a lista integral usada na revisão final do ciclo.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -313,38 +327,40 @@ mas não substitui a lista integral usada na revisão final do ciclo.
 Exemplos:
 
 ```json
-{"sprintId":"sprint-10"}
+{"sprintId":"901328052926"}
 ```
 
 ```json
-{"sprintId":"sprint-10","openOnly":true}
+{"sprintId":"901328052926","openOnly":true}
 ```
 
 ```json
-{"sprintId":"sprint-11"}
+{"sprintId":"901328060001"}
 ```
 
 ```json
-{"account":"produto","sprintId":"sprint-10","openOnly":false}
+{"account":"produto","sprintId":"901328052926","openOnly":false}
 ```
 
 ```json
-{"account":"cliente-a","sprintId":"sprint-22","openOnly":true}
+{"account":"cliente-a","sprintId":"901328060002","openOnly":true}
 ```
 
-A ferramenta retorna resumos de tarefa. Para descrição, subtarefas e checklist
-items de um item específico, chame `clickupfy_task_get` com o ID da tarefa.
+A ferramenta retorna `{ tasks: [] }` em linhas compactas. Para descrição,
+subtarefas e checklist items de um item específico, chame
+`clickupfy_task_get` com o ID da tarefa.
 
 ## Ferramentas de escrita de trabalho
 
-As ferramentas seguintes só aparecem fora de read-only. Informe apenas campos
-que devem mudar. Elas usam o mesmo perfil e regras de isolamento das consultas.
+As ferramentas seguintes só aparecem fora de `--read-only`. Informe apenas campos
+que devem mudar. Elas usam o mesmo perfil e as mesmas regras de isolamento das
+consultas.
 
 ### `clickupfy_task_create`
 
 Cria tarefa ou subtarefa na List fixa. `name` é obrigatório. Datas devem ser
 timestamps inteiros em milissegundos, diferentemente do CLI, que aceita datas
-`AAAA-MM-DD`.
+`AAAA-MM-DD` gravadas no começo do dia local.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -352,7 +368,7 @@ timestamps inteiros em milissegundos, diferentemente do CLI, que aceita datas
 | `name` | string | sim | Nome da tarefa. |
 | `description`, `markdownContent`, `status`, `parent` | string | não | Conteúdo, status e pai. |
 | `priority` | inteiro | não | De `1` a `4`. |
-| `assignees` | número[] | não | Responsáveis. |
+| `assignees` | string[] | não | IDs numéricos dos responsáveis, em texto. |
 | `startDate`, `dueDate` | inteiro | não | Timestamp em milissegundos. |
 | `points` | número | não | Sprint Points não negativos. |
 
@@ -371,34 +387,35 @@ Exemplos:
 ```
 
 ```json
-{"name":"Implementar token","status":"em andamento","priority":2,"assignees":[42,57],"startDate":1786320000000,"dueDate":1786665600000,"points":5}
+{"name":"Implementar token","status":"in progress","priority":2,"assignees":["42","57"],"startDate":1763251200000,"dueDate":1763596800000,"points":5}
 ```
 
 ```json
-{"account":"produto","listId":"3001","name":"Cobrir expiração","parent":"86abc123","markdownContent":"Adicionar testes de sessão expirada."}
+{"account":"produto","listId":"901328052926","name":"Cobrir expiração","parent":"86abc123","markdownContent":"Adicionar testes de sessão expirada."}
 ```
 
 Leia a tarefa criada com `clickupfy_task_get`. Para `listId`, omitir é o caminho
-normal no MCP do projeto; um valor diferente do valor fixo é recusado.
+normal no MCP do projeto; um valor diferente do fixo é recusado.
 
 ### `clickupfy_task_update`
 
 Atualiza campos de uma tarefa. `taskId` é obrigatório e pelo menos um campo de
-alteração deve estar presente. Para remover data, use `null` em `startDate` ou
-`dueDate`; não envie texto vazio.
+alteração deve estar presente. Para remover uma data, use `clearStartDate: true`
+ou `clearDueDate: true`; não envie timestamp nulo nem texto vazio.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
 | `account`, `taskId` | string | `taskId` sim | Perfil e tarefa. |
 | `name`, `description`, `markdownContent`, `status` | string | não | Campos textuais. |
 | `priority` | inteiro | não | De `1` a `4`. |
-| `startDate`, `dueDate` | inteiro ou `null` | não | Nova data ou remoção. |
+| `startDate`, `dueDate` | inteiro | não | Nova data em milissegundos. |
+| `clearStartDate`, `clearDueDate` | booleano | não | Remove a data correspondente. |
 | `points` | número | não | Sprint Points não negativos. |
 
 Exemplos:
 
 ```json
-{"taskId":"86abc123","status":"em andamento"}
+{"taskId":"86abc123","status":"in progress"}
 ```
 
 ```json
@@ -410,21 +427,23 @@ Exemplos:
 ```
 
 ```json
-{"taskId":"86abc123","startDate":1786320000000,"dueDate":1786665600000}
+{"taskId":"86abc123","startDate":1763251200000,"dueDate":1763596800000}
 ```
 
 ```json
-{"account":"produto","taskId":"86abc123","markdownContent":"## Entrega\n\nPublicar manual atualizado.","dueDate":null}
+{"account":"produto","taskId":"86abc123","markdownContent":"## Entrega\n\nPublicar manual atualizado.","clearDueDate":true}
 ```
 
-Depois da escrita, use `clickupfy_task_get`. A ferramenta devolve a tarefa
-atualizada, mas a releitura é importante quando outras alterações concorrem na
-mesma tarefa.
+Enviar `startDate` junto de `clearStartDate`, ou `dueDate` junto de
+`clearDueDate`, produz erro. Depois da escrita, use `clickupfy_task_get`. A
+ferramenta devolve a tarefa atualizada, mas a releitura é importante quando
+outras alterações concorrem na mesma tarefa.
 
 ### `clickupfy_checklist_create`
 
-Cria checklist em uma tarefa. O retorno fornece o ID necessário em
-`clickupfy_checklist_item_create`. Itens não são criados automaticamente.
+Cria checklist em uma tarefa. O retorno é `{ checklist }` e fornece o ID
+necessário em `clickupfy_checklist_item_create`. Itens não são criados
+automaticamente.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -456,37 +475,37 @@ Exemplos:
 
 ### `clickupfy_checklist_item_create`
 
-Acrescenta item aberto a um checklist. `assignee`, quando informado, é um ID
-numérico. A ferramenta não recebe `taskId` porque o checklist já define a
-tarefa proprietária.
+Acrescenta um item aberto a um checklist. `assignee`, quando informado, é um ID
+numérico. A ferramenta não recebe `taskId` porque o checklist já define a tarefa
+proprietária. O retorno é `{ checklist }` com `items[]`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
 | `account` | string | não | Perfil a resolver. |
 | `checklistId` | string | sim | Checklist que receberá o item. |
 | `name` | string | sim | Texto do item. |
-| `assignee` | inteiro | não | Pessoa responsável pelo item. |
+| `assignee` | inteiro | não | ID numérico da pessoa responsável. |
 
 Exemplos:
 
 ```json
-{"checklistId":"check-1","name":"Executar testes unitários"}
+{"checklistId":"b955c4dc","name":"Executar testes unitários"}
 ```
 
 ```json
-{"checklistId":"check-1","name":"Executar build"}
+{"checklistId":"b955c4dc","name":"Executar build"}
 ```
 
 ```json
-{"checklistId":"check-1","name":"Revisar documentação","assignee":42}
+{"checklistId":"b955c4dc","name":"Revisar documentação","assignee":42}
 ```
 
 ```json
-{"account":"produto","checklistId":"check-2","name":"Conferir changelog"}
+{"account":"produto","checklistId":"3f1a7c22","name":"Conferir changelog"}
 ```
 
 ```json
-{"account":"cliente-a","checklistId":"check-3","name":"Validar publicação","assignee":57}
+{"account":"cliente-a","checklistId":"3f1a7c22","name":"Validar publicação","assignee":57}
 ```
 
 ### `clickupfy_checklist_item_set`
@@ -506,32 +525,35 @@ Marca ou reabre um item e confirma o estado por uma nova leitura da tarefa.
 Exemplos:
 
 ```json
-{"taskId":"86abc123","checklistId":"check-1","itemId":"item-1","resolved":true}
+{"taskId":"86abc123","checklistId":"b955c4dc","itemId":"21e08dc8","resolved":true}
 ```
 
 ```json
-{"taskId":"86abc123","checklistId":"check-1","itemId":"item-1","resolved":false}
+{"taskId":"86abc123","checklistId":"b955c4dc","itemId":"21e08dc8","resolved":false}
 ```
 
 ```json
-{"account":"produto","taskId":"86abc123","checklistId":"check-2","itemId":"item-4","resolved":true}
+{"account":"produto","taskId":"86abc123","checklistId":"3f1a7c22","itemId":"8b2d7e10","resolved":true}
 ```
 
 ```json
-{"account":"cliente-a","taskId":"77def456","checklistId":"check-3","itemId":"item-2","resolved":true}
+{"account":"cliente-a","taskId":"77def456","checklistId":"3f1a7c22","itemId":"8b2d7e10","resolved":true}
 ```
 
 ```json
-{"taskId":"77def456","checklistId":"check-3","itemId":"item-2","resolved":false}
+{"taskId":"77def456","checklistId":"3f1a7c22","itemId":"8b2d7e10","resolved":false}
 ```
 
-Não passe um item de outra tarefa. A ferramenta faz essa conferência e recusa a
-escrita quando a relação não corresponde à árvore lida.
+O retorno é o item confirmado na nova leitura, com `done`, `state` e `action`.
+Não passe um item de outra tarefa: a ferramenta faz essa conferência e recusa a
+escrita com o exit code `6` quando a relação não corresponde à árvore lida. Se o
+ClickUp não confirmar o estado, a resposta traz `isError` com o exit code `5`.
 
 ### `clickupfy_sprint_add_task`
 
-Associa tarefa a Sprint sem trocar sua List principal. Ela não cria tarefa e
-não muda seu status. A ferramenta só aparece em servidor com escrita.
+Associa tarefa a Sprint sem trocar sua List principal. Ela não cria tarefa e não
+muda seu status. A ferramenta só aparece em servidor com escrita. O retorno é
+`{ sprintId, taskId, added }`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -542,23 +564,23 @@ não muda seu status. A ferramenta só aparece em servidor com escrita.
 Exemplos:
 
 ```json
-{"sprintId":"sprint-10","taskId":"86abc123"}
+{"sprintId":"901328052926","taskId":"86abc123"}
 ```
 
 ```json
-{"sprintId":"sprint-10","taskId":"77def456"}
+{"sprintId":"901328052926","taskId":"77def456"}
 ```
 
 ```json
-{"account":"produto","sprintId":"sprint-10","taskId":"86abc123"}
+{"account":"produto","sprintId":"901328052926","taskId":"86abc123"}
 ```
 
 ```json
-{"account":"cliente-a","sprintId":"sprint-22","taskId":"55ghi789"}
+{"account":"cliente-a","sprintId":"901328060002","taskId":"55ghi789"}
 ```
 
 ```json
-{"account":"homologacao","sprintId":"sprint-33","taskId":"99jkl012"}
+{"account":"homologacao","sprintId":"901328060003","taskId":"99jkl012"}
 ```
 
 Leia `clickupfy_sprint_tasks` depois da escrita. Só associe a tarefa quando o
@@ -567,7 +589,8 @@ planejamento da Sprint estiver incluído no pedido.
 ### `clickupfy_sprint_remove_task`
 
 Remove uma associação com Sprint sem excluir a tarefa. Comentários, checklist,
-tempo e List principal permanecem na tarefa.
+tempo e List principal permanecem na tarefa. O retorno é
+`{ sprintId, taskId, removed }`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -578,23 +601,23 @@ tempo e List principal permanecem na tarefa.
 Exemplos:
 
 ```json
-{"sprintId":"sprint-10","taskId":"86abc123"}
+{"sprintId":"901328052926","taskId":"86abc123"}
 ```
 
 ```json
-{"sprintId":"sprint-10","taskId":"77def456"}
+{"sprintId":"901328052926","taskId":"77def456"}
 ```
 
 ```json
-{"account":"produto","sprintId":"sprint-10","taskId":"86abc123"}
+{"account":"produto","sprintId":"901328052926","taskId":"86abc123"}
 ```
 
 ```json
-{"account":"cliente-a","sprintId":"sprint-22","taskId":"55ghi789"}
+{"account":"cliente-a","sprintId":"901328060002","taskId":"55ghi789"}
 ```
 
 ```json
-{"account":"homologacao","sprintId":"sprint-33","taskId":"99jkl012"}
+{"account":"homologacao","sprintId":"901328060003","taskId":"99jkl012"}
 ```
 
 Use `clickupfy_task_delete` somente quando a exclusão inteira estiver
@@ -602,8 +625,9 @@ explicitamente autorizada.
 
 ### `clickupfy_sprint_set_points`
 
-Define Sprint Points de uma tarefa. `points` é um número maior ou igual a zero.
-O ClickUpfy transmite o valor; a escala pertence ao time.
+Define Sprint Points de uma tarefa. `points` é um número maior ou igual a zero. O
+ClickUpfy transmite o valor; a escala pertence ao time. O retorno é a tarefa
+atualizada.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -633,13 +657,15 @@ Exemplos:
 {"account":"cliente-a","taskId":"77def456","points":8}
 ```
 
-Leia a tarefa com `clickupfy_task_get` para confirmar o número persistido.
+Pontos negativos retornam `isError` sem chamar a API. Leia a tarefa com
+`clickupfy_task_get` para confirmar o número persistido.
 
 ### `clickupfy_task_delete`
 
-Exclui permanentemente uma tarefa. O campo `confirm` só aceita o literal
-`true`; essa exigência impede uma exclusão causada por objeto incompleto ou
-ambíguo. A ferramenta não está disponível em read-only.
+Exclui permanentemente uma tarefa. O campo `confirm` só aceita o literal `true`;
+essa exigência impede uma exclusão causada por objeto incompleto ou ambíguo. A
+ferramenta não está disponível em `--read-only`. O retorno é
+`{ deleted, taskId }`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -675,9 +701,9 @@ qualquer exemplo deste tipo. Para somente retirar a tarefa do ciclo, use
 
 ### `clickupfy_comment_create`
 
-Publica comentário em uma tarefa. `notifyAll` é opcional; ele pede ao ClickUp
-para notificar participantes. A ferramenta não modifica status, timer ou
-checklist.
+Publica comentário em uma tarefa. `notifyAll` é opcional; ele pede ao ClickUp para
+notificar participantes. A ferramenta não modifica status, timer ou checklist. O
+retorno é `{ id, hist_id, date }`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -711,7 +737,8 @@ Exemplos:
 ### `clickupfy_time_current`
 
 Consulta o time entry que está em execução no workspace. Não recebe filtros;
-omitir `account` usa o perfil fixado ou ativo.
+omitir `account` usa o perfil fixado ou ativo. O retorno é `{ entry }`, com
+`entry: null` quando não há cronômetro.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -741,8 +768,10 @@ Exemplos:
 
 ### `clickupfy_time_start`
 
-Inicia um time entry para uma tarefa. Consulte `clickupfy_time_current` antes,
-pois a ferramenta não encerra automaticamente um registro que já esteja ativo.
+Inicia um time entry para uma tarefa. Consulte `clickupfy_time_current` antes. O
+ClickUp mantém um cronômetro por pessoa: quando um já roda em outra tarefa, ele é
+substituído, e a tarefa anterior volta em `previous` com `id`, `taskId`,
+`taskName`, `description` e `start`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -772,11 +801,14 @@ Exemplos:
 {"account":"cliente-a","taskId":"77def456","description":"Correção da integração"}
 ```
 
+O retorno é `{ entry, previous? }`.
+
 ### `clickupfy_time_stop`
 
 Encerra o time entry atual do workspace. Ela não recebe `taskId` e não modifica
-status nem comentários. Relê `clickupfy_time_current` depois da chamada quando
-o encerramento precisa ser confirmado.
+status nem comentários. Releia `clickupfy_time_current` depois da chamada quando o
+encerramento precisa ser confirmado. Sem cronômetro ativo, a resposta traz
+`isError` com o exit code `5`.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -804,40 +836,42 @@ Exemplos:
 {"account":"suporte"}
 ```
 
+O retorno é `{ entry }` com o time entry encerrado.
+
 ## Tags de tarefas
 
 ### `clickupfy_task_add_tag`
 
-Adiciona uma tag a uma tarefa ou subtarefa existente, preservando as outras
-tags. A ferramenta está disponível somente quando o servidor permite escrita.
-Ela usa a API key do perfil selecionado e respeita o perfil e o workspace
-fixados pelo MCP do projeto.
+Adiciona uma tag a uma tarefa ou subtarefa existente, preservando as outras tags.
+A ferramenta está disponível somente quando o servidor permite escrita. Ela usa a
+API key do perfil selecionado e respeita o perfil e o workspace fixados pelo MCP
+do projeto.
 
 | Campo | Tipo | Obrigatório | Padrão e uso |
 | --- | --- | --- | --- |
 | `taskId` | string | sim | ID interno da tarefa; não aceita texto vazio. |
 | `tagName` | string | sim | Nome da tag; não aceita texto vazio ou composto apenas por espaços. |
-| `customTaskId` | boolean | não | `false`; habilite para resolver o ID no workspace do perfil. |
+| `customTaskId` | booleano | não | `false`; habilite para resolver o ID no workspace do perfil. |
 | `account` | string | não | Perfil ativo ou fixado no projeto. |
 
-Cada chamada associa um nome e retorna `added: true`, `taskId` e `tagName`
-quando a API aceita a operação. A permissão para alterar a tarefa depende da
-API key. Recusas do ClickUp retornam `isError: true`; argumentos inválidos são
-recusados pelo schema. Em `--read-only`, a ferramenta não é registrada.
-A ferramenta não gerencia as cores ou o catálogo de tags do Space.
+Cada chamada associa um nome e retorna `{ added, taskId, tagName }` quando a API
+aceita a operação. A permissão para alterar a tarefa depende da API key. Recusas
+do ClickUp retornam `isError: true`; argumentos inválidos são recusados pelo
+schema. Em `--read-only`, a ferramenta não é registrada. A ferramenta não gerencia
+as cores ou o catálogo de tags do Space.
 
 Exemplos:
 
 Associe uma tag pelo ID interno:
 
 ```json
-{"taskId":"task-1","tagName":"bug"}
+{"taskId":"86abc123","tagName":"bug"}
 ```
 
 Use um nome com espaços e acentos:
 
 ```json
-{"taskId":"task-1","tagName":"em revisão"}
+{"taskId":"86abc123","tagName":"em revisão"}
 ```
 
 Resolva um ID personalizado no workspace configurado:
@@ -849,7 +883,7 @@ Resolva um ID personalizado no workspace configurado:
 Selecione outro perfil quando o servidor permitir:
 
 ```json
-{"account":"produto","taskId":"task-2","tagName":"documentação"}
+{"account":"produto","taskId":"77def456","tagName":"documentação"}
 ```
 
 Associe uma tag a uma subtarefa pelo ID interno:
@@ -859,155 +893,195 @@ Associe uma tag a uma subtarefa pelo ID interno:
 ```
 
 Depois da escrita, consulte `clickupfy_task_get` com `raw: true` e o ID interno
-para conferir o campo `tags`. IDs personalizados usam `custom_task_ids=true`
-e `team_id` no endpoint [Add Tag To Task](https://developer.clickup.com/reference/addtagtotask).
+para conferir o campo `tags`. IDs personalizados usam `custom_task_ids=true` e
+`team_id` no endpoint [Add Tag To Task](https://developer.clickup.com/reference/addtagtotask).
 
 ## Gestão do catálogo de tags
 
-As operações usam o perfil ativo ou `--account` no CLI e `account` no MCP.
-A API key precisa ter acesso ao Space ou à tarefa. Falhas do ClickUp são
-propagadas; no MCP, retornam `isError: true`. Ferramentas de escrita não ficam
-disponíveis em modo somente leitura. O MCP aceita `spaceId` ou usa o Space
-fixado na configuração; o CLI exige `--space` nos comandos `tag`.
+As operações usam o perfil ativo ou `account` no MCP. A API key precisa ter
+acesso ao Space ou à tarefa. Falhas do ClickUp são propagadas e retornam
+`isError: true`. Ferramentas de escrita não ficam disponíveis em modo somente
+leitura. O MCP aceita `spaceId` ou usa o Space fixado na configuração; no CLI, o
+equivalente é `--space`, obrigatório nos comandos `tag`.
 
 ### `clickupfy_tags_list`
 
-Lista nomes e cores das tags de um Space. A saída JSON é um array; o terminal mostra uma tabela. A consulta não altera tags.
+Lista nomes e cores das tags de um Space, em `{ tags: [] }`. A consulta não altera
+tags.
 
-`spaceId` é string, opcional quando o MCP fixa o Space. No CLI, `--space` é obrigatório.
+`spaceId` é string, opcional quando o MCP fixa o Space.
+
+| Campo | Tipo | Obrigatório | Uso |
+| --- | --- | --- | --- |
+| `account` | string | não | Perfil a resolver. |
+| `spaceId` | string | condicional | Space consultado; obrigatório sem Space fixo. |
 
 Exemplos:
 
 ```json
-{"spaceId":"123"}
+{"spaceId":"90070363783"}
 ```
 
 ```json
-{"spaceId":"456"}
+{"spaceId":"9007154145"}
 ```
 
 ```json
-{"spaceId":"123","account":"dev"}
+{"spaceId":"90070363783","account":"dev"}
 ```
 
 ```json
-{"spaceId":"456","account":"produto"}
+{"spaceId":"9007154145","account":"produto"}
 ```
 
 ```json
 {}
 ```
 
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
+O último exemplo funciona apenas com Space fixado no servidor. Após uma escrita,
+consulte `clickupfy_tags_list` para conferir o catálogo ou
+`clickupfy_task_get` com `raw: true` para conferir as associações da tarefa.
 
 ### `clickupfy_tag_create`
 
-Cria uma tag no catálogo do Space com nome e cores. Retorna `created`, `spaceId` e `name`. A associação a tarefas é feita separadamente com `task add-tag`.
+Cria uma tag no catálogo do Space com nome e cores. Retorna
+`{ created, spaceId, name }`. A associação a tarefas é feita separadamente com
+`clickupfy_task_add_tag`.
 
-`name`, `foreground` e `background` são strings obrigatórias. As cores usam `#RRGGBB`. No CLI, use `--foreground` e `--background`. Nome vazio e cores inválidas são recusados.
+`name`, `foreground` e `background` são obrigatórios. As cores usam `#RRGGBB`.
+Nome vazio e cor fora do formato são recusados.
+
+| Campo | Tipo | Obrigatório | Uso |
+| --- | --- | --- | --- |
+| `account` | string | não | Perfil a resolver. |
+| `spaceId` | string | condicional | Space do catálogo. |
+| `name` | string | sim | Nome da tag. |
+| `foreground` | string | sim | Cor do texto em `#RRGGBB`. |
+| `background` | string | sim | Cor de fundo em `#RRGGBB`. |
 
 Exemplos:
 
 ```json
-{"spaceId":"123","name":"bug","foreground":"#ffffff","background":"#112233"}
+{"spaceId":"90070363783","name":"bug","foreground":"#ffffff","background":"#112233"}
 ```
 
 ```json
-{"spaceId":"123","name":"em revisão","foreground":"#ffffff","background":"#336699"}
+{"spaceId":"90070363783","name":"em revisão","foreground":"#ffffff","background":"#336699"}
 ```
 
 ```json
-{"spaceId":"123","name":"backend","foreground":"#ffffff","background":"#112233"}
+{"spaceId":"90070363783","name":"backend","foreground":"#ffffff","background":"#112233"}
 ```
 
 ```json
-{"spaceId":"123","name":"documentação","foreground":"#ffffff","background":"#336699"}
+{"spaceId":"9007154145","name":"documentação","foreground":"#ffffff","background":"#336699"}
 ```
 
 ```json
-{"spaceId":"123","name":"QA / revisão","foreground":"#ffffff","background":"#112233"}
+{"spaceId":"90070363783","name":"QA / revisão","foreground":"#ffffff","background":"#112233"}
 ```
-
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
 
 ### `clickupfy_tag_update`
 
-Renomeia a tag ou altera suas cores no Space. Consulta a definição atual e preserva os campos omitidos. Retorna `updated`, `spaceId` e `name`. Tag ausente e atualização sem campos são recusadas.
+Renomeia a tag ou altera suas cores no Space. Consulta a definição atual e
+preserva os campos omitidos. Retorna `{ updated, spaceId, name }`. Tag ausente e
+atualização sem campos são recusadas.
 
-`tagName` é o nome atual obrigatório; no CLI, é o argumento `<tag>`. `name`, `foreground` e `background` são strings opcionais, com pelo menos um campo informado. No CLI, use `--name`, `--foreground` e `--background`.
+`tagName` é o nome atual obrigatório. `name`, `foreground` e `background` são
+opcionais, com pelo menos um campo informado.
+
+| Campo | Tipo | Obrigatório | Uso |
+| --- | --- | --- | --- |
+| `account` | string | não | Perfil a resolver. |
+| `spaceId` | string | condicional | Space do catálogo. |
+| `tagName` | string | sim | Nome atual da tag. |
+| `name` | string | não | Novo nome. |
+| `foreground`, `background` | string | não | Novas cores em `#RRGGBB`. |
 
 Exemplos:
 
 ```json
-{"spaceId":"123","tagName":"bug","name":"defeito"}
+{"spaceId":"90070363783","tagName":"bug","name":"defeito"}
 ```
 
 ```json
-{"spaceId":"123","tagName":"bug","foreground":"#ffffff"}
+{"spaceId":"90070363783","tagName":"bug","foreground":"#ffffff"}
 ```
 
 ```json
-{"spaceId":"123","tagName":"bug","background":"#cc0000"}
+{"spaceId":"90070363783","tagName":"bug","background":"#cc0000"}
 ```
 
 ```json
-{"spaceId":"123","tagName":"em revisão","name":"revisada","background":"#00aa00"}
+{"spaceId":"90070363783","tagName":"em revisão","name":"revisada","background":"#00aa00"}
 ```
 
 ```json
-{"spaceId":"123","tagName":"backend","foreground":"#ffffff","background":"#112233"}
+{"spaceId":"90070363783","tagName":"backend","foreground":"#ffffff","background":"#112233"}
 ```
-
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
 
 ### `clickupfy_tag_delete`
 
-Exclui a tag do Space. Consulte as tarefas que a utilizam antes de executar essa alteração. Retorna `deleted`, `spaceId` e `name`. Para remover somente a associação a uma tarefa, use `task remove-tag`.
+Exclui a tag do Space e de todas as tarefas que a usavam. Consulte as tarefas que
+a utilizam antes de executar essa alteração. Retorna `{ deleted, spaceId, name }`.
+Para remover somente a associação a uma tarefa, use `clickupfy_task_remove_tag`.
 
-`tagName` é string obrigatória. No MCP, `confirm: true` é obrigatório. No CLI, `--yes` dispensa o prompt; sem terminal interativo, a confirmação precisa ser explícita. O cliente consulta a definição da tag para enviar o corpo DELETE exigido pela API.
+`tagName` é obrigatório e `confirm: true` também. O cliente consulta a definição
+da tag para enviar o corpo DELETE exigido pela API.
+
+| Campo | Tipo | Obrigatório | Uso |
+| --- | --- | --- | --- |
+| `account` | string | não | Perfil a resolver. |
+| `spaceId` | string | condicional | Space do catálogo. |
+| `tagName` | string | sim | Nome atual da tag. |
+| `confirm` | `true` | sim | Confirmação literal obrigatória. |
 
 Exemplos:
 
 ```json
-{"spaceId":"123","tagName":"bug","confirm":true}
+{"spaceId":"90070363783","tagName":"bug","confirm":true}
 ```
 
 ```json
-{"spaceId":"123","tagName":"em revisão","confirm":true}
+{"spaceId":"90070363783","tagName":"em revisão","confirm":true}
 ```
 
 ```json
-{"spaceId":"123","tagName":"backend","confirm":true}
+{"spaceId":"90070363783","tagName":"backend","confirm":true}
 ```
 
 ```json
-{"spaceId":"123","tagName":"documentação","confirm":true}
+{"spaceId":"9007154145","tagName":"documentação","confirm":true}
 ```
 
 ```json
-{"spaceId":"123","tagName":"QA / revisão","confirm":true}
+{"spaceId":"90070363783","tagName":"QA / revisão","confirm":true}
 ```
-
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
 
 ### `clickupfy_task_remove_tag`
 
-Remove uma tag da tarefa e mantém a definição no Space. Retorna `removed`, `taskId` e `tagName`. As outras associações da tarefa permanecem intactas.
+Remove uma tag da tarefa e mantém a definição no Space. Retorna
+`{ removed, taskId, tagName }`. As outras associações da tarefa permanecem
+intactas.
 
-`taskId` e `tagName` são strings obrigatórias. `customTaskId` é boolean opcional, desativado por padrão; no CLI, use `--custom-task-id`. IDs personalizados usam o workspace do perfil.
+`taskId` e `tagName` são obrigatórios. `customTaskId` é booleano opcional,
+desativado por padrão; IDs personalizados usam o workspace do perfil.
+
+| Campo | Tipo | Obrigatório | Uso |
+| --- | --- | --- | --- |
+| `account` | string | não | Perfil a resolver. |
+| `taskId` | string | sim | Tarefa que perderá a tag. |
+| `tagName` | string | sim | Nome da tag. |
+| `customTaskId` | booleano | não | Resolve o ID no workspace do perfil. |
 
 Exemplos:
 
 ```json
-{"taskId":"task-1","tagName":"bug"}
+{"taskId":"86abc123","tagName":"bug"}
 ```
 
 ```json
-{"taskId":"task-1","tagName":"em revisão"}
+{"taskId":"86abc123","tagName":"em revisão"}
 ```
 
 ```json
@@ -1015,12 +1089,12 @@ Exemplos:
 ```
 
 ```json
-{"account":"produto","taskId":"task-2","tagName":"documentação"}
+{"account":"produto","taskId":"77def456","tagName":"documentação"}
 ```
 
 ```json
 {"taskId":"sub-1","tagName":"QA / revisão"}
 ```
 
-Após uma escrita, consulte `tag list --space <id>` para conferir o catálogo
-ou `task get <task-id> --raw` para conferir as associações da tarefa.
+Após uma escrita, consulte `clickupfy_tags_list` para conferir o catálogo ou
+`clickupfy_task_get` com `raw: true` para conferir as associações da tarefa.

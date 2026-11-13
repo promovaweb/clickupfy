@@ -6,11 +6,11 @@
 | --- | --- |
 | Natureza | normativo |
 | Escopo | instalação e responsabilidades das skills distribuídas |
-| Autoridade | assets empacotados e contrato de agent install |
+| Autoridade | assets embutidos no binário e contrato de agent install |
 
 ## O catálogo incluído
 
-O pacote distribui cinco skills:
+O binário distribui cinco skills:
 
 | Skill | Responsabilidade |
 | --- | --- |
@@ -30,15 +30,15 @@ clickupfy agent skill list
 clickupfy agent skill show clickupfy-dev
 ```
 
-`list` apresenta o catálogo. `show` imprime a fonte empacotada da skill, útil
-para revisar permissões e fluxo antes da instalação. As cinco skills são
-mantidas em português do Brasil.
+`list` apresenta o catálogo com nome e descrição. `show` imprime a fonte
+embutida da skill, útil para revisar permissões e fluxo antes da instalação. As
+cinco skills são mantidas em português do Brasil.
 
 ## Configure o projeto
 
 Use `$clickupfy-setup` para preparar um repositório novo ou revisar uma
 integração existente. A skill executa `clickupfy doctor`, orienta o perfil com
-`clickupfy auth add` quando necessário, instala as skills por `npx skills add` e
+`clickupfy setup` quando necessário, instala as skills por `npx skills add` e
 cria o MCP somente depois de confirmar os IDs do ClickUp.
 
 ## Instale no projeto
@@ -60,6 +60,12 @@ Para instalar no catálogo global do usuário, em `~/.codex/skills/`:
 clickupfy agent skill install --global
 ```
 
+Para instalar só algumas skills, informe os nomes:
+
+```bash
+clickupfy agent skill install clickupfy-dev clickup-issue-implement
+```
+
 Prefira a instalação local quando projetos usam versões ou regras diferentes.
 Consulte a instalação efetiva com:
 
@@ -69,11 +75,15 @@ npx skills list --global
 ```
 
 `--force` é aceito por compatibilidade. A atualização passa pelo próprio
-`npx skills add`, que mantém o lockfile e os caminhos canônicos:
+`npx skills add`, que mantém o lockfile e os caminhos canônicos.
+
+Para instalar as skills e, no mesmo passo, gravar o servidor MCP do projeto:
 
 ```bash
-clickupfy agent skill install --force
+clickupfy agent install --space 10 --list 30
 ```
+
+`agent init` é o alias do mesmo comando.
 
 ## Crie uma issue sem implementá-la
 
@@ -120,6 +130,17 @@ uma consulta em implementação completa.
 `clickupfy-release` lê a documentação de release do próprio repositório e
 acompanha versão, changelog, validações e artefatos. Ela não deve ser instalada
 como regra genérica em projetos que apenas consomem o CLI.
+
+## Leia a documentação embutida
+
+Um agente sem acesso ao repositório pode ler a documentação pelo próprio
+binário:
+
+```bash
+clickupfy --skill
+clickupfy --skill mcp
+clickupfy skill cli
+```
 
 Agora veja como essas skills acessam o ClickUp pelo
 [servidor MCP](mcp.md).

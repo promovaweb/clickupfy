@@ -6,7 +6,7 @@
 | --- | --- |
 | Natureza | referência |
 | Escopo | comandos globais, perfis locais, autenticação e descoberta da hierarquia do ClickUp |
-| Autoridade | `src/cli.ts`, `src/config.ts`, `src/context.ts` e ajuda da versão instalada |
+| Autoridade | `src/cli/commands/setup.ts`, `src/cli/commands/account.ts`, `src/cli/commands/workspace.ts`, `src/clickup/accounts.ts`, `src/clickup/hierarchy.ts` e a ajuda da versão instalada |
 
 Este capítulo descreve cada comando que prepara uma sessão de trabalho e
 localiza os IDs usados pelos demais capítulos. Os exemplos usam IDs fictícios.
@@ -14,33 +14,87 @@ Substitua somente os valores entre colchetes ou os números de exemplo. Nunca
 cole uma API key em arquivo versionado, conversa pública, comentário de tarefa
 ou captura de tela.
 
+O binário guarda tudo em `~/.clickupfy/`. Os perfis ficam em `accounts.json`,
+sem segredo nenhum, e a API key de cada perfil fica cifrada em
+`credentials.json` como `clickup.<perfil>.api_key`. Os dois arquivos são
+gravados com permissão `0600`.
+
 ## Opções globais
 
-Todas as ações, exceto a configuração inicial, podem receber estas opções
-imediatamente depois de `clickupfy`:
+Estas opções valem em qualquer posição, antes ou depois do comando:
 
-| Opção                | Tipo     | Efeito                                                                  |
-| -------------------- | -------- | ----------------------------------------------------------------------- |
-| `--account <perfil>` | texto    | Seleciona um perfil para esta execução sem trocar o perfil ativo.       |
-| `--json`             | booleano | Imprime o payload completo em JSON, adequado para automação e inspeção. |
+| Opção | Tipo | Efeito |
+| --- | --- | --- |
+| `-h`, `--help` | booleano | Help do comando atual, com exit code `0`. |
+| `-V`, `--version` | booleano | Imprime `clickupfy <versão>`, com exit code `0`. |
+| `--json` | booleano | Saída em JSON com o envelope `{ ok, command, data }`. |
+| `--skill [topic]` | texto | Documentação embutida. Topics: `cli`, `tui`, `mcp`, `config`, `exit-codes` e `reference`. |
+| `--opencli` | booleano | Descrição OpenCLI da árvore de comandos em JSON. |
+| `--account <perfil>` | texto | Seleciona um perfil para esta execução sem trocar o perfil ativo. |
+| `--no-color` | booleano | Desliga cores ANSI. `NO_COLOR=1` tem o mesmo efeito. |
 
-O perfil ativo só muda com `account use`. A ordem importa: escreva
-`clickupfy --account cliente-a task list`, e não coloque `--account` depois do
-subcomando.
+O perfil usado por um comando é resolvido nesta ordem: a opção
+`--account <perfil>`, a variável `PROMOVAWEB_CLICKUPFY_ACCOUNT` e o perfil ativo
+em `accounts.json`. Sem nenhum deles, o comando sai com o exit code `4` e
+sugere `clickupfy setup`. Um perfil inexistente sai com `6`. O perfil ativo só
+muda com `account use`.
+
+Como as opções globais valem em qualquer posição, as duas formas abaixo são
+equivalentes:
+
+```bash
+clickupfy --account cliente-a task list
+clickupfy task list --account cliente-a
+```
+
+### O envelope do `--json`
+
+Com `--json`, a saída de sucesso é um objeto com `ok`, `command` e `data`:
+
+```json
+{
+  "ok": true,
+  "command": "clickupfy status",
+  "data": { "account": "produto", "active": true }
+}
+```
+
+Em erro, o objeto traz `ok: false`, `command` e `error` com `code`, `name`,
+`message` e `details`:
+
+```json
+{
+  "ok": false,
+  "command": "clickupfy account show",
+  "error": {
+    "code": 6,
+    "name": "NOT_FOUND",
+    "message": "Profile \"cliente-x\" does not exist.",
+    "details": { "account": "cliente-x" }
+  }
+}
+```
+
+O exit code do processo é sempre o mesmo de `error.code`. Um script deve ler os
+dois: o envelope para a mensagem e o code para a classe da falha. Listas vêm
+dentro de um objeto, como `{ "tasks": [] }` ou `{ "spaces": [] }`, e nunca como
+array na raiz de `data`.
 
 ### `clickupfy upgrade`
 
-Atualiza a instalação global do ClickUpfy pelo npm e relê o launcher global
-depois da instalação. Sem alvo, instala `@promovaweb/clickupfy@latest`.
+Atualiza o ClickUpfy para a versão mais recente ou para uma versão indicada.
+Instalado pelo pacote npm, roda `npm install -g @promovaweb/clickupfy@<alvo>`.
+Como binário avulso, baixa `clickupfy-<plataforma>` e o `SHA256SUMS` da GitHub
+Release, confere o hash e troca o executável.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
-| `[alvo]` | não | `latest`, `next` ou uma versão SemVer, como `0.5.0`. `latest` é o padrão. |
+| `[alvo]` | não | `latest`, `next` (só npm) ou uma versão SemVer, como `1.0.1`. `latest` é o padrão. |
 
-O comando instala a nova versão com `npm install --global`, sem alterar a
-configuração de accounts, e confirma a versão retornada pelo launcher global.
-Ele exige o npm disponível no `PATH` e permissões para alterar o prefixo global.
-Não substitui executáveis standalone baixados da GitHub Release.
+Rodando do código-fonte (`bun run src/main.ts`), o comando se recusa a
+atualizar e sai com `2`. Alvo inválido sai com `2`; asset ausente para a
+plataforma, com `6`; falha de rede ou de checksum, com `5`; falta de permissão
+para trocar o arquivo, com `7`.
 
 Exemplos:
 
@@ -57,34 +111,40 @@ clickupfy upgrade next
 ```
 
 ```bash
-clickupfy upgrade 0.5.0
+clickupfy upgrade 1.0.1
 ```
 
 ```bash
-clickupfy upgrade v0.5.0
+clickupfy upgrade v1.0.1
 ```
 
-O quinto exemplo normaliza o prefixo `v` antes de chamar o npm. Se o npm falhar
-ou o launcher não retornar uma versão SemVer, o comando encerra com erro e não
-declara a atualização como concluída.
+O quinto exemplo normaliza o prefixo `v` antes de montar a URL da release. O
+canal `next` existe apenas no npm: como binário avulso, use `latest` ou uma
+versão.
 
 ### `clickupfy doctor`
 
-Verifica o setup local sem fazer chamadas à API do ClickUp. O diagnóstico
-confere o caminho `~/clickupfy/config.json` ou o caminho definido por
-`PROMOVAWEB_CLICKUPFY_CONFIG`, as permissões `0700` do diretório e `0600` do
-arquivo, o JSON, o schema, os accounts e o account ativo. Quando executado na
-raiz de um projeto, também verifica o gerenciador `skills`, as quatro skills do
-ClickUpfy, o idioma dos arquivos instalados e lê `.mcp.json` e
-`.codex/config.toml` se existirem. API keys nunca aparecem na saída.
+Confere o ambiente local sem alterar arquivos. O diagnóstico valida Bun 1.4.4
+ou superior, o TTY de entrada e saída, a pasta de dados com `0700`, a leitura de
+`settings.json`, a origem da master key, a decifragem do cofre, a versão e a
+plataforma. Em seguida verifica os perfis e os arquivos MCP do projeto atual.
 
-Os arquivos de projeto são opcionais. A ausência deles gera `skipped` porque o
-MCP só é necessário quando o projeto usa agentes. Um arquivo presente, mas
-inválido, gera `error`. O comando retorna código `1` quando existe uma
-verificação com erro. `warning` e `skipped` não reprovam o diagnóstico.
-Se o gerenciador `skills` não estiver instalado, ou se uma skill instalada
-estiver fora do padrão de português do Brasil, o diagnóstico registra essa
-situação para correção.
+| Check | O que confere |
+| --- | --- |
+| `accounts` | `~/.clickupfy/accounts.json` existe e segue o schema. |
+| `profile` | O perfil resolvido por `--account`, `PROMOVAWEB_CLICKUPFY_ACCOUNT` ou o perfil ativo. |
+| `api-key` | A API key do perfil está no cofre, sem mostrar o valor. |
+| `legacy-config` | O config do ClickUpfy 0.9.0 ainda existe e guarda API keys em texto puro. |
+| `mcp-json`, `codex-config` | Servidores `clickupfy` no `.mcp.json` e no `.codex/config.toml` do diretório atual. |
+
+Cada linha usa `✓`, `!` ou `✗`. Em JSON, `data` traz `{ checks, ok }`, e cada
+check tem `name`, `status` (`ok`, `warn` ou `fail`), `detail` e, quando se
+refere a um arquivo, `path`. Arquivo ainda não criado e ausência de TTY geram
+`warn`. Um check com `fail` produz exit code `3`; os demais retornam `0`.
+
+Com `--online`, o doctor também valida a API key em `GET /user` e lê as skills
+instaladas com `npx skills list --json`. Essas verificações chamam a rede e
+podem baixar o gerenciador de skills.
 
 Exemplos:
 
@@ -93,11 +153,11 @@ clickupfy doctor
 ```
 
 ```bash
-clickupfy --json doctor
+clickupfy doctor --json
 ```
 
 ```bash
-PROMOVAWEB_CLICKUPFY_CONFIG=/tmp/clickupfy-config.json clickupfy doctor
+clickupfy doctor --online
 ```
 
 ```bash
@@ -105,64 +165,73 @@ cd ~/projetos/produto && clickupfy doctor
 ```
 
 ```bash
-clickupfy --json doctor | jq '.checks[] | select(.estado == "error")'
+clickupfy doctor --json | jq '.data.checks[] | select(.status == "fail")'
 ```
 
-O diagnóstico confirma a configuração local e os arquivos usados pelos
-agentes, mas não testa se a API key continua válida no ClickUp. Para essa
+O diagnóstico confirma a configuração local e os arquivos usados pelos agentes,
+mas sem `--online` não testa se a API key continua válida no ClickUp. Para essa
 verificação remota, use `clickupfy whoami`.
 
-### `clickupfy install`
+### `clickupfy setup`
 
 Cria ou atualiza um perfil local e associa a API key a um workspace autorizado.
-Sem `--non-interactive`, o comando pergunta pelos valores ausentes. A API key
-fica no arquivo de configuração do usuário, cujo caminho aparece em `status`;
-ela não vai para o `.mcp.json` nem para o `.codex/config.toml` do projeto.
+O comando valida a chave em `GET /user`, lista os workspaces que ela alcança e
+grava a chave cifrada no cofre. `clickupfy install` é um alias compatível.
 
-| Parâmetro           | Obrigatório | Uso                                                             |
-| ------------------- | ----------- | --------------------------------------------------------------- |
-| `--api-key <chave>` | não         | API key pessoal do ClickUp. `--token` é um alias compatível.    |
-| `--name <nome>`     | não         | Nome legível do perfil local.                                   |
-| `--workspace <id>`  | não         | Workspace que será associado ao perfil.                         |
-| `--non-interactive` | não         | Recusa prompts; use junto dos dados necessários para automação. |
+Sem `--non-interactive`, o comando pergunta pelos valores ausentes, inclusive a
+chave sem eco. Fora de um terminal interativo, `--api-key` é obrigatória e
+`--workspace` também quando a chave alcança mais de um workspace. Repetir o
+comando com o mesmo `--name` substitui aquele perfil.
+
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `--api-key <chave>` | condicional | API key pessoal do ClickUp (`pk_...`). `--token` é um alias compatível. |
+| `--name <nome>` | não | Nome legível do perfil, normalizado para kebab-case. O padrão é o username do ClickUp. |
+| `--workspace <id>` | condicional | Workspace associado ao perfil. Obrigatório fora de um TTY quando a chave alcança vários. |
+| `--non-interactive` | não | Recusa prompts e sai com `2` quando falta um valor. |
 
 Exemplos:
 
 ```bash
-clickupfy install
+clickupfy setup
 ```
 
 ```bash
-clickupfy install --name "Produto"
+clickupfy setup --name produto
 ```
 
 ```bash
-clickupfy install --name "Cliente A" --workspace 123456
+clickupfy setup --name cliente-a --workspace 90070363783
 ```
 
 ```bash
-clickupfy install --api-key "$CLICKUP_API_KEY" --name "Automação"
+clickupfy setup --api-key "$CLICKUP_API_KEY" --name automacao
 ```
 
 ```bash
-clickupfy install \
+clickupfy setup \
   --api-key "$CLICKUP_API_KEY" \
-  --name "Produto" \
-  --workspace 123456 \
-  --non-interactive
+  --name produto \
+  --workspace 90070363783 \
+  --non-interactive \
+  --json
 ```
 
 Quando a API key for inválida, execute `whoami` para conferir a autenticação.
-Quando o workspace informado não pertencer à chave, selecione um workspace da
-lista devolvida pelo ClickUp. O comando nunca deve aparecer em histórico de
-shell com uma chave escrita diretamente; prefira uma variável de ambiente
-temporária ou a entrada interativa.
+Quando o workspace informado não pertencer à chave, o comando sai com `6` e
+lista os IDs disponíveis em `error.details.available`. Nunca escreva a chave
+diretamente no histórico do shell; prefira uma variável de ambiente temporária
+ou a entrada interativa.
 
 ### `clickupfy status`
 
-Mostra o caminho de configuração, o perfil resolvido, se ele está ativo, o
-usuário e o workspace associado. A chave aparece mascarada. Use este comando
-como inspeção local, não como teste definitivo de uma chave recém-revogada.
+Mostra o perfil resolvido, o caminho do `accounts.json`, se ele é o ativo, a
+chave mascarada, o usuário e o workspace associado. O comando não chama a API
+do ClickUp.
+
+Em JSON, `data` traz `{ config, account, active, name, apiKey, user, workspace }`.
+Use este comando como inspeção local, não como teste definitivo de uma chave
+recém-revogada.
 
 Exemplos:
 
@@ -171,35 +240,41 @@ clickupfy status
 ```
 
 ```bash
-clickupfy --json status
+clickupfy status --json
 ```
 
 ```bash
-clickupfy --account produto status
+clickupfy status --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json status
+clickupfy --account cliente-a status --json
 ```
 
 ```bash
 clickupfy status > /tmp/clickupfy-status.txt
 ```
 
-O quarto exemplo consulta o perfil `cliente-a` sem alterar o perfil que será
+O terceiro exemplo consulta o perfil `produto` sem alterar o perfil que será
 usado pela próxima chamada sem `--account`. A redireção do último exemplo é
 segura porque a saída mascara a chave, mas ainda pode conter nomes de pessoas e
-workspaces.
+de workspaces.
 
 ## Perfis locais
 
 Um perfil é um conjunto local de API key, identidade autenticada e workspace
 selecionado. Cada perfil tem um identificador, como `produto` ou `cliente-a`.
-O identificador é usado com `--account` e pelo `--account` do servidor MCP.
+O identificador é usado com `--account` no CLI e pelo `--account` do servidor
+MCP.
+
+Os perfis ficam em `~/.clickupfy/accounts.json`, com `version`, `activeAccount`
+e o mapa `accounts`. Esse arquivo não guarda segredo: a API key de cada perfil
+fica no cofre. Por isso ele pode ser lido e copiado sem expor a chave.
 
 ### `clickupfy account list`
 
-Lista todos os perfis e marca o perfil ativo com `*`. Não revela API keys.
+Lista todos os perfis e marca o ativo com `*`. Cada linha traz `id`, `active`,
+`name`, `user`, `workspace` e `workspace_id`. Nenhuma API key aparece.
 `clickupfy account ls` é o alias equivalente.
 
 Exemplos:
@@ -213,11 +288,11 @@ clickupfy account ls
 ```
 
 ```bash
-clickupfy --json account list
+clickupfy account list --json
 ```
 
 ```bash
-clickupfy --account produto account list
+clickupfy account list --account produto
 ```
 
 ```bash
@@ -225,19 +300,18 @@ clickupfy account list | less
 ```
 
 Mesmo com `--account`, a lista continua mostrando todos os perfis; a opção só
-tem efeito quando uma ação precisa resolver uma conta. Use a tabela para
-conferir o identificador exato antes de chamar `account show`, `account use` ou
-um comando de trabalho.
+tem efeito quando uma ação precisa resolver uma conta. Em JSON, `data` traz
+`{ accounts: [] }`. Use a tabela para conferir o identificador exato antes de
+chamar `account show`, `account use` ou um comando de trabalho.
 
 ### `clickupfy account show [perfil]`
 
-Exibe metadados seguros de um perfil. Sem argumento, resolve o perfil ativo ou
-o que foi indicado pela opção global `--account`. O argumento posicional tem
-precedência sobre a opção global quando os dois aparecem.
+Exibe metadados seguros de um perfil, com a API key mascarada. Sem argumento,
+resolve o perfil ativo ou o que foi indicado pela opção global `--account`.
 
-| Parâmetro  | Obrigatório | Uso                            |
-| ---------- | ----------- | ------------------------------ |
-| `[perfil]` | não         | Identificador local do perfil. |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `[perfil]` | não | Identificador local do perfil. |
 
 Exemplos:
 
@@ -250,31 +324,31 @@ clickupfy account show produto
 ```
 
 ```bash
-clickupfy --account cliente-a account show
+clickupfy account show --account cliente-a
 ```
 
 ```bash
-clickupfy --json account show produto
+clickupfy account show produto --json
 ```
 
 ```bash
-clickupfy --account cliente-a account show produto
+clickupfy account show produto --account cliente-a
 ```
 
-No último caso, a saída é do perfil `produto`, pois o argumento posicional foi
-informado. Se o perfil não existir, o CLI interrompe a chamada sem iniciar uma
-requisição ao ClickUp.
+No último caso, a saída é do perfil `produto`, pois o argumento posicional tem
+precedência sobre a opção global. Se o perfil não existir, o comando sai com `6`
+sem iniciar uma requisição ao ClickUp.
 
 ### `clickupfy account use <perfil>`
 
-Define o perfil ativo no arquivo de configuração. É uma alteração local e não
-muda nada no ClickUp. Evite usar este comando em automações ou quando dois
-projetos usam contas diferentes ao mesmo tempo; nesses casos, informe
-`--account` em cada chamada ou fixe o perfil no MCP de cada projeto.
+Define o perfil ativo em `accounts.json`. É uma alteração local e não muda nada
+no ClickUp. Evite usar este comando em automações ou quando dois projetos usam
+contas diferentes ao mesmo tempo; nesses casos, informe `--account` em cada
+chamada ou fixe o perfil no MCP de cada projeto.
 
-| Parâmetro  | Obrigatório | Uso                                 |
-| ---------- | ----------- | ----------------------------------- |
-| `<perfil>` | sim         | Identificador local já configurado. |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `<perfil>` | sim | Identificador local já configurado. |
 
 Exemplos:
 
@@ -298,20 +372,21 @@ clickupfy account use suporte
 clickupfy account use produto && clickupfy status
 ```
 
-O último exemplo confirma a mudança persistida. Quando o comando faz parte de
-um script, prefira não depender do perfil ativo: `clickupfy --account produto
-...` deixa o destino explícito e não interfere no restante da máquina.
+O último exemplo confirma a mudança persistida. Em JSON, `data` traz
+`{ activeAccount }`. Quando o comando faz parte de um script, prefira não
+depender do perfil ativo: `clickupfy --account produto ...` deixa o destino
+explícito e não interfere no restante da máquina.
 
 ### `clickupfy account remove <perfil>`
 
-Remove somente o perfil local. Não revoga a API key no ClickUp, não remove
-usuários e não exclui tarefas. Em terminal interativo, pede confirmação. Em
-automação, `--yes` confirma a remoção sem prompt.
+Remove os metadados do perfil e a API key correspondente do cofre. Não revoga a
+API key no ClickUp, não remove usuários e não exclui tarefas. Em terminal
+interativo, pede confirmação; fora dele, `--yes` é obrigatório.
 
-| Parâmetro  | Obrigatório | Uso                            |
-| ---------- | ----------- | ------------------------------ |
-| `<perfil>` | sim         | Identificador local a remover. |
-| `--yes`    | não         | Confirma sem interação.        |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `<perfil>` | sim | Identificador local a remover. |
+| `--yes` | não | Confirma sem interação. |
 
 Exemplos:
 
@@ -324,7 +399,7 @@ clickupfy account remove sandbox --yes
 ```
 
 ```bash
-clickupfy account remove cliente-encerrado
+clickupfy account remove cliente-encerrado --yes
 ```
 
 ```bash
@@ -335,9 +410,53 @@ clickupfy account remove homologacao --yes
 clickupfy account remove temporario --yes && clickupfy account list
 ```
 
-Se você remover o perfil ativo, o ClickUpfy torna ativo o primeiro perfil que
-sobrar ou deixa a configuração sem perfil ativo quando não houver outro. Leia
-`account list` após a remoção, especialmente em uma máquina compartilhada.
+Recusar a confirmação sai com `130`. Se você remover o perfil ativo, o ClickUpfy
+torna ativo o primeiro perfil que sobrar ou deixa `activeAccount` como `null`
+quando não houver outro. Leia `account list` após a remoção, especialmente em
+uma máquina compartilhada.
+
+### `clickupfy account import`
+
+Importa os perfis do config do ClickUpfy 0.9.0 para o cofre cifrado. O comando
+lê `PROMOVAWEB_CLICKUPFY_CONFIG` ou `~/clickupfy/config.json`, grava os
+metadados em `accounts.json` e cada API key como `clickup.<perfil>.api_key`. O
+arquivo antigo só é lido: ele não é alterado nem apagado, então o ClickUpfy
+0.9.0 continua funcionando durante a transição.
+
+A mesma importação roda automaticamente na primeira execução de um comando que
+lê perfis, quando `accounts.json` ainda não existe e o config antigo está no
+lugar. O stderr mostra `Imported N profile(s) from <caminho> into the vault.`
+uma única vez.
+
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `--force` | não | Substitui perfis que já existem em vez de pulá-los. |
+
+Exemplos:
+
+```bash
+clickupfy account import
+```
+
+```bash
+clickupfy account import --force
+```
+
+```bash
+clickupfy account import --json
+```
+
+```bash
+PROMOVAWEB_CLICKUPFY_CONFIG=/tmp/clickupfy-config.json clickupfy account import
+```
+
+```bash
+clickupfy account import --force && clickupfy account list
+```
+
+Sem `--force`, os perfis que já existem são pulados e aparecem em `skipped`.
+Em JSON, `data` traz `{ source, imported[], skipped[], activeAccount }`, sem
+chaves. Config antigo inválido faz o comando sair com `3` e informar o caminho.
 
 ## Workspace e identidade autenticada
 
@@ -348,7 +467,7 @@ persiste a escolha no perfil; `whoami` consulta a API e confirma o usuário.
 ### `clickupfy workspace list`
 
 Lista os workspaces que a API key do perfil consegue acessar. O marcador `*`
-indica o workspace atualmente associado ao perfil. `workspace ls` é um alias.
+indica o workspace atualmente associado ao perfil. `workspace ls` é o alias.
 
 Exemplos:
 
@@ -361,61 +480,63 @@ clickupfy workspace ls
 ```
 
 ```bash
-clickupfy --account produto workspace list
+clickupfy workspace list --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json workspace list
+clickupfy --account cliente-a workspace list --json
 ```
 
 ```bash
 clickupfy workspace list | tee /tmp/workspaces.txt
 ```
 
-O resultado autoritativo vem da API. Caso o workspace esperado não apareça,
-verifique a permissão da API key no ClickUp em vez de tentar adivinhar um ID.
+Em JSON, `data` traz `{ workspaces: [] }`. O resultado autoritativo vem da API.
+Caso o workspace esperado não apareça, verifique a permissão da API key no
+ClickUp em vez de tentar adivinhar um ID.
 
 ### `clickupfy workspace use <workspace-id>`
 
-Associa um workspace autorizado ao perfil resolvido. O CLI consulta a API e só
-salva o ID quando ele aparece na lista permitida, portanto um número copiado de
-outro perfil é recusado.
+Associa um workspace autorizado ao perfil resolvido. O comando consulta a API e
+só salva o ID quando ele aparece na lista permitida, portanto um número copiado
+de outro perfil é recusado com `6`.
 
-| Parâmetro        | Obrigatório | Uso                                |
-| ---------------- | ----------- | ---------------------------------- |
-| `<workspace-id>` | sim         | ID devolvido por `workspace list`. |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `<workspace-id>` | sim | ID devolvido por `workspace list`. |
 
 Exemplos:
 
 ```bash
-clickupfy workspace use 123456
+clickupfy workspace use 90070363783
 ```
 
 ```bash
-clickupfy --account cliente-a workspace use 987654
+clickupfy workspace use 9007154145 --account cliente-a
 ```
 
 ```bash
-clickupfy --account produto workspace use 123456
+clickupfy --account produto workspace use 90070363783
 ```
 
 ```bash
-clickupfy workspace use 654321 && clickupfy status
+clickupfy workspace use 9007154145 && clickupfy status
 ```
 
 ```bash
-clickupfy --account suporte workspace use 246810
+clickupfy --account suporte workspace use 90070363783
 ```
 
-A alteração afeta o perfil indicado, não todos os perfis. Um servidor MCP com
-`--workspace` fixo ainda recusará um workspace diferente, mesmo que o perfil
-local seja alterado depois.
+A alteração afeta somente o perfil indicado. Um servidor MCP com `--workspace`
+fixo ainda recusa um workspace diferente, mesmo que o perfil local seja alterado
+depois.
 
 ### `clickupfy whoami`
 
-Valida a API key em uma chamada ao ClickUp e devolve o usuário autenticado
-junto do perfil e do workspace resolvidos. Use-o depois de `setup`, após uma
-troca de chave ou ao investigar erro de autorização.
+Valida a API key em uma chamada ao ClickUp e devolve o usuário autenticado junto
+do perfil e do workspace resolvidos. Em JSON, `data` traz `{ account, user }`.
+Use o comando depois de `setup`, após uma troca de chave ou ao investigar erro
+de autorização.
 
 Exemplos:
 
@@ -424,15 +545,15 @@ clickupfy whoami
 ```
 
 ```bash
-clickupfy --json whoami
+clickupfy whoami --json
 ```
 
 ```bash
-clickupfy --account produto whoami
+clickupfy whoami --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json whoami
+clickupfy --account cliente-a whoami --json
 ```
 
 ```bash
@@ -446,17 +567,20 @@ Uma resposta de `status` não substitui este teste: ela lê a configuração loc
 
 O ClickUp organiza trabalho em workspace, Space, Folder e List. Uma List pode
 existir diretamente dentro de um Space, sem Folder. IDs não são intercambiáveis:
-um `space-id` não serve no lugar de `folder-id`, por exemplo. Comece no
+um `space-id` não serve no lugar de um `folder-id`, por exemplo. Comece no
 workspace selecionado e preserve os IDs retornados em um local seguro.
+
+Em texto, as listagens saem como tabela. Com `--json`, cada uma vem dentro de um
+objeto, como `{ "spaces": [] }`, `{ "folders": [] }` ou `{ "lists": [] }`.
 
 ### `clickupfy space list`
 
 Lista Spaces do workspace associado ao perfil. `--archived` acrescenta Spaces
 arquivados; sem a opção, o resultado contém apenas os ativos.
 
-| Parâmetro    | Obrigatório | Uso                       |
-| ------------ | ----------- | ------------------------- |
-| `--archived` | não         | Inclui Spaces arquivados. |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `--archived` | não | Inclui Spaces arquivados. |
 
 Exemplos:
 
@@ -473,7 +597,7 @@ clickupfy space list --archived
 ```
 
 ```bash
-clickupfy --account produto --json space list
+clickupfy space list --account produto --json
 ```
 
 ```bash
@@ -486,34 +610,34 @@ devem ser usados como destino de novas tarefas sem autorização explícita.
 
 ### `clickupfy folder list --space <id>`
 
-Lista Folders de um Space. O parâmetro `--space` é obrigatório; o CLI não usa
-um Space implícito porque um perfil pode operar em vários projetos.
+Lista Folders de um Space. O parâmetro `--space` é obrigatório no CLI; o comando
+não usa um Space implícito porque um perfil pode operar em vários projetos.
 
-| Parâmetro      | Obrigatório | Uso                                     |
-| -------------- | ----------- | --------------------------------------- |
-| `--space <id>` | sim         | ID do Space retornado por `space list`. |
-| `--archived`   | não         | Inclui Folders arquivados.              |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `--space <id>` | sim | ID do Space retornado por `space list`. |
+| `--archived` | não | Inclui Folders arquivados. |
 
 Exemplos:
 
 ```bash
-clickupfy folder list --space 1001
+clickupfy folder list --space 90070363783
 ```
 
 ```bash
-clickupfy folder ls --space 1001
+clickupfy folder ls --space 90070363783
 ```
 
 ```bash
-clickupfy folder list --space 1001 --archived
+clickupfy folder list --space 90070363783 --archived
 ```
 
 ```bash
-clickupfy --account produto --json folder list --space 1001
+clickupfy folder list --space 90070363783 --account produto --json
 ```
 
 ```bash
-clickupfy --account cliente-a folder list --space 2001 --archived
+clickupfy --account cliente-a folder list --space 9007154145 --archived
 ```
 
 Uma resposta vazia não significa necessariamente falta de acesso: o Space pode
@@ -523,15 +647,14 @@ ramo da hierarquia.
 ### `clickupfy list list --folder <id> | --space <id>`
 
 Lista Lists dentro de um Folder ou Lists que pertencem diretamente a um Space.
-Informe uma das duas opções. O CLI exige pelo menos uma; quando ambas forem
-fornecidas, a chamada deve apontar para o nível real que você pretende ler,
-mantendo um único destino por consulta.
+Informe uma das duas opções. Quando as duas aparecem, `--folder` tem precedência
+e o Space não é enviado à API. Sem nenhuma delas, o comando sai com `2`.
 
-| Parâmetro       | Obrigatório | Uso                                |
-| --------------- | ----------- | ---------------------------------- |
-| `--folder <id>` | condicional | ID do Folder que contém as Lists.  |
-| `--space <id>`  | condicional | ID do Space para Lists sem Folder. |
-| `--archived`    | não         | Inclui Lists arquivadas.           |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `--folder <id>` | condicional | ID do Folder que contém as Lists. |
+| `--space <id>` | condicional | ID do Space para Lists sem Folder. |
+| `--archived` | não | Inclui Lists arquivadas. |
 
 Exemplos:
 
@@ -548,15 +671,15 @@ clickupfy list list --folder 2001 --archived
 ```
 
 ```bash
-clickupfy list list --space 1001
+clickupfy list list --space 90070363783
 ```
 
 ```bash
-clickupfy --account produto --json list list --space 1001 --archived
+clickupfy --account produto list list --space 90070363783 --archived --json
 ```
 
-Consulte cada List pelo comando seguinte para obter os status configurados.
-Em projetos com MCP, o ID da List escolhido aqui será o valor obrigatório de
+Consulte cada List pelo comando seguinte para obter os status configurados. Em
+projetos com MCP, o ID da List escolhido aqui será o valor obrigatório de
 `agent install --list` ou de `mcp serve --list`.
 
 ### `clickupfy list get <list-id>`
@@ -565,33 +688,34 @@ Obtém a List e os status aceitos pelas tarefas dela. A grafia retornada para um
 status é a mesma que deve aparecer em `task create --status` e
 `task update --status`; não use uma tradução ou suposição local.
 
-| Parâmetro   | Obrigatório | Uso                                   |
-| ----------- | ----------- | ------------------------------------- |
-| `<list-id>` | sim         | ID da List retornado por `list list`. |
+| Parâmetro | Obrigatório | Uso |
+| --- | --- | --- |
+| `<list-id>` | sim | ID da List retornado por `list list`. |
 
 Exemplos:
 
 ```bash
-clickupfy list get 3001
+clickupfy list get 901328052926
 ```
 
 ```bash
-clickupfy --json list get 3001
+clickupfy list get 901328052926 --json
 ```
 
 ```bash
-clickupfy --account produto list get 3001
+clickupfy list get 901328052926 --account produto
 ```
 
 ```bash
-clickupfy --account cliente-a --json list get 4001
+clickupfy --account cliente-a list get 901328060001 --json
 ```
 
 ```bash
-clickupfy list get 3001 > /tmp/list-3001.json
+clickupfy list get 901328052926 --json > /tmp/list-901328052926.json
 ```
 
-O último exemplo deve incluir `--json` quando o arquivo for consumido por outro
-programa. A tabela compacta é adequada para leitura, mas não é uma API estável
-de máquina. Continue em [tarefas e checklists](tarefas.md) para usar os status
-e IDs encontrados aqui.
+O `data` do `--json` traz a List da API com `statuses[]`. O último exemplo
+guarda o objeto para outro programa; a tabela compacta é adequada para leitura,
+mas não é uma API estável de máquina. Continue em
+[tarefas e checklists](referencia-cli-tarefas.md) para usar os status e IDs
+encontrados aqui.

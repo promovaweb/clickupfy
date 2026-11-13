@@ -16,7 +16,8 @@ clickupfy time current
 
 Essa leitura evita iniciar um segundo registro enquanto outro item permanece
 em execução. Se houver um time entry ativo, confirme a tarefa e decida se ele
-deve continuar ou ser encerrado.
+deve continuar ou ser encerrado. Sem cronômetro, a resposta traz
+`entry: null` e sai com exit code 0.
 
 ## Inicie um registro
 
@@ -27,7 +28,12 @@ clickupfy time start \
 ```
 
 Use uma descrição curta e observável. O registro pertence ao usuário
-autenticado pelo account selecionado.
+autenticado pelo perfil selecionado.
+
+O ClickUp mantém um cronômetro por pessoa. Se outro cronômetro estiver ativo em
+outra tarefa, `time start` troca o cronômetro, avisa no stderr e devolve a
+tarefa anterior em `previous`, com `id`, `taskId`, `taskName`, `description` e
+`start`. A troca não é impedida.
 
 Em um fluxo com agente, inicie o tempo somente quando a implementação realmente
 começar. Leitura inicial, esclarecimento e espera por autorização não devem ser
@@ -45,9 +51,10 @@ Depois, consulte novamente:
 clickupfy time current
 ```
 
-A ausência de registro em execução confirma o encerramento.
+A ausência de registro em execução confirma o encerramento. `time stop` sem
+cronômetro ativo sai com exit code 5 e a mensagem do ClickUp.
 
-## Use outro account em uma operação
+## Use outro perfil em uma operação
 
 ```bash
 clickupfy --account cliente-a time current
@@ -56,7 +63,7 @@ clickupfy --account cliente-a time start \
   --description "Correção e regressão"
 ```
 
-Essa seleção não altera o account ativo. É útil quando dois projetos usam
+Essa seleção não altera o perfil ativo. É útil quando dois projetos usam
 workspaces diferentes na mesma máquina.
 
 ## Relação com comentários e status

@@ -12,7 +12,8 @@ quando perfis, skills, MCP ou arquivos locais precisarem de revisão.
 
 1. Leia as instruções do projeto e execute `clickupfy doctor`.
 2. Quando não houver perfil válido, execute `clickupfy setup` em terminal
-   interativo. Não exponha a API key em arquivos, comandos compartilhados ou
+   interativo. Perfis do ClickUpfy 0.9.0 são importados sozinhos na primeira
+   execução; `clickupfy account import` repete a importação. Não exponha a API key em arquivos, comandos compartilhados ou
    logs.
 3. Instale ou reconcilie as skills pelo gerenciador oficial:
 
@@ -26,8 +27,11 @@ quando perfis, skills, MCP ou arquivos locais precisarem de revisão.
    MCP do projeto:
 
    ```bash
-   clickupfy agent init --account <perfil> --workspace <id> --space <id> --list <id>
+   clickupfy agent install --account <perfil> --workspace <id> --space <id> --list <id>
    ```
+
+   Para gravar uma entrada com nome próprio também no Gemini e no OpenCode,
+   use `clickupfy mcp setup`.
 
 5. Execute `clickupfy doctor`, `clickupfy agent skill list` e `npx skills list`
    para conferir a configuração, a origem das skills e o servidor MCP.

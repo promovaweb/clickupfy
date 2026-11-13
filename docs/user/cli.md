@@ -5,76 +5,126 @@
 | Campo | Valor |
 | --- | --- |
 | Natureza | referência |
-| Escopo | grupos públicos, opções globais e formatos de saída |
-| Autoridade | definições Commander em src/cli.ts |
+| Escopo | grupos públicos, opções globais, formatos de saída e exit codes |
+| Autoridade | registry de commands em src/cli/commands.ts |
 
 ## Sintaxe global
 
 ```text
-clickupfy [options] [command]
+clickupfy [options] <command> [subcommand] [arguments]
 ```
 
-O comando de manutenção da instalação npm usa esta forma:
+Sem argumentos, em um terminal interativo, o binário abre a TUI. Sem TTY,
+imprime o help e sai com exit code 2.
+
+O comando de manutenção da instalação usa esta forma:
 
 ```text
 clickupfy upgrade [alvo]
 ```
 
-As opções globais selecionam o account e o formato da resposta antes que o
-CLI interprete o grupo e a ação:
+As opções globais valem em qualquer posição, antes ou depois do comando:
 
-| Opção                | Efeito                                    |
-| -------------------- | ----------------------------------------- |
-| `-V`, `--version`    | Mostra a versão.                          |
-| `--account <perfil>` | Usa outro account somente nessa execução. |
-| `--json`             | Imprime a resposta completa em JSON.      |
-| `-h`, `--help`       | Mostra ajuda.                             |
+| Opção                | Efeito                                                              |
+| -------------------- | ------------------------------------------------------------------- |
+| `-V`, `--version`    | Mostra a versão.                                                    |
+| `-h`, `--help`       | Mostra o help do comando atual.                                     |
+| `--account <perfil>` | Usa outro perfil somente nessa execução.                            |
+| `--json`             | Imprime a resposta no envelope `{ ok, command, data }`.             |
+| `--skill [tópico]`   | Imprime a documentação embutida, inteira ou por tópico.             |
+| `--opencli`          | Imprime a descrição OpenCLI da árvore de commands em JSON.          |
+| `--no-color`         | Desliga cores ANSI. `NO_COLOR=1` tem o mesmo efeito.                |
 
-Coloque as opções globais antes do grupo. No exemplo abaixo, a resposta de
-`task get` usa o account `cliente-a` e sai em JSON:
+Os tópicos de `--skill` são `cli`, `tui`, `mcp`, `config`, `exit-codes` e
+`reference`.
+
+No exemplo abaixo, a resposta de `task get` usa o perfil `cliente-a` e sai em
+JSON:
 
 ```bash
 clickupfy --account cliente-a --json task get 86abc123
 ```
 
+## Saída em texto e em JSON
+
+Texto é o padrão quando `output.format` em settings.json é `text`. Com
+`--json`, a resposta segue este envelope:
+
+```json
+{
+  "ok": true,
+  "command": "clickupfy task get",
+  "data": { "task": {}, "execution": {} }
+}
+```
+
+Em erro:
+
+```json
+{
+  "ok": false,
+  "command": "clickupfy task get",
+  "error": {
+    "code": 6,
+    "name": "NOT_FOUND",
+    "message": "Task \"x\" not found.",
+    "details": {}
+  }
+}
+```
+
+Listas vêm dentro de um objeto, como `data.tasks`, `data.spaces` ou
+`data.comments`. O exit code do processo é sempre o mesmo de `error.code`.
+
 ## Configuração e identidade
 
 ```bash
-clickupfy install [options]
-clickupfy doctor
+clickupfy setup [options]
 clickupfy status
 clickupfy whoami
 clickupfy account list
 clickupfy account show [perfil]
 clickupfy account use <perfil>
 clickupfy account remove <perfil>
+clickupfy account import [--force]
 clickupfy workspace list
 clickupfy workspace use <workspace-id>
+clickupfy doctor [--online]
+clickupfy config list
+clickupfy config get <key>
+clickupfy config set <key> <value>
+clickupfy config unset <key>
+clickupfy config path
+clickupfy config schema
+clickupfy credentials status
 ```
 
-Para atualizar uma instalação global feita pelo npm, use `clickupfy upgrade`.
-Consulte a [referência de perfis e hierarquia](referencia-cli-perfis-hierarquia.md)
-para parâmetros, canais aceitos, confirmação da versão e limites do comando.
-
-O setup recebe a credencial, identifica o account local e associa o workspace.
-Estes parâmetros permitem executar o mesmo processo com ou sem prompts:
+O setup recebe a credencial, identifica o perfil local e associa o workspace.
+`install` é o alias de `setup`. Estes parâmetros permitem executar o mesmo
+processo com ou sem prompts:
 
 | Opção               | Efeito                                                              |
 | ------------------- | ------------------------------------------------------------------- |
 | `--api-key <chave>` | Informa a API key pessoal do ClickUp.                               |
 | `--token <chave>`   | Mantém compatibilidade como alias de `--api-key`.                   |
-| `--name <nome>`     | Define o nome local do account.                                     |
-| `--workspace <id>`  | Associa o account ao workspace indicado.                            |
+| `--name <nome>`     | Define o nome local do perfil, normalizado em kebab-case.           |
+| `--workspace <id>`  | Associa o perfil ao workspace indicado.                             |
 | `--non-interactive` | Executa sem abrir prompts e exige os valores necessários por opção. |
 
 `account remove <perfil>` aceita `--yes` para confirmar a remoção sem prompt.
-As outras ações desse grupo não possuem opções próprias.
+`account import` aceita `--force` para substituir perfis já existentes. As
+outras ações desse grupo não possuem opções próprias.
 
-`clickupfy doctor` verifica localmente o JSON em `~/clickupfy/config.json`, as
-permissões, o schema, os accounts, o gerenciador `skills`, as skills do
-ClickUpfy e os arquivos `.mcp.json` e `.codex/config.toml` do projeto quando
-existirem. Use `--json` para automação. O comando não faz chamada ao ClickUp.
-Use `clickupfy whoami` para validar a API key remotamente.
+`clickupfy doctor` verifica localmente o runtime, o terminal, as permissões da
+pasta, o `settings.json`, a origem da master key, o cofre, o
+`~/.clickupfy/accounts.json`, o perfil resolvido, a presença da API key, o
+config antigo do ClickUpfy 0.9.0 e os arquivos `.mcp.json` e
+`.codex/config.toml` do projeto quando existirem. Use `--json` para automação.
+O comando não faz chamada ao ClickUp e não cria arquivos.
+
+`clickupfy doctor --online` também valida a API key em `GET /user` e lê as
+skills instaladas com `npx skills list --json`. Essas verificações podem chamar
+a rede e baixar o gerenciador de skills.
 
 ## Hierarquia
 
@@ -87,9 +137,9 @@ clickupfy list get <list-id>
 ```
 
 `space list`, `folder list` e `list list` aceitam `--archived`. O comando
-`folder list` exige `--space <id>`. Em `list list`, informe
-`--folder <id>` ou `--space <id>`, pois os dois destinos são mutuamente
-exclusivos e a resposta precisa pertencer a um único nível da hierarquia.
+`folder list` exige `--space <id>`. Em `list list`, informe `--folder <id>` ou
+`--space <id>`, pois os dois destinos são mutuamente exclusivos e a resposta
+precisa pertencer a um único nível da hierarquia.
 
 ## Tarefas
 
@@ -102,6 +152,8 @@ clickupfy task get <task-id> --raw
 clickupfy task create [options]
 clickupfy task update <task-id> [options]
 clickupfy task delete <task-id> [--yes]
+clickupfy task add-tag <task-id> <tag-name>
+clickupfy task remove-tag <task-id> <tag-name>
 ```
 
 ### Filtros de leitura
@@ -109,21 +161,24 @@ clickupfy task delete <task-id> [--yes]
 | Comando       | Opção                  | Efeito                                                 |
 | ------------- | ---------------------- | ------------------------------------------------------ |
 | `task list`   | `--list <id>`          | Define a List consultada e é obrigatório.              |
-| `task list`   | `--status <status...>` | Restringe a resposta aos status informados.            |
-| `task list`   | `--assignee <ids...>`  | Restringe a resposta aos responsáveis informados.      |
+| `task list`   | `--status <valores>`   | Restringe a resposta aos status informados.            |
+| `task list`   | `--assignee <valores>` | Restringe a resposta aos responsáveis informados.      |
 | `task list`   | `--include-closed`     | Inclui tarefas concluídas.                             |
 | `task list`   | `--page <n>`           | Consulta uma página, começando em zero.                |
 | `task search` | `--query <texto>`      | Procura no nome, na descrição ou no ID.                |
-| `task search` | `--status <status...>` | Restringe a busca aos status informados.               |
-| `task search` | `--assignee <ids...>`  | Restringe a busca aos responsáveis informados.         |
+| `task search` | `--status <valores>`   | Restringe a busca aos status informados.               |
+| `task search` | `--assignee <valores>` | Restringe a busca aos responsáveis informados.         |
 | `task search` | `--include-closed`     | Inclui tarefas concluídas.                             |
-| `task search` | `--max-pages <n>`      | Limita a paginação consultada entre uma e 100 páginas. |
+| `task search` | `--max-pages <n>`      | Limita a paginação consultada entre um e 100.          |
 | `task get`    | `--raw`                | Retorna a resposta original do ClickUp.                |
 | `task get`    | `--markdown`           | Concatena tarefa, subtarefas e checklists em Markdown. |
 
-`--raw` e `--markdown` não podem ser usados juntos. A opção global `--json`
-também é incompatível com esses dois formatos, e o CLI encerra a execução com
-uma mensagem de uso quando encontra a combinação.
+`--status` e `--assignee` aceitam vários valores separados por vírgula, como
+em `--status "to do,review"` e `--assignee 7,8`.
+
+`--raw` e `--markdown` não podem ser usados juntos. As duas opções também são
+incompatíveis com `--json`, e o CLI encerra a execução com uma mensagem de uso
+quando encontra a combinação.
 
 ### Campos de criação
 
@@ -135,15 +190,16 @@ uma mensagem de uso quando encontra a combinação.
 | `--markdown-content <markdown>` | Envia uma descrição preservada como Markdown.            |
 | `--status <status>`             | Define o status inicial.                                 |
 | `--priority <n>`                | Define prioridade de `1` a `4`.                          |
-| `--assignee <ids...>`           | Informa IDs numéricos dos responsáveis.                  |
+| `--assignee <ids>`              | Informa IDs dos responsáveis, separados por vírgula.     |
 | `--parent <task-id>`            | Cria uma subtarefa ligada ao item informado.             |
 | `--start-date <AAAA-MM-DD>`     | Define a data de início.                                 |
 | `--due-date <AAAA-MM-DD>`       | Define a data de entrega.                                |
 | `--points <n>`                  | Define Sprint Points com número igual ou maior que zero. |
 
-Escolha `--description` para texto ou `--markdown-content` para Markdown. Evite
-enviar os dois campos na mesma criação para não deixar a representação da
-descrição ambígua.
+Datas são gravadas no início do dia no fuso local da máquina, para o ClickUp
+mostrar só a data. Escolha `--description` para texto ou `--markdown-content`
+para Markdown. Evite enviar os dois campos na mesma criação para não deixar a
+representação da descrição ambígua.
 
 ### Campos de atualização
 
@@ -161,8 +217,21 @@ descrição ambígua.
 | `--points <n>`                  | Altera os Sprint Points.            |
 
 O comando exige pelo menos um campo. Quando uma data e sua opção `--clear-*`
-aparecem na mesma execução, a remoção prevalece. `task delete` usa `--yes`
-para confirmar a exclusão sem prompt.
+aparecem na mesma execução, a remoção prevalece. `task delete` usa `--yes` para
+confirmar a exclusão sem prompt.
+
+### Tags
+
+```bash
+clickupfy tag list --space <space-id>
+clickupfy tag create <name> --space <space-id> --foreground "#ffffff" --background "#336699"
+clickupfy tag update <tag-name> --space <space-id> --name <novo-nome>
+clickupfy tag delete <tag-name> --space <space-id> --yes
+```
+
+`--foreground` e `--background` aceitam cores `#RRGGBB`. `task add-tag` e
+`task remove-tag` aceitam `--custom-task-id` para trabalhar com o id
+personalizado do workspace.
 
 Depois de escolher os campos, consulte a ajuda da versão instalada para
 comparar a referência com o contrato executável:
@@ -228,6 +297,9 @@ clickupfy time start --task <task-id> [--description <texto>]
 clickupfy time stop
 ```
 
+`time start` com outro cronômetro ativo em outra tarefa troca o cronômetro,
+avisa no stderr e devolve a tarefa anterior em `previous`.
+
 ## Docs
 
 ```bash
@@ -241,7 +313,7 @@ clickupfy doc page create <doc-id> --name <nome> [options]
 clickupfy doc page update <doc-id> <page-id> [options]
 ```
 
-Docs usam a API v3 do ClickUp e sempre operam no workspace do account ativo,
+Docs usam a API v3 do ClickUp e sempre operam no workspace do perfil ativo,
 sem depender de Space, Folder ou List.
 
 | Comando                          | Opção                        | Efeito                                                                       |
@@ -260,6 +332,7 @@ sem depender de Space, Folder ou List.
 | `doc page list`                  | `--max-page-depth <n>`       | Limita a profundidade de sub-páginas retornadas.                             |
 | `doc page list` / `doc page get` | `--content-format <valor>`   | `text/md` (padrão) ou `text/plain`.                                          |
 | `doc page create`                | `--content <texto>`          | Conteúdo inicial da página.                                                  |
+| `doc page create`                | `--file <caminho>`           | Lê o conteúdo de um arquivo; `--file -` lê do stdin.                         |
 | `doc page create`                | `--sub-title <texto>`        | Subtítulo da página.                                                         |
 | `doc page create`                | `--parent-page <id>`         | Cria como sub-página deste ID.                                               |
 | `doc page create`                | `--orderindex <n>`           | Posição entre as páginas irmãs.                                              |
@@ -267,47 +340,110 @@ sem depender de Space, Folder ou List.
 
 `doc page tree` mostra a hierarquia de páginas sem conteúdo, o caminho mais
 rápido para localizar um `page-id`. `doc page update` exige pelo menos um
-campo entre `--name`, `--sub-title` e `--content`.
+campo entre `--name`, `--sub-title`, `--content` e `--file`. `--content` e
+`--file` juntos saem com exit code 2.
 
 A API pública do ClickUp não oferece endpoints para excluir Docs ou páginas,
 reordenar páginas na árvore, nem gerenciar permissões de compartilhamento.
+
+## API genérica
+
+```bash
+clickupfy api list
+clickupfy api describe <operation>
+clickupfy api call <operation> [options]
+```
+
+O catálogo cobre as 173 operações das especificações públicas v2 e v3. O
+argumento `<operation>` aceita o `operationId` (`GetTask`), o nome de CLI
+(`v2-get-task`) ou o nome da tool (`clickupfy_api_v2_get_task`).
+
+```bash
+clickupfy api list --group Tasks
+clickupfy api describe GetTask
+clickupfy api call GetTask --path '{"task_id":"abc123"}'
+clickupfy api call v2-create-task-attachment --path '{"task_id":"abc123"}' --file attachment[0]=./relatorio.pdf
+```
+
+`api call` aceita `--path`, `--query`, `--body`, `--body-file`, `--input`,
+`--content-type`, `--file`, `--yes` e `--dry-run`. Operações `DELETE` pedem
+confirmação no terminal; fora dele, sem `--yes`, saem com exit code 2.
 
 ## Agentes e MCP
 
 ```bash
 clickupfy agent skill list
 clickupfy agent skill show <nome>
-clickupfy agent skill install [--global] [--force]
+clickupfy agent skill install [skills...] [--global] [--force]
 clickupfy agent install [options]
+clickupfy mcp setup [options]
+clickupfy mcp [--list] [--list-id <id>] [options]
 clickupfy mcp serve --list <id> [options]
 ```
 
 `agent skill install` aceita uma lista opcional de skills e chama
-`npx skills add promovaweb/clickupfy --agent codex --copy --yes`. Sem `--global`, o
-gerenciador usa `.agents/skills/` e cria ou atualiza `skills-lock.json` no
-projeto. Com `--global`, usa `~/.codex/skills/`. Para consultar o estado real,
-use `npx skills list` ou `npx skills list --global`; `clickupfy agent skill list` exibe
-somente o catálogo distribuído pelo ClickUpfy.
+`npx skills add promovaweb/clickupfy --copy --agent codex --skill <nome>...`.
+Sem `--global`, o gerenciador usa `.agents/skills/` e cria ou atualiza
+`skills-lock.json` no projeto. Com `--global`, usa o catálogo global do
+usuário. Para consultar o estado real, use `npx skills list` ou
+`npx skills list --global`; `clickupfy agent skill list` exibe somente o
+catálogo embutido no binário.
 
 O comando não oferece `--target`: o gerenciador de skills controla os caminhos
-canônicos. `--force` permanece aceito por compatibilidade, mas a sincronização
-é feita pelo próprio `npx skills add`.
+canônicos. `--force` permanece aceito por compatibilidade.
 
 `agent install` exige `--space <id>` e `--list <id>`. Ele também aceita
-`--global`, `--workspace <id>`, `--folder <id>`,
-`--sprint-folder <id>` e `--force`. O comando atualiza o servidor
-`promovaweb-clickupfy` no `.mcp.json` e no `.codex/config.toml`, preservando as
-outras entradas de cada arquivo.
+`--global`, `--workspace <id>`, `--folder <id>`, `--sprint-folder <id>` e
+`--force`. O comando atualiza o servidor `promovaweb-clickupfy` no `.mcp.json`
+e no `.codex/config.toml`, preservando as outras entradas de cada arquivo.
+`agent init` é o alias.
 
-`mcp serve` exige `--list <id>` e aceita `--account <perfil>`,
-`--workspace <id>`, `--space <id>`, `--folder <id>`,
-`--sprint-folder <id>` e `--read-only`.
+`mcp setup` grava uma entrada fixada nos quatro formatos de cliente e aceita
+`--name`, `--space`, `--list`, `--clients`, `--project`, `--read-only`,
+`--force` e `--non-interactive`.
+
+`mcp serve` exige `--list <id>`. `mcp` aceita `--list-id <id>`. Os dois
+aceitam `--account <perfil>`, `--workspace <id>`, `--space <id>`,
+`--folder <id>`, `--sprint-folder <id>` e `--read-only`.
+
+## Manutenção e outros modos
+
+```bash
+clickupfy
+clickupfy tui --tab about
+clickupfy about
+clickupfy upgrade
+clickupfy skill cli
+clickupfy completion bash
+```
+
+`clickupfy` sem argumentos abre a TUI na aba Overview, com o perfil, o
+workspace e o cronômetro em execução. A tecla `r` atualiza os dados.
+
+`clickupfy --skill` imprime a documentação embutida. `clickupfy completion`
+gera o script para `bash`, `zsh` ou `fish`.
+
+## Exit codes
+
+| Code | Name | Quando |
+| --- | --- | --- |
+| `0` | `SUCCESS` | operação concluída |
+| `1` | `GENERIC_ERROR` | falha inesperada sem classificação |
+| `2` | `USAGE` | arguments, options ou subcommand inválidos |
+| `3` | `CONFIG` | settings.json ausente, inválido ou key desconhecida |
+| `4` | `CREDENTIALS` | cofre ilegível, master key ausente ou credencial não encontrada |
+| `5` | `NETWORK_OR_API` | falha de rede ou resposta de API fora do esperado |
+| `6` | `NOT_FOUND` | recurso solicitado não existe |
+| `7` | `PERMISSION` | permissão negada no sistema de arquivos |
+| `8` | `NO_TTY` | a TUI exige um terminal interativo |
+| `9` | `MCP` | o servidor MCP falhou ao iniciar ou perdeu o transporte |
+| `130` | `INTERRUPTED` | entrada cancelada ou processo interrompido com Ctrl+C |
 
 ## Escolha o formato de saída
 
 A tabela compacta é adequada para leitura humana. Use `--json` quando um
 script precisar de campos completos ou quando a tabela não mostrar um detalhe
-da API.
+da API. Listas vêm dentro de um objeto, como `data.tasks`.
 
 Use `task get --markdown` para contexto textual. Use `--raw` apenas quando
 precisar comparar a resposta original do ClickUp com a projeção do ClickUpfy.
