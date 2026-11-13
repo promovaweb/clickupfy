@@ -1,14 +1,25 @@
-# Contribuir com o ClickUpfy
+# Contribuindo com o ClickUpfy
 
 Este guia é para quem desenvolve, revisa ou mantém o ClickUpfy. Para usar a
 ferramenta, leia o [README](README.md).
 
-O ClickUpfy é um binário único em [Bun](https://bun.sh) com CLI, TUI e
-servidor MCP, feito com o framework
+O ClickUpfy é um binário único em [Bun](https://github.com/oven-sh/bun) com
+CLI, TUI e servidor MCP, feito com o framework
 [Termfy](https://github.com/promovaweb/termfy) a partir do
 [Termfy Starter Kit](https://github.com/promovaweb/termfy-starter-kit). As
 skills do Termfy ficam em `.agents/skills/termfy-*` e ensinam um agente a
 evoluir o projeto.
+
+## Antes de começar
+
+- Converse no [Discord](https://promovaweb.com/discord) antes de mexer em algo
+  grande ou de mudar o comportamento de um command, de uma tool MCP ou da
+  TUI.
+- Para um bug ou uma ideia, abra uma
+  [issue](https://github.com/promovaweb/clickupfy/issues) com a versão, o
+  sistema operacional e o passo a passo para reproduzir.
+- Uma issue por mudança. Um pull request por issue, salvo quando a mudança
+  depende de outra.
 
 ## Ambiente
 
@@ -29,7 +40,7 @@ temporária com `CLICKUPFY_HOME=/tmp/clickupfy-dev`. A API do ClickUp pode
 ser trocada por um servidor fake com `PROMOVAWEB_CLICKUPFY_API_URL` e
 `PROMOVAWEB_CLICKUPFY_API_URL_V3`, como fazem os testes.
 
-## Como o código está organizado
+## Organização do código
 
 ```text
 src/
@@ -118,6 +129,9 @@ bash .ebook/build-ebook.sh                   # gera o ebook a partir de docs/use
 bun install --frozen-lockfile --os="*" --cpu="*" --libc="*"
 bun run build:all                            # binários de todas as plataformas
 ```
+
+O CI roda `bun run validate` em pull request e em push para `main`
+(`.github/workflows/ci.yml`).
 
 ## Documentação
 

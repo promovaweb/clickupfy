@@ -1,12 +1,41 @@
-# ClickUpfy
+<p align="center">
+  <a href="https://promovaweb.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://promovaweb.com/promovaweb-logo-dark-586.png">
+      <img alt="Promovaweb" src="https://promovaweb.com/promovaweb-logo-light-586.png" width="240">
+    </picture>
+  </a>
+</p>
 
-[![npm](https://img.shields.io/npm/v/@promovaweb/clickupfy)](https://www.npmjs.com/package/@promovaweb/clickupfy)
-[![GitHub Release](https://img.shields.io/github/v/release/promovaweb/clickupfy)](https://github.com/promovaweb/clickupfy/releases/latest)
+<h1 align="center">ClickUpfy</h1>
 
-Trabalhe no ClickUp pelo terminal e pelos seus agentes de IA. O ClickUpfy é
-um binário único que lista, cria e atualiza tarefas, subtarefas, tags,
-checklists, comentários, Sprints, Docs e registros de tempo, com três formas
-de uso:
+<p align="center">
+  Trabalhe no ClickUp pelo terminal e pelos seus agentes de IA.
+</p>
+
+<p align="center">
+  <a href="https://github.com/promovaweb/clickupfy/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/promovaweb/clickupfy"></a>
+  <a href="https://www.npmjs.com/package/@promovaweb/clickupfy"><img alt="npm" src="https://img.shields.io/npm/v/@promovaweb/clickupfy"></a>
+  <a href="https://github.com/promovaweb/clickupfy/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/promovaweb/clickupfy/actions/workflows/ci.yml/badge.svg"></a>
+</p>
+
+<p align="center">
+  <a href="https://promovaweb.com/discord"><img alt="Discord: obter ajuda e conversar com a Comunidade" src="https://img.shields.io/badge/Discord-Obter%20ajuda%20e%20conversar%20com%20a%20Comunidade-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+</p>
+
+<p align="center">
+  <a href="https://promovaweb.com/docs/clickupfy/">Documentação</a> ·
+  <a href="https://promovaweb.com/discord">Discord</a> ·
+  <a href="https://promovaweb.com/planos?utm_source=github&utm_medium=readme&utm_campaign=clickupfy">Planos da Promovaweb</a> ·
+  <a href="https://github.com/promovaweb/clickupfy/blob/main/CHANGELOG.md">Changelog</a>
+</p>
+
+## O que é
+
+O ClickUpfy é um binário único que lista, cria e atualiza tarefas,
+subtarefas, tags, checklists, comentários, Sprints, Docs e registros de tempo
+no ClickUp. Ele atende quem trabalha no terminal e quem delega o trabalho a um
+agente de IA, com três formas de uso:
 
 | Modo | Como abrir | Para quê |
 | --- | --- | --- |
@@ -59,7 +88,7 @@ clickupfy account list
 clickupfy --account cliente-a task list --list 901328052926
 ```
 
-## Uso no terminal
+## Uso
 
 ### Tarefas
 
@@ -204,14 +233,40 @@ O histórico completo está no [CHANGELOG](CHANGELOG.md).
 - Manual completo em [promovaweb.com/docs/clickupfy](https://promovaweb.com/docs/clickupfy/),
   também em [PDF](https://promovaweb.com/pdf/ebook-clickupfy.pdf) e
   [EPUB](https://promovaweb.com/pdf/ebook-clickupfy.epub).
+- Página do projeto em
+  [promovaweb.com/opensource/clickupfy](https://promovaweb.com/opensource/clickupfy/).
 - No terminal: `clickupfy --help`, `clickupfy <command> --help` e
   `clickupfy --skill`, que imprime a referência inteira para agentes.
+
+## Feito com
+
+| Projeto | Para quê |
+| --- | --- |
+| [Bun](https://github.com/oven-sh/bun) | runtime e compilação do binário |
+| [Termfy](https://github.com/promovaweb/termfy) | framework de CLI, TUI e MCP da Promovaweb |
+| [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) | servidor MCP via stdio |
+| [OpenTUI](https://github.com/anomalyco/opentui) | interface de terminal |
+| [ClickUp API](https://clickup.com/api) | APIs v2 e v3 que o binário acessa |
+
+## Comunidade e suporte
+
+- **Discord:** [obter ajuda e conversar com a Comunidade](https://promovaweb.com/discord).
+- **Bugs e pedidos:** abra uma [issue](https://github.com/promovaweb/clickupfy/issues)
+  com a versão, o sistema operacional e o passo a passo para reproduzir.
+- **Novidades:** acompanhe o [CHANGELOG](CHANGELOG.md) e as
+  [releases](https://github.com/promovaweb/clickupfy/releases).
 
 ## Contribuir
 
 Instruções para desenvolver, testar e publicar estão no
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Licença
+## Promovaweb
 
-Código da Promovaweb publicado sem licença de uso aberta (`UNLICENSED`).
+O ClickUpfy é mantido pela [Promovaweb](https://promovaweb.com), comunidade de
+co-working digital onde profissionais aprendem a construir, automatizar e
+gerir negócios de tecnologia e IA com aulas ao vivo, Co-works e revisão de
+projetos reais.
+
+Quer usar o ClickUpfy em projetos de verdade, com acompanhamento? Conheça os
+[planos da Promovaweb](https://promovaweb.com/planos?utm_source=github&utm_medium=readme&utm_campaign=clickupfy).

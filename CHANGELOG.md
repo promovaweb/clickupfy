@@ -4,6 +4,18 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.0.4](https://github.com/promovaweb/clickupfy/compare/v1.0.3...v1.0.4) (2026-11-13)
+
+### Documentação
+
+- README reorganizado para quem usa: cabeçalho com a Promovaweb, badges,
+  banner do Discord e links para a documentação, os planos e o changelog.
+  Ganha as seções Feito com, Comunidade e suporte e Promovaweb, com os
+  repositórios usados.
+- `CONTRIBUTING.md` para quem contribui, com a seção Antes de começar
+  (Discord e issues) e o CI que roda `bun run validate`.
+- `npm/README.md` regenerado a partir do README.
+
 ## [1.0.3](https://github.com/promovaweb/clickupfy/compare/v1.0.2...v1.0.3) (2026-11-13)
 
 ### Documentação
