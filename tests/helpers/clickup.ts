@@ -140,8 +140,8 @@ export async function testEnv(api: FakeApi): Promise<TestEnv> {
 }
 
 /** Parses the JSON text of a tool result. */
-export function toolJson(result: { content?: unknown }): any {
-  const text = (result.content as Array<{ text: string }>)[0]?.text ?? "null";
+export function toolJson(result: unknown): any {
+  const text = ((result as { content?: Array<{ text: string }> }).content ?? [])[0]?.text ?? "null";
   try {
     return JSON.parse(text);
   } catch {
