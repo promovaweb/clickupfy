@@ -1,6 +1,6 @@
 {
   "name": "@promovaweb/clickupfy",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
   "license": "UNLICENSED",
   "author": "Promovaweb",
@@ -9,11 +9,21 @@
     "type": "git",
     "url": "git+https://github.com/promovaweb/clickupfy.git"
   },
-  "keywords": ["clickup", "cli", "mcp", "sprints", "tui"],
+  "keywords": [
+    "clickup",
+    "cli",
+    "mcp",
+    "sprints",
+    "tui"
+  ],
   "bin": {
     "clickupfy": "bin/clickupfy.cjs"
   },
-  "files": ["bin", "lib", "README.md"],
+  "files": [
+    "bin",
+    "lib",
+    "README.md"
+  ],
   "scripts": {
     "postinstall": "node lib/binary.cjs"
   },

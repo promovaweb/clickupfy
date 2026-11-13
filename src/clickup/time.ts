@@ -10,6 +10,7 @@
  */
 import { manifest } from "../app/manifest.ts";
 import { color, table } from "../cli/format.ts";
+import { formatTimestamp } from "../operations/render.ts";
 import type { Operation } from "../operations/types.ts";
 import type { ClickUpClient } from "./client.ts";
 
@@ -64,8 +65,8 @@ function describeEntry(entry: TimeEntry | null | undefined): string {
     ["id", String(entry.id)],
     ["task", entry.task ? `${entry.task.name ?? "-"} (${entry.task.id ?? "-"})` : "-"],
     ["description", entry.description || "-"],
-    ["start", entry.start === undefined ? "-" : String(entry.start)],
-    ["duration", entry.duration === undefined ? "-" : String(entry.duration)],
+    ["start", entry.start === undefined ? "-" : (formatTimestamp(entry.start) ?? String(entry.start))],
+    ["duration", entry.duration === undefined ? "-" : Number(entry.duration) < 0 ? "running" : `${Math.round(Number(entry.duration) / 60000)} min`],
   ]);
 }
 

@@ -1,116 +1,86 @@
 ---
 name: clickupfy-release
-description: Prepara e valida releases do ClickUpfy com SemVer, changelog, tags, GitHub Release, executáveis, checksums e recuperação de falhas.
+description: Prepara e valida releases do ClickUpfy com SemVer, changelog, tag, GitHub Release com binários Bun, SHA256SUMS, pacote npm e recuperação de falhas.
 ---
 
 # Release do ClickUpfy
 
-Conduza releases reproduzíveis sem criar tags ou alterar versões manualmente.
-O Release Please é a fonte da versão, do changelog, da tag e da GitHub
-Release. O GitHub Actions compila e publica os artefatos após a criação da
-release.
+O ClickUpfy é um binário Bun feito com o Termfy. Cada release sai de uma tag
+`vMAJOR.MINOR.PATCH` empurrada para o GitHub. O workflow `release.yml`
+valida o projeto, compila os binários, gera o `SHA256SUMS`, publica a GitHub
+Release com as notas do `CHANGELOG.md` e publica o pacote npm
+`@promovaweb/clickupfy`, que só traz o launcher e baixa o binário da release.
+O passo a passo está em `docs/release.md`.
 
 ## Cobertura documental da release
 
-Confira se todo comando, parâmetro, ferramenta MCP e comportamento público da
-versão está explicado em `docs/user/`. O manual precisa detalhar entradas,
-saídas, permissões, efeitos persistentes, limitações da API e cinco exemplos
-diferentes por comando ou ferramenta. Leia também `docs/user/reading-order.txt`
-para confirmar que cada capítulo aparece uma vez no PDF e no EPUB.
+Confira se todo command, option, tool MCP e comportamento público da versão
+está em `docs/` (documentação embutida, conferida por `bun run docs:check`) e
+no manual `docs/user/`. Leia `docs/user/reading-order.txt` para confirmar que
+cada capítulo aparece uma vez no PDF e no EPUB.
 
-Quando houver mudança documental, confirme `ebook/VERSION`, execute
-`npm run ebook`, execute `npm run ebook:verify` e publique os artefatos que o
-manifesto resultante declarar. Não libere versão cujo texto de ajuda tenha
-mudado sem a referência correspondente no manual.
+Quando o manual mudar, atualize `ebook/VERSION`, gere o ebook com
+`bash .ebook/build-ebook.sh`, confira com `bash .ebook/build-ebook.sh --check`
+e mantenha no repositório os arquivos que o manifesto `ebook/build.json`
+declarar.
 
 ## Antes de começar
 
 1. Trabalhe dentro do repositório independente `clickupfy/`.
-2. Leia `RELEASING.md` e confira `git status --short`.
-3. Preserve mudanças locais que não pertençam à release.
-4. Execute `npm ci` quando as dependências ainda não estiverem instaladas.
-5. Não crie uma tag nem edite a versão diretamente, salvo em uma recuperação
-   explicitamente autorizada.
+2. Confira `git status --short` e preserve mudanças alheias à release.
+3. Rode `bun install` quando as dependências ainda não estiverem instaladas.
 
-## Preparar mudanças
+## Preparar a versão
 
-Use Conventional Commits. O Release Please determina a próxima versão pelo
-histórico desde a última release:
+1. Escolha a versão SemVer: patch para correção, minor para funcionalidade,
+   major para mudança incompatível (commands, options, campos do `--json`,
+   nomes de tools ou exit codes).
+2. Grave a mesma versão em `package.json` e em `npm/package.json`.
+3. Acrescente a seção `## [X.Y.Z](link do compare) (AAAA-MM-DD)` no topo do
+   `CHANGELOG.md`, com mudanças incompatíveis, funcionalidades e correções.
+4. Rode `bun run validate`: typecheck, testes, skills do Termfy, OpenCLI,
+   cobertura da documentação embutida e build. Quando o registry de commands
+   mudar, rode `bun run opencli` antes e revise o diff de `docs/opencli.json`.
 
-- `fix:` propõe patch;
-- `feat:` propõe minor;
-- `feat!:` ou `BREAKING CHANGE:` propõe major;
-- `docs:`, `build:`, `ci:` e `refactor:` entram no changelog sem forçar uma
-  versão maior que as mudanças funcionais presentes.
-
-Antes de enviar as mudanças:
+## Publicar
 
 ```bash
-npm run validar
+git commit -m "release: clickupfy vX.Y.Z"
+git tag vX.Y.Z
+git push origin main vX.Y.Z
 ```
 
-O comando verifica tipos, testes, build, versões, manifesto, changelog e
-presença do workflow.
+Empurre só a tag desta entrega. Acompanhe o workflow `Release` até:
 
-## Publicar uma release
-
-1. Faça push dos Conventional Commits para `main`.
-2. Aguarde o workflow `Release` criar ou atualizar a Release PR.
-3. Revise na PR a versão proposta e o `CHANGELOG.md`.
-4. Faça merge da Release PR.
-5. Acompanhe a mesma execução do workflow até estes resultados:
-   - tag imutável `vMAJOR.MINOR.PATCH`;
-   - GitHub Release;
-   - executáveis Linux x64, macOS x64, macOS arm64 e Windows x64;
-   - pacote `@promovaweb/clickupfy` publicado no registry npm;
-   - o mesmo pacote npm em arquivo `.tgz` na GitHub Release;
-   - `SHA256SUMS`;
-   - attestations de proveniência quando o repositório for público.
-
-Não rode `git tag` nem `gh release create` no fluxo normal.
+- GitHub Release `vX.Y.Z` com `clickupfy-linux-x64`, `clickupfy-linux-arm64`,
+  `clickupfy-darwin-x64`, `clickupfy-darwin-arm64`,
+  `clickupfy-windows-x64.exe` e `SHA256SUMS`;
+- `@promovaweb/clickupfy@X.Y.Z` no registry npm (`npm view
+  @promovaweb/clickupfy version`).
 
 ## Validar localmente
 
-Valide a coerência da versão atual:
-
 ```bash
-npm run release:check
-npm run release:check -- v0.1.0
+bun run build
+./dist/clickupfy --version
+./dist/clickupfy mcp --list
+bun install --frozen-lockfile --os="*" --cpu="*" --libc="*"
+bun run build:all
 ```
-
-O segundo comando só deve usar a tag correspondente à versão atual. Gere e
-teste o executável da plataforma local:
-
-```bash
-npm run build:executable
-./artifacts/clickupfy-v0.1.0-linux-x64/clickupfy --version
-```
-
-Adapte o nome do artefato à versão, plataforma e arquitetura exibidas pelo
-script.
 
 ## Diagnosticar falhas
 
-- Release PR ausente: confira os gatilhos do workflow, as permissões de Actions
-  e se há Conventional Commits depois do `bootstrap-sha` ou da última tag.
-- CI não executou na Release PR: configure o secret opcional
-  `RELEASE_PLEASE_TOKEN`, conforme `RELEASING.md`.
-- Release criada sem binários: reexecute os jobs falhos da mesma execução.
-- Publicação npm falhou: confirme o secret `NPM_TOKEN` e reexecute o job; o
-  script ignora uma versão que já exista no registry.
-- Artefato inválido: reproduza com `npm ci`, `npm run validar` e
-  `npm run build:executable` na plataforma afetada.
-- Versão divergente: não corrija somente um arquivo. Inspecione
-  `package.json`, `package-lock.json`, `.release-please-manifest.json`,
-  `CHANGELOG.md` e a tag.
+- Workflow recusou a tag: a versão de `package.json` ou de
+  `npm/package.json` difere da tag. Corrija numa versão nova.
+- Release sem binários: reexecute os jobs falhos da mesma execução.
+- Publicação npm falhou: confirme o secret `NPM_TOKEN` e reexecute o job
+  `npm`.
+- `npm install -g` instalou, mas o primeiro uso falha: confira se a GitHub
+  Release da mesma versão tem o binário da plataforma e o `SHA256SUMS`.
 
 ## Recuperar uma release
 
-Não mova nem reutilize uma tag publicada. Para erro no código, envie um
-Conventional Commit corretivo e publique uma nova patch release. Para arquivo
-ausente ou job interrompido, reexecute o workflow no commit tagueado; o upload
-usa substituição idempotente para os nomes daquela mesma release.
-
-Só use operações manuais do GitHub CLI quando a automação não puder ser
-recuperada e houver autorização explícita. Registre no handoff o motivo, a tag,
-os arquivos substituídos e as validações executadas.
+Não mova nem reutilize uma tag publicada. Para erro no código, publique uma
+nova patch. Para arquivo ausente ou job interrompido, reexecute o workflow no
+commit da tag. Só use operações manuais do GitHub CLI com autorização
+explícita e registre no handoff o motivo, a tag, os arquivos e as validações.

@@ -20,8 +20,8 @@ interfaces. Cada comando ou ferramenta citado recebe cinco exemplos diferentes
 e executáveis com valores fictícios.
 
 Atualize o percurso e a referência detalhada. Depois ajuste `ebook/VERSION`,
-gere PDF e EPUB com `npm run ebook` e confirme ambos com
-`npm run ebook:verify`. Trate uma alteração de documentação como item próprio
+gere PDF e EPUB com `bash .ebook/build-ebook.sh` e confirme ambos com
+`bash .ebook/build-ebook.sh --check`. Trate uma alteração de documentação como item próprio
 do plano, comentário de progresso e validação final; ela não pode ficar para
 uma tarefa posterior.
 

@@ -3,16 +3,30 @@
  *
  * Arrays of objects become a column table with the scalar fields of the
  * first rows; plain objects become a key/value table, with nested values as
- * compact JSON; scalars print as they are. Operations with a better human
- * view pass their own `text` function instead.
+ * compact JSON; scalars print as they are. Millisecond timestamps in date
+ * columns (`date`, `start`, `due`, `created`...) print as local dates.
+ * Operations with a better human view pass their own `text` function.
  */
 import { color, grid, table } from "../cli/format.ts";
 
 const MAX_COLUMNS = 6;
 const MAX_CELL = 60;
 
-function cell(value: unknown): string {
+/** Formats a millisecond epoch (number or 12-13 digit string) as local `YYYY-MM-DD HH:MM`; other values pass through. */
+export function formatTimestamp(value: unknown): string | undefined {
+  const text = typeof value === "number" ? String(value) : typeof value === "string" ? value : "";
+  if (!/^\d{12,13}$/.test(text)) return undefined;
+  const d = new Date(Number(text));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+const DATE_KEY = /(date|start|end|due|created|updated|closed)/i;
+
+function cell(value: unknown, key = ""): string {
   if (value === null || value === undefined) return "-";
+  const stamp = DATE_KEY.test(key) ? formatTimestamp(value) : undefined;
+  if (stamp) return stamp;
   if (typeof value === "object") {
     const record = value as Record<string, unknown>;
     if (typeof record.status === "string") return record.status;
@@ -38,7 +52,7 @@ export function renderRows(rows: ReadonlyArray<Record<string, unknown>>, preferr
       .slice(0, MAX_COLUMNS);
   return grid(
     keys.map((k) => k.toUpperCase()),
-    rows.map((r) => keys.map((k) => cell(r[k]))),
+    rows.map((r) => keys.map((k) => cell(r[k], k))),
   );
 }
 
@@ -56,7 +70,7 @@ export function renderDefault(data: unknown): string {
       const [, rows] = lists[0] as [string, Array<Record<string, unknown>>];
       return renderRows(rows);
     }
-    return table(Object.entries(record).map(([k, v]) => [k, cell(v)]));
+    return table(Object.entries(record).map(([k, v]) => [k, cell(v, k)]));
   }
   return String(data);
 }

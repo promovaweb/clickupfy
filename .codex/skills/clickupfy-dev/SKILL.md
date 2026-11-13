@@ -34,8 +34,10 @@ texto de ajuda ou em uma tabela de nomes.
 5. Informar `--account <perfil>` ou o argumento `account` sem trocar o perfil
    ativo apenas para uma consulta pontual.
 
-Nunca ler, imprimir, comentar ou copiar o campo `apiKey` de
-`~/clickupfy/config.json`. Não incluir credenciais em comandos,
+Nunca ler, imprimir, comentar ou copiar API keys: elas ficam cifradas no
+cofre `~/.clickupfy/credentials.json` (`clickup.<perfil>.api_key`), e o
+config antigo `~/clickupfy/config.json` do 0.9.0 também não deve ser lido.
+Não use `credentials get --reveal`. Não incluir credenciais em comandos,
 logs, commits ou respostas.
 
 ## Preservar o isolamento dos projetos
@@ -80,7 +82,8 @@ clickupfy task list --list <list-id>
 ```
 
 Usar `--space <space-id>` em `list list` quando a list não pertencer a um
-folder. Acrescentar `--json` quando os campos compactos não forem suficientes.
+folder. Acrescentar `--json` quando os campos compactos não forem suficientes;
+a resposta vem no envelope `{ ok, command, data }`.
 
 No MCP, seguir a mesma ordem com:
 

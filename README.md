@@ -57,22 +57,27 @@ bun run dev                 # TUI
 bun run dev -- --help       # help do CLI
 bun run dev -- about --json
 bun run dev -- mcp --list
+bun run api:generate        # regenera src/api/catalog.json a partir de api/
 ```
 
 ## Commands
 
-| Command | Função |
+| Grupo | Commands |
 | --- | --- |
-| `clickupfy` | abre a TUI (abas Overview e About) |
-| `clickupfy tui [--tab overview\|about]` | abre a TUI em uma aba |
-| `clickupfy about` | version, executable, runtime, platform e credits |
-| `clickupfy config list\|get\|set\|unset\|path\|schema` | preferências em `settings.json` |
-| `clickupfy credentials set\|get\|list\|remove\|status\|clear` | segredos cifrados em `credentials.json` |
-| `clickupfy mcp [--list]` | servidor MCP via stdio |
-| `clickupfy skill [topic]` | documentação embutida |
+| Perfis | `setup` (alias `install`), `status`, `whoami`, `account list\|show\|use\|remove\|import`, `workspace list\|use` |
+| Hierarquia | `space list`, `folder list`, `list list\|get` |
+| Tarefas | `task list\|get\|search\|create\|update\|delete\|add-tag\|remove-tag`, `tag list\|create\|update\|delete` |
+| Execução | `checklist create\|item-create\|set`, `comment list\|create`, `time current\|start\|stop` |
+| Sprints | `sprint list\|current\|get\|tasks\|add-task\|remove-task\|set-points` |
+| Docs | `doc list\|get\|create`, `doc page list\|get\|tree\|create\|update` |
+| API | `api list\|describe\|call` (173 operações v2 e v3) |
+| Agentes | `mcp`, `mcp serve`, `mcp setup`, `agent skill list\|show\|install`, `agent install` |
+| Manutenção | `doctor [--online]`, `upgrade [target]`, `config`, `credentials`, `about`, `tui`, `skill`, `completion` |
 
-Options globais: `--help`, `--version`, `--json`, `--skill [topic]`,
-`--opencli`, `--no-color`. Referência completa em [docs/cli.md](docs/cli.md).
+Options globais: `--help`, `--version`, `--json`, `--account <profile>`,
+`--skill [topic]`, `--opencli`, `--no-color`. Referência completa em
+[docs/cli.md](docs/cli.md); o manual do usuário fica em
+[docs/user/](docs/user/README.md) e gera o ebook em [ebook/](ebook/).
 
 ## Documentação embutida
 
@@ -106,39 +111,59 @@ Detalhes em [docs/exit-codes.md](docs/exit-codes.md).
 ## Configuração e credenciais
 
 ```bash
+clickupfy setup                     # API key sem eco, workspace e perfil ativo
+clickupfy account list
 clickupfy config set tui.theme day
-clickupfy credentials set openai.api_key        # digita sem eco
-printf '%s' "$TOKEN" | clickupfy credentials set github.token --stdin
 clickupfy credentials status
 ```
 
-Os arquivos ficam em `~/.clickupfy/` com permissão 0600. As credenciais são
-cifradas com AES-256-GCM; a master key vem de `CLICKUPFY_MASTER_KEY` ou de
-`~/.clickupfy/master.key`. Veja [docs/configuration.md](docs/configuration.md).
+Os arquivos ficam em `~/.clickupfy/` com permissão 0600: `accounts.json`
+(perfis, sem segredos), `credentials.json` (API keys cifradas com
+AES-256-GCM, uma por perfil) e `settings.json`. A master key vem de
+`CLICKUPFY_MASTER_KEY` ou de `~/.clickupfy/master.key`. Veja
+[docs/configuration.md](docs/configuration.md).
 
 ## MCP
 
 ```json
-{ "mcpServers": { "clickupfy": { "command": "clickupfy", "args": ["mcp"] } } }
+{
+  "mcpServers": {
+    "clickup-projeto": {
+      "command": "clickupfy",
+      "args": ["mcp", "serve", "--account", "work", "--space", "90070363783", "--list", "901328052926"]
+    }
+  }
+}
 ```
 
-Tools: `about`, `exit_codes`, `skill`, `config_list`, `config_get`,
-`credentials_status`. Resources: `clickupfy://about`, `clickupfy://exit-codes`,
-`clickupfy://skill`, `clickupfy://skill/{topic}`. Prompt: `operate`.
-Detalhes em [docs/mcp.md](docs/mcp.md).
+`clickupfy mcp setup` grava essa entrada no `.mcp.json`, no
+`.codex/config.toml`, no `.gemini/settings.json` e no `opencode.json`. O
+servidor fixa perfil, space, folder, list e Sprint folder, e `--read-only`
+esconde as tools de escrita. São mais de 50 tools `clickupfy_*` (perfis,
+hierarquia, tarefas, tags, checklists, comentários, Sprints, Docs e tempo),
+mais uma tool por operação do catálogo da API. Detalhes em
+[docs/mcp.md](docs/mcp.md).
 
 ## Estrutura
 
 ```text
-src/        código do binário (app, cli, config, mcp, tui, skill)
-docs/       documentação embutida e opencli.json
+src/        código do binário (app, cli, clickup, operations, api, agent, config, mcp, tui, skill)
+docs/       documentação embutida, opencli.json e o manual do usuário (docs/user)
+api/        especificações OpenAPI v2 e v3 que geram src/api/catalog.json
+npm/        pacote npm @promovaweb/clickupfy (launcher que baixa o binário)
+specs/      CLISPEC.md e as specs de cada evolução
+ebook/      guia do usuário em PDF e EPUB, gerado de docs/user
 template/   stubs de command, screen e tool
-.agents/    skills do framework instaladas via npx skills (skills-lock.json)
-scripts/    build, init e checks
+.agents/    skills do framework Termfy (skills-lock.json)
+.codex/     skills do ClickUpfy, embutidas no binário
+scripts/    build, geração do catálogo e checks
 tests/      bun test
 ```
 
-Arquitetura em [docs/architecture.md](docs/architecture.md).
+Cada operação do ClickUp é declarada uma vez em `src/clickup/<família>.ts` e
+vira command do CLI e tool MCP pela camada `src/operations/`. Arquitetura
+em [docs/architecture.md](docs/architecture.md); visão do produto em
+[CLISPEC.md](CLISPEC.md).
 
 ## Validar, compilar e publicar
 
@@ -150,9 +175,10 @@ bun run build:all     # linux-x64, linux-arm64, darwin-x64, darwin-arm64, window
 
 Releases seguem [docs/release.md](docs/release.md): versão em
 `package.json`, entrada no `CHANGELOG.md`, tag `vX.Y.Z` e GitHub Release com
-binários gerados pelo workflow. O guia do método em PDF e EPUB fica no
-framework, não aqui.
+binários gerados pelo workflow, que também publica o pacote npm. O guia do
+usuário em PDF e EPUB sai de `bash .ebook/build-ebook.sh`.
 
 ## Licença
 
-Repositório privado da Promovaweb. Uso interno e dos alunos autorizados.
+Código da Promovaweb publicado sem licença de uso aberta (`UNLICENSED`, como no
+0.9.0).

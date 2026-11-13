@@ -4,32 +4,73 @@ Status: in_progress
 
 ## Goal
 
-Publicar o novo binário no lugar do CLI Node sem quebrar quem instala pelo npm.
+Publicar o novo binário no lugar do CLI Node sem quebrar quem instala pelo
+npm, com documentação, ebook e skills alinhados, e levar a branch `termfy`
+para a `main` como release 1.0.0.
 
 ## Behavior
 
-Binários por plataforma na GitHub Release; o pacote `@promovaweb/clickupfy` vira wrapper que baixa e roda o binário certo. `legacy/` sai, docs, ebook e README são atualizados, a branch `termfy` entra na `main` e sai a release 1.0.0.
+`npm install -g @promovaweb/clickupfy` instala só o launcher
+`bin/clickupfy.cjs`. Na primeira execução ele baixa `clickupfy-<plataforma>`
+e o `SHA256SUMS` da GitHub Release da mesma versão, confere o hash, guarda o
+binário em `~/.clickupfy/bin/v<versão>/` e o executa com os mesmos
+argumentos e stdio herdado; o exit code e o sinal são repassados. O
+`postinstall` tenta baixar antes, sem falhar a instalação.
+`CLICKUPFY_BINARY_PATH`, `CLICKUPFY_BINARY_DIR` e
+`CLICKUPFY_RELEASE_BASE_URL` trocam o binário, a pasta e a origem. Hash
+divergente sai com 1 e não grava nada. Quem baixa o binário avulso da
+release confere o `SHA256SUMS` e usa direto.
+
+A tag `vX.Y.Z` dispara o workflow: confere a versão de `package.json` e de
+`npm/package.json`, roda `bun run validate`, compila os cinco alvos, publica
+a GitHub Release e depois o pacote npm.
 
 ## Design
 
-`scripts/build.ts --all`, workflow de release do starter kit adaptado e pacote npm em `npm/`.
+- `npm/`: `package.json` (`@promovaweb/clickupfy`, sem dependências),
+  `bin/clickupfy.cjs` (launcher) e `lib/binary.cjs` (`assetName`,
+  `ensureBinary`). É Node porque roda pelo npm; o binário segue só Bun.
+- `.github/workflows/release.yml`: conferência da versão da tag e job `npm`
+  com `NPM_TOKEN`.
+- `docs/release.md`, `README.md` e `CHANGELOG.md` da 1.0.0.
+- `docs/user/`: o manual do 0.9.0 portado para o binário novo, com os
+  mesmos arquivos e o mesmo `reading-order.txt`, que o Hub sincroniza com o
+  site; ebook 2.0.0 gerado de `docs/user/`.
+- `.codex/skills/`: skills do ClickUpfy atualizadas (release, setup, dev,
+  issues).
+- `legacy/` removido antes do merge.
+- No Hub: `scripts/omarchy-plugins.mjs` e `AGENTS-FUNDAMENTOS.md` passam a
+  ler `.data` do envelope `--json`.
 
 ## Surface
 
-- Nenhuma mudança de superfície.
+Nenhuma mudança de superfície.
 
 ## Tasks
 
-- [ ] Wrapper npm `#termfy-release`
-- [ ] Remover `legacy/` e atualizar docs `#termfy-docs`
-- [ ] Scripts e skills do Hub leem `.data` do envelope `--json` `#termfy-docs`
-- [ ] Release 1.0.0 `#termfy-release`
+- [x] Wrapper npm com download e conferência do SHA256 `#termfy-release`
+- [x] Job npm e conferência de versão no workflow de release `#termfy-release`
+- [x] Scripts e skills do Hub leem `.data` do envelope `--json` `#termfy-docs`
+- [x] README, CHANGELOG 1.0.0 e `docs/release.md` `#termfy-docs`
+- [x] Skills do ClickUpfy atualizadas `#termfy-docs`
+- [ ] Manual `docs/user/` portado e ebook 2.0.0 `#termfy-docs`
+- [ ] Remover `legacy/` `#termfy-docs`
+- [ ] Merge na `main` e release 1.0.0 `#termfy-release`
 
 ## Tests
 
-- [ ] `npm i -g` instala e roda `clickupfy --version`
+- [x] Launcher baixa, confere, guarda em cache e executa, repassando o exit
+  code (`tests/npm-wrapper.test.ts`)
+- [x] Hash divergente sai com 1 sem gravar o binário
+- [x] Versões de `package.json` e `npm/package.json` iguais
 - [ ] `bun run validate` verde sem `legacy/`
+- [ ] `npm i -g @promovaweb/clickupfy@1.0.0` instala e roda
+  `clickupfy --version`
 
 ## Notes
 
-- 2026-11-13: criada como draft na entrevista do CLISPEC; options detalhadas na `termfy-spec`.
+- 2026-11-13: criada como draft na entrevista do CLISPEC.
+- 2026-11-13: o binário compilado tem cerca de 124 MB; o pacote npm baixa só
+  o da plataforma em vez de embutir os cinco.
+- 2026-11-13: o Release Please do 0.9.0 sai; a versão passa a ser definida à
+  mão em `package.json` e `npm/package.json`, com tag e workflow do Termfy.

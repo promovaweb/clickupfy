@@ -1,8 +1,61 @@
 # Changelog
 
 Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
-projeto segue versionamento semântico e usa commits convencionais para preparar
-as próximas versões.
+projeto segue versionamento semântico; o fluxo de publicação está em
+`docs/release.md`.
+
+## [1.0.0](https://github.com/promovaweb/clickupfy/compare/v0.9.0...v1.0.0) (2026-11-13)
+
+O ClickUpfy foi refeito sobre o framework Termfy: um binário único em Bun
+com CLI, TUI e servidor MCP stdio, mantendo os commands e as tools
+`clickupfy_*` do 0.9.0.
+
+### Mudanças incompatíveis
+
+- O `--json` passa a usar o envelope `{ ok, command, data }`, e os erros saem
+  como `{ ok: false, command, error }`. Scripts que liam o objeto cru passam
+  a ler `.data`. Listas vêm dentro de objetos (`{ tasks[] }`, `{ spaces[] }`).
+- Mensagens, options e campos do `--json` estão em inglês. Os estados dos
+  checklist items são `done` e `pending`, e os das Sprints são `planned`,
+  `active`, `completed` e `regular`.
+- Os exit codes seguem a tabela do Termfy: 2 para uso, 3 para configuração,
+  4 para credenciais, 5 para rede ou API, 6 para recurso inexistente, 7 para
+  permissão e 130 para interrupção.
+- `--status` e `--assignee` recebem valores separados por vírgula.
+- O pacote npm `@promovaweb/clickupfy` passa a ser um launcher que baixa o
+  binário da plataforma na primeira execução, conferindo o `SHA256SUMS`.
+
+### Funcionalidades
+
+- **perfis:** API keys cifradas no cofre (`~/.clickupfy/credentials.json`),
+  perfis em `~/.clickupfy/accounts.json` e importação automática do
+  `~/clickupfy/config.json` sem alterar o arquivo; `account import`.
+- **mcp:** escopo fixado por `mcp serve` (inclusive `--sprint-folder` e
+  `--read-only`), `mcp --list-id`, `mcp serve --describe` e erros com
+  `isError` e o exit code equivalente.
+- **tui:** aba Overview com perfil, workspace, cronômetro em execução e
+  perfis.
+- **time:** `time start` avisa quando troca um cronômetro de outra tarefa e
+  devolve `previous`.
+- **docs:** `doc page create|update` leem o conteúdo de `--file <path>` ou
+  do stdin (`--file -`).
+- **api:** `api call <operation>` com `--dry-run` e `--file` repetível; as
+  tools do catálogo não exigem mais os ids fixados pelo servidor nem o
+  workspace do perfil.
+- **doctor:** checagens de perfil, API key, config antigo, `.mcp.json` e
+  `.codex/config.toml`; `--online` valida a chave e as skills.
+- **upgrade:** atualiza pelo npm ou trocando o binário pela GitHub Release.
+- Documentação embutida com `clickupfy --skill` e descrição OpenCLI com
+  `clickupfy --opencli`.
+
+### Correções
+
+- `--start-date` e `--due-date` gravam o início do dia no fuso local; o
+  0.9.0 gravava meia-noite UTC, que aparecia como o dia anterior no Brasil.
+- `clickupfy_tasks_search` sem list fixada busca no workspace em vez de
+  chamar `/list/undefined/task`.
+- `doc page update` sem nenhum campo para atualizar sai com 2 em vez de
+  enviar um PUT vazio.
 
 ## [0.9.0](https://github.com/promovaweb/clickupfy/compare/v0.8.1...v0.9.0) (2026-10-26)
 
