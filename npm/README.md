@@ -17,6 +17,7 @@
   <a href="https://github.com/promovaweb/clickupfy/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/promovaweb/clickupfy"></a>
   <a href="https://www.npmjs.com/package/@promovaweb/clickupfy"><img alt="npm" src="https://img.shields.io/npm/v/@promovaweb/clickupfy"></a>
   <a href="https://github.com/promovaweb/clickupfy/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/promovaweb/clickupfy/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/promovaweb/clickupfy/blob/main/LICENSE"><img alt="Licença" src="https://img.shields.io/github/license/promovaweb/clickupfy"></a>
 </p>
 
 <p align="center">
@@ -270,3 +271,8 @@ projetos reais.
 
 Quer usar o ClickUpfy em projetos de verdade, com acompanhamento? Conheça os
 [planos da Promovaweb](https://promovaweb.com/planos?utm_source=github&utm_medium=readme&utm_campaign=clickupfy).
+
+## Licença
+
+Distribuído sob a [GNU AGPL 3.0](https://github.com/promovaweb/clickupfy/blob/main/LICENSE). A licença não concede o uso do
+nome e do logo do ClickUpfy nem da marca Promovaweb (AGPL 3.0, seção 7, item e).

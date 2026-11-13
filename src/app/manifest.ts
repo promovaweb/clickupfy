@@ -54,7 +54,7 @@ export const manifest: Manifest = Object.freeze({
   author: block.author ?? "",
   site: block.site ?? "",
   repository: block.repository ?? "",
-  license: pkg.license ?? "UNLICENSED",
+  license: pkg.license ?? "AGPL-3.0-only",
   envPrefix: bin.replace(/[^a-z0-9]/gi, "_").toUpperCase(),
 });
 

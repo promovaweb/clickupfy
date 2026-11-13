@@ -62,6 +62,12 @@ describe("npm wrapper", () => {
     expect(npmReadme).not.toMatch(/\]\((?!https?:|#)/);
   });
 
+  test("npm package ships the same LICENSE as the repository", () => {
+    const npm = JSON.parse(readFileSync(join(root, "npm", "package.json"), "utf8"));
+    expect(npm.files).toContain("LICENSE");
+    expect(readFileSync(join(root, "npm", "LICENSE"), "utf8")).toBe(readFileSync(join(root, "LICENSE"), "utf8"));
+  });
+
   test("asset names follow the release build", () => {
     expect(assetName("linux", "x64")).toBe("clickupfy-linux-x64");
     expect(assetName("darwin", "arm64")).toBe("clickupfy-darwin-arm64");

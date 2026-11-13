@@ -1,8 +1,8 @@
 {
   "name": "@promovaweb/clickupfy",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-only",
   "author": "Promovaweb",
   "homepage": "https://promovaweb.com/docs/clickupfy",
   "repository": {
@@ -22,7 +22,8 @@
   "files": [
     "bin",
     "lib",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "postinstall": "node lib/binary.cjs"

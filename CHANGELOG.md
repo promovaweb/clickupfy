@@ -4,6 +4,19 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.1.0](https://github.com/promovaweb/clickupfy/compare/v1.0.4...v1.1.0) (2026-11-13)
+
+### Licença
+
+- A partir desta versão, o projeto é distribuído sob a GNU AGPL 3.0
+  (`AGPL-3.0-only`); versões anteriores continuam sob a licença com que
+  foram publicadas.
+- `LICENSE` na raiz e cópia em `npm/LICENSE`, incluída no pacote npm.
+- Campo `license` de `package.json`, `npm/package.json` e
+  `docs/opencli.json` atualizado.
+- README ganha o badge e a seção Licença; `CONTRIBUTING.md` registra que as
+  contribuições entram sob a mesma licença. `npm/README.md` regenerado.
+
 ## [1.0.4](https://github.com/promovaweb/clickupfy/compare/v1.0.3...v1.0.4) (2026-11-13)
 
 ### Documentação

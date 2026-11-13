@@ -157,3 +157,8 @@ A publicação segue [docs/release.md](docs/release.md): mesma versão em
 `release: clickupfy vX.Y.Z`, tag `vX.Y.Z` e push da tag. O workflow publica a
 GitHub Release com os binários e o pacote npm. Tags publicadas nunca são
 movidas.
+
+## Licença
+
+O ClickUpfy é distribuído sob a [GNU AGPL 3.0](LICENSE). Ao enviar uma
+contribuição, você concorda que ela entra sob a mesma licença do projeto.
