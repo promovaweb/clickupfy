@@ -38,6 +38,10 @@ jobs:
       - name: Validar projeto
         run: bun run validate
 
+      # O validate deixa dist/clickupfy da máquina do runner; a release leva só os alvos nomeados.
+      - name: Limpar dist
+        run: rm -rf dist
+
       - name: Compilar para todas as plataformas
         run: bun run build:all
 
@@ -65,6 +69,9 @@ jobs:
     name: Publicar pacote npm
     needs: binarios
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Obter código
         uses: actions/checkout@v4
@@ -72,12 +79,20 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
       # O pacote é só o launcher: o binário vem da GitHub Release publicada acima.
+      # Idempotente: uma versão já publicada não falha a reexecução. Com id-token,
+      # o npm 11 tenta trusted publishing (OIDC) antes do NPM_TOKEN.
       - name: Publicar @promovaweb/clickupfy
         working-directory: npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: |
+          versao="$(jq -r .version package.json)"
+          if [ "$(npm view "@promovaweb/clickupfy@$versao" version 2>/dev/null)" = "$versao" ]; then
+            echo "@promovaweb/clickupfy@$versao já publicado."
+            exit 0
+          fi
+          npm publish --access public --provenance

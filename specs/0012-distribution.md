@@ -55,7 +55,8 @@ Nenhuma mudança de superfície.
 - [x] Skills do ClickUpfy atualizadas `#termfy-docs`
 - [x] Manual `docs/user/` portado e ebook 2.0.0 `#termfy-docs`
 - [x] Remover `legacy/` `#termfy-docs`
-- [ ] Merge na `main` e release 1.0.0 `#termfy-release`
+- [x] Merge na `main` e release 1.0.0 `#termfy-release`
+- [ ] Pacote `@promovaweb/clickupfy` 1.x publicado no npm `#termfy-release`
 
 ## Tests
 
@@ -77,3 +78,7 @@ Nenhuma mudança de superfície.
 - 2026-11-13: manual portado pelo OpenCode em duas abas e revisado; os 285
   exemplos `clickupfy ...` de `docs/user/` passam pelo parser e as 47 tools
   citadas existem. Ebook 2.0.0 gerado. `legacy/` removido.
+- 2026-11-13: v1.0.0 publicada na GitHub Release; o job npm falhou com 404
+  no PUT (o `NPM_TOKEN` do repositório parece vencido). A 1.0.1 limpa o
+  `dist/` antes do build cruzado (a 1.0.0 levou um asset `clickupfy` a mais)
+  e publica com `--provenance` e OIDC, de forma idempotente.

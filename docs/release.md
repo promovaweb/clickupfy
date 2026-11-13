@@ -13,8 +13,9 @@ Toda alteração publicada sai com versão, changelog, tag e GitHub Release.
 7. O workflow `release.yml` compila os binários para linux-x64, linux-arm64,
    darwin-x64, darwin-arm64 e windows-x64, gera `SHA256SUMS` e publica a
    GitHub Release com as notas do changelog.
-8. O job `npm` publica `npm/` como `@promovaweb/clickupfy` com o secret
-   `NPM_TOKEN`. O pacote só traz o launcher, que baixa o binário desta
+8. O job `npm` publica `npm/` como `@promovaweb/clickupfy` com `--provenance`:
+   tenta trusted publishing (OIDC) e usa o secret `NPM_TOKEN` como reserva;
+   uma versão já publicada não falha a reexecução. O pacote só traz o launcher, que baixa o binário desta
    release na primeira execução e confere o `SHA256SUMS`.
 9. Confira a release em `https://github.com/<org>/<repo>/releases/tag/vX.Y.Z`.
 

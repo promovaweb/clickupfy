@@ -4,6 +4,16 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.0.1](https://github.com/promovaweb/clickupfy/compare/v1.0.0...v1.0.1) (2026-11-13)
+
+### Correções
+
+- **release:** a GitHub Release deixa de levar o `dist/clickupfy` do runner
+  junto com os binários nomeados por plataforma e o `SHA256SUMS`.
+- **release:** a publicação no npm usa `--provenance` e trusted publishing
+  (OIDC) quando disponível, e não falha ao reexecutar uma versão já
+  publicada.
+
 ## [1.0.0](https://github.com/promovaweb/clickupfy/compare/v0.9.0...v1.0.0) (2026-11-13)
 
 O ClickUpfy foi refeito sobre o framework Termfy: um binário único em Bun
