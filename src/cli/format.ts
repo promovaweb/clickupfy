@@ -58,3 +58,18 @@ export function section(title: string): string {
 export function blocks(...parts: Array<string | undefined | false>): string {
   return parts.filter((p): p is string => typeof p === "string" && p.length > 0).join("\n\n");
 }
+
+/**
+ * Multi-column table with a dimmed header row, each column padded to its
+ * widest cell. Returns `empty` (dimmed) when there are no rows.
+ */
+export function grid(headers: readonly string[], rows: ReadonlyArray<readonly string[]>, empty = "nothing to show"): string {
+  if (rows.length === 0) return color.dim(empty);
+  const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => (r[i] ?? "").length)));
+  const line = (cells: readonly string[]) =>
+    cells
+      .map((c, i) => (i === cells.length - 1 ? c : c.padEnd(widths[i] ?? 0)))
+      .join("  ")
+      .trimEnd();
+  return [color.dim(line(headers)), ...rows.map(line)].join("\n");
+}

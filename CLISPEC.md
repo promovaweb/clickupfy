@@ -39,6 +39,16 @@ ClickUp localmente: só settings, perfis e credenciais.
 
 | Command | Função | Options | `data` no `--json` | Exit codes | Credenciais |
 | --- | --- | --- | --- | --- | --- |
+| `setup` (alias `install`) | Configure a ClickUp API key and bind the profile to a workspace. | `--api-key <key>`, `--token <key>`, `--name <name>`, `--workspace <id>`, `--non-interactive` | `{ account, user, workspace, path }` | 2, 4, 5, 6, 7, 130 | `clickup.<perfil>.api_key` |
+| `status` | Show the resolved profile and its configuration. | | `{ config, account, active, name, apiKey, user, workspace }` | 3, 4, 6 | `clickup.<perfil>.api_key` |
+| `account list` (alias `ls`) | List profiles without API keys. | | `{ accounts[] }` | 3 | |
+| `account show` | Show safe metadata of a profile. | `[profile]` | `{ account }` | 3, 4, 6 | `clickup.<perfil>.api_key` |
+| `account use` | Set the active profile. | `<profile>` | `{ activeAccount }` | 3, 6, 7 | |
+| `account remove` (alias `rm`) | Remove a profile and its API key. | `<profile>`, `--yes` | `{ account, removed }` | 2, 3, 6, 7, 130 | `clickup.<perfil>.api_key` |
+| `account import` | Import profiles from the ClickUpfy 0.9.0 config file. | `--force` | `{ source, imported[], skipped[], activeAccount }` | 3, 6, 7 | `clickup.<perfil>.api_key` |
+| `workspace list` (alias `ls`) | List workspaces the API key can reach. | | `{ workspaces[] }` | 3, 4, 5, 6 | `clickup.<perfil>.api_key` |
+| `workspace use` | Bind an authorized workspace to the profile. | `<workspace-id>` | `{ account, workspace }` | 3, 4, 5, 6, 7 | `clickup.<perfil>.api_key` |
+| `whoami` | Validate the API key and show the user. | | `{ account, user }` | 3, 4, 5, 6 | `clickup.<perfil>.api_key` |
 | `tui` | Open the terminal interface (Overview and About). | `--tab <tab>` | não se aplica | 8 | |
 | `about` | Show version, executable, runtime, platform and credits. | | `{ bin, title, version, description, author, site, repository, license, executable, runtime, platform, pid, dataDir, credits[] }` | | |
 | `config list` | List every key with its effective value. | | `{ settings }` | 3 | |
@@ -58,6 +68,12 @@ ClickUp localmente: só settings, perfis e credenciais.
 | `skill` | Print the embedded documentation, whole or by topic. | `<topic>` | `{ topic, markdown }` | 6 | |
 | `doctor` | Check runtime, terminal, settings, key source and vault readability. | | `{ ok, checks[] }` | 1 | |
 | `completion` | Print a completion script for bash, zsh or fish. | `<shell>` | não se aplica | 2 | |
+
+### Global options
+
+| Option | Função |
+| --- | --- |
+| `--account <profile>` | perfil do ClickUp; padrão `PROMOVAWEB_CLICKUPFY_ACCOUNT` e depois o perfil ativo |
 
 ### Screens
 
@@ -93,11 +109,17 @@ ClickUp localmente: só settings, perfis e credenciais.
 | `tui.theme` | `enum` (`night`, `day`) | `night` | paleta da TUI |
 | `telemetry.enabled` | `boolean` | `false` | reservado; nada é enviado |
 
+### Credentials
+
+| Nome | Usada por | Como obter |
+| --- | --- | --- |
+| `clickup.<perfil>.api_key` | todos os commands e tools que chamam o ClickUp | ClickUp, Settings, Apps, API Token; gravada por `setup` ou importada do config antigo |
+
 ## Specs
 
 | ID | Título | Status |
 | --- | --- | --- |
-| 0001 | Perfis, API keys e client do ClickUp | draft |
+| 0001 | Perfis, API keys e client do ClickUp | done |
 | 0002 | Servidor MCP compatível | draft |
 | 0003 | Spaces, folders e lists | draft |
 | 0004 | Tarefas e tags | draft |
@@ -128,6 +150,8 @@ ClickUp localmente: só settings, perfis e credenciais.
   `agent init/skill`, `api` e `task delete` continuam). O texto do código
   passa a ser em inglês, como exige o Termfy; a documentação segue em
   português.
-- 2026-11-13: dúvida aberta para a spec 0001: perfis (nome, workspace,
-  contexto) em `settings.json` ou em arquivo próprio; a API key de cada
-  perfil vai para o cofre com um nome por perfil.
+- 2026-11-13: checkpoint 1 aprovado. Perfis em `~/.clickupfy/accounts.json`
+  e API key de cada perfil no cofre como `clickup.<perfil>.api_key`.
+- 2026-11-13: o `--json` adota o envelope `{ ok, command, data }` do
+  Termfy; scripts e skills do Hub que leem o objeto cru migram na spec 0012.
+- 2026-11-13: spec 0001 (Perfis, API keys e client do ClickUp) closed.

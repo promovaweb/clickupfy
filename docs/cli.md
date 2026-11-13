@@ -23,6 +23,7 @@
 | `--json` | Saída em JSON com envelope estável. Erros também saem em JSON, em stdout. |
 | `--skill [topic]` | Documentação embutida. Topics: `cli`, `tui`, `mcp`, `config`, `exit-codes`, `reference`. |
 | `--opencli` | Descrição OpenCLI 0.1 da árvore de commands em JSON. |
+| `--account <profile>` | Perfil do ClickUp usado pelo command. O padrão vem de `PROMOVAWEB_CLICKUPFY_ACCOUNT` e, depois, do perfil ativo. |
 | `--no-color` | Desliga cores ANSI. `NO_COLOR=1` tem o mesmo efeito. |
 
 ## Saída em texto e em JSON
@@ -46,6 +47,32 @@ Em erro:
 
 O exit code do processo é sempre o mesmo de `error.code`. Um agente deve ler
 os dois: o envelope para a mensagem, o code para a classe da falha.
+
+## Perfis e workspaces
+
+Um perfil reúne o nome local, o usuário do ClickUp, um workspace e a API
+key guardada no cofre. Estes commands criam, consultam e trocam o perfil
+usado pelos demais commands.
+
+| Command | Função | Options | data no `--json` | Exit codes |
+| --- | --- | --- | --- | --- |
+| `setup` (alias `install`) | Valida a API key em `GET /user`, associa um workspace e torna o perfil ativo. Pede a chave sem eco e o workspace em TTY. | `--api-key <key>`, `--token <key>`, `--name <name>`, `--workspace <id>`, `--non-interactive` | `{ account, user, workspace, path }` | 2, 4, 5, 6, 7, 130 |
+| `status` | Mostra o perfil resolvido, o caminho do `accounts.json`, se é o ativo, a chave mascarada, o usuário e o workspace. Não chama a API. | nenhuma | `{ config, account, active, name, apiKey, user, workspace }` | 3, 4, 6 |
+| `whoami` | Valida a API key em `GET /user` e mostra id, username e email. | nenhuma | `{ account, user }` | 3, 4, 5, 6 |
+| `account list` (alias `ls`) | Lista `id`, `active`, `name`, `user`, `workspace` e `workspace_id`, sem chaves. | nenhuma | `{ accounts[] }` | 3 |
+| `account show [profile]` | Mostra os metadados de um perfil com a chave mascarada. Sem argument, usa o perfil resolvido. | nenhuma | `{ account }` | 3, 4, 6 |
+| `account use <profile>` | Define o perfil ativo. | nenhuma | `{ activeAccount }` | 3, 6, 7 |
+| `account remove <profile>` (alias `rm`) | Apaga os metadados e a credencial do perfil. | `--yes` | `{ account, removed }` | 2, 3, 6, 7, 130 |
+| `account import` | Importa os perfis do config antigo do ClickUpfy 0.9.0 para o cofre. | `--force` | `{ source, imported[], skipped[], activeAccount }` | 3, 6, 7 |
+| `workspace list` (alias `ls`) | Lista os workspaces que a API key alcança, marcando o associado ao perfil. | nenhuma | `{ workspaces[] }` | 3, 4, 5, 6 |
+| `workspace use <workspace-id>` | Associa ao perfil um workspace da lista. | nenhuma | `{ account, workspace }` | 3, 4, 5, 6, 7 |
+
+O perfil usado por um command é resolvido nesta ordem: a option
+`--account <profile>`, a variável `PROMOVAWEB_CLICKUPFY_ACCOUNT` e o perfil
+ativo em `accounts.json`. Sem nenhum deles o command sai com 4 e sugere
+`{{bin}} setup`; um id inexistente sai com 6. A API key fica no cofre como
+`clickup.<perfil>.api_key` e nunca aparece na saída: `status` e
+`account show` mostram a versão mascarada e `account list` a omite.
 
 ## Commands do esqueleto
 

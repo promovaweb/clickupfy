@@ -5,7 +5,8 @@
  *
  * - `settings.json`     preferences in plain text;
  * - `credentials.json`  secrets encrypted with AES-256-GCM;
- * - `master.key`        master key created on first write (mode 0600).
+ * - `master.key`        master key created on first write (mode 0600);
+ * - `accounts.json`     ClickUp profiles without secrets (mode 0600).
  *
  * The `<BIN>_HOME` variable overrides the root, useful in tests and CI.
  */
@@ -34,6 +35,7 @@ export const paths = {
   settings: () => join(baseDir(), "settings.json"),
   credentials: () => join(baseDir(), "credentials.json"),
   masterKey: () => join(baseDir(), "master.key"),
+  accounts: () => join(baseDir(), "accounts.json"),
 };
 
 /** Ensures the base directory exists with mode 0700. Returns its path. */

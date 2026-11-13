@@ -135,6 +135,13 @@ export const GLOBAL_OPTIONS: readonly OptionDefinition[] = Object.freeze([
     recursive: true,
   },
   {
+    name: "--account",
+    argument: { name: "profile" },
+    description:
+      "ClickUp profile to use. Defaults to PROMOVAWEB_CLICKUPFY_ACCOUNT, then to the active profile.",
+    recursive: true,
+  },
+  {
     name: "--no-color",
     description: "Disable ANSI colors in text output. Same as NO_COLOR=1.",
     recursive: true,

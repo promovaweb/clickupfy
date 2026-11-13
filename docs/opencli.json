@@ -72,12 +72,545 @@
         "recursive": true
       },
       {
+        "name": "--account",
+        "description": "ClickUp profile to use. Defaults to PROMOVAWEB_CLICKUPFY_ACCOUNT, then to the active profile.",
+        "recursive": true,
+        "arguments": [
+          {
+            "name": "profile",
+            "required": true,
+            "arity": {
+              "minimum": 1,
+              "maximum": 1
+            }
+          }
+        ]
+      },
+      {
         "name": "--no-color",
         "description": "Disable ANSI colors in text output. Same as NO_COLOR=1.",
         "recursive": true
       }
     ],
     "commands": [
+      {
+        "name": "setup",
+        "description": "Configure a ClickUp API key and bind the profile to a workspace.",
+        "aliases": [
+          "install"
+        ],
+        "options": [
+          {
+            "name": "--api-key",
+            "description": "Personal ClickUp API key (pk_...). Asked without echo on a terminal.",
+            "arguments": [
+              {
+                "name": "key",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--token",
+            "description": "Compatible alias for --api-key.",
+            "arguments": [
+              {
+                "name": "key",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--name",
+            "description": "Local profile name, normalized to kebab-case. Defaults to the ClickUp username.",
+            "arguments": [
+              {
+                "name": "name",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--workspace",
+            "description": "Workspace to bind. Required off a TTY when the key reaches several.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--non-interactive",
+            "description": "Never prompt; fail with exit code 2 when a value is missing."
+          }
+        ],
+        "examples": [
+          "clickupfy setup",
+          "clickupfy setup --api-key \"$CLICKUP_API_KEY\" --name work --workspace 9007154145 --non-interactive --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 4,
+            "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+          },
+          {
+            "code": 5,
+            "description": "NETWORK_OR_API: Network failure or unexpected API response."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          },
+          {
+            "code": 7,
+            "description": "PERMISSION: Permission denied on the file system."
+          },
+          {
+            "code": 130,
+            "description": "INTERRUPTED: Input cancelled or process interrupted."
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "description": "Show the resolved profile and its configuration.",
+        "examples": [
+          "clickupfy status",
+          "clickupfy status --account work --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 3,
+            "description": "CONFIG: settings.json missing, invalid or unknown key."
+          },
+          {
+            "code": 4,
+            "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          }
+        ]
+      },
+      {
+        "name": "account",
+        "description": "Manage local ClickUp profiles.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List profiles without API keys.",
+            "aliases": [
+              "ls"
+            ],
+            "examples": [
+              "clickupfy account list",
+              "clickupfy account ls --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              }
+            ]
+          },
+          {
+            "name": "show",
+            "description": "Show safe metadata of a profile, with the API key masked.",
+            "arguments": [
+              {
+                "name": "profile",
+                "description": "Profile id. Defaults to the resolved profile.",
+                "required": false
+              }
+            ],
+            "examples": [
+              "clickupfy account show",
+              "clickupfy account show work --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "use",
+            "description": "Set the active profile.",
+            "arguments": [
+              {
+                "name": "profile",
+                "description": "Profile id.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy account use work"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          },
+          {
+            "name": "remove",
+            "description": "Remove a profile and its API key from the vault.",
+            "aliases": [
+              "rm"
+            ],
+            "arguments": [
+              {
+                "name": "profile",
+                "description": "Profile id.",
+                "required": true
+              }
+            ],
+            "options": [
+              {
+                "name": "--yes",
+                "description": "Confirm without a prompt. Required off a TTY."
+              }
+            ],
+            "examples": [
+              "clickupfy account remove old-profile --yes"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
+          },
+          {
+            "name": "import",
+            "description": "Import profiles from the ClickUpfy 0.9.0 config file into the vault.",
+            "options": [
+              {
+                "name": "--force",
+                "description": "Replace profiles that already exist instead of skipping them."
+              }
+            ],
+            "examples": [
+              "clickupfy account import",
+              "clickupfy account import --force --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy account list",
+          "clickupfy account use work"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "workspace",
+        "description": "Query and bind ClickUp workspaces.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List workspaces the API key can reach.",
+            "aliases": [
+              "ls"
+            ],
+            "examples": [
+              "clickupfy workspace list",
+              "clickupfy workspace ls --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "use",
+            "description": "Bind an authorized workspace to the profile.",
+            "arguments": [
+              {
+                "name": "workspace-id",
+                "description": "Workspace id from workspace list.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy workspace use 9007154145"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy workspace list"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "whoami",
+        "description": "Validate the API key and show the authenticated user.",
+        "examples": [
+          "clickupfy whoami",
+          "clickupfy whoami --json"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          },
+          {
+            "code": 3,
+            "description": "CONFIG: settings.json missing, invalid or unknown key."
+          },
+          {
+            "code": 4,
+            "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+          },
+          {
+            "code": 5,
+            "description": "NETWORK_OR_API: Network failure or unexpected API response."
+          },
+          {
+            "code": 6,
+            "description": "NOT_FOUND: Requested resource does not exist."
+          }
+        ]
+      },
       {
         "name": "tui",
         "description": "Open the terminal interface (Overview and About). Requires a TTY.",
@@ -823,7 +1356,8 @@
       "clickupfy",
       "clickupfy about --json",
       "clickupfy config set output.format json",
-      "clickupfy credentials set openai.api_key",
+      "clickupfy setup",
+      "clickupfy status --json",
       "clickupfy mcp",
       "clickupfy --skill"
     ],

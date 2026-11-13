@@ -22,6 +22,7 @@ Binários por plataforma na GitHub Release; o pacote `@promovaweb/clickupfy` vir
 
 - [ ] Wrapper npm `#termfy-release`
 - [ ] Remover `legacy/` e atualizar docs `#termfy-docs`
+- [ ] Scripts e skills do Hub leem `.data` do envelope `--json` `#termfy-docs`
 - [ ] Release 1.0.0 `#termfy-release`
 
 ## Tests
