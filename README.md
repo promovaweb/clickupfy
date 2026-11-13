@@ -1,10 +1,8 @@
 <p align="center">
-  <a href="https://promovaweb.com">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://promovaweb.com/promovaweb-logo-dark-586.png">
-      <img alt="Promovaweb" src="https://promovaweb.com/promovaweb-logo-light-586.png" width="240">
-    </picture>
-  </a>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/promovaweb/clickupfy/main/brand/logo/logo-dark.png">
+    <img alt="ClickUpfy" src="https://raw.githubusercontent.com/promovaweb/clickupfy/main/brand/logo/logo-light.png" width="360">
+  </picture>
 </p>
 
 <h1 align="center">ClickUpfy</h1>
@@ -12,6 +10,8 @@
 <p align="center">
   Trabalhe no ClickUp pelo terminal e pelos seus agentes de IA.
 </p>
+
+<p align="center">Um projeto da <a href="https://promovaweb.com">Promovaweb</a></p>
 
 <p align="center">
   <a href="https://github.com/promovaweb/clickupfy/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/promovaweb/clickupfy"></a>
