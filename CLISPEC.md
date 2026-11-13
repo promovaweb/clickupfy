@@ -225,7 +225,7 @@ ClickUp localmente: só settings, perfis e credenciais.
 | 0009 | Catálogo genérico da API | done |
 | 0010 | Integração com agentes e manutenção | done |
 | 0011 | Overview do ClickUp na TUI | done |
-| 0012 | Distribuição, documentação e merge | in_progress |
+| 0012 | Distribuição, documentação e merge | done |
 
 ## Notes
 
@@ -264,3 +264,4 @@ ClickUp localmente: só settings, perfis e credenciais.
   descrito em `docs/cli.md`, que o `docs:check` confere com o registry.
 - 2026-11-13: `legacy/` removido; a paridade com o 0.9.0 está nas specs
   0001 a 0011.
+- 2026-11-13: spec 0012 (Distribuição, documentação e merge) closed.

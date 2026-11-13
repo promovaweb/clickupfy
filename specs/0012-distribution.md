@@ -1,6 +1,6 @@
 # 0012 Distribuição, documentação e merge
 
-Status: in_progress
+Status: done
 
 ## Goal
 
@@ -56,7 +56,7 @@ Nenhuma mudança de superfície.
 - [x] Manual `docs/user/` portado e ebook 2.0.0 `#termfy-docs`
 - [x] Remover `legacy/` `#termfy-docs`
 - [x] Merge na `main` e release 1.0.0 `#termfy-release`
-- [ ] Pacote `@promovaweb/clickupfy` 1.x publicado no npm `#termfy-release`
+- [x] Pacote `@promovaweb/clickupfy` 1.x publicado no npm `#termfy-release`
 
 ## Tests
 
@@ -65,8 +65,8 @@ Nenhuma mudança de superfície.
 - [x] Hash divergente sai com 1 sem gravar o binário
 - [x] Versões de `package.json` e `npm/package.json` iguais
 - [x] `bun run validate` verde sem `legacy/`
-- [ ] `npm i -g @promovaweb/clickupfy@1.0.0` instala e roda
-  `clickupfy --version`
+- [x] `npm install @promovaweb/clickupfy@1.0.1` instala, baixa o binário e
+  roda `clickupfy --version`
 
 ## Notes
 
@@ -82,3 +82,6 @@ Nenhuma mudança de superfície.
   no PUT (o `NPM_TOKEN` do repositório parece vencido). A 1.0.1 limpa o
   `dist/` antes do build cruzado (a 1.0.0 levou um asset `clickupfy` a mais)
   e publica com `--provenance` e OIDC, de forma idempotente.
+- 2026-11-13: com o `NPM_TOKEN` renovado, a 1.0.1 e depois a 1.0.2 foram
+  publicadas no npm; a 1.0.2 traz o README próprio do pacote e o
+  `CONTRIBUTING.md`. Spec fechada.

@@ -4,6 +4,13 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.0.3](https://github.com/promovaweb/clickupfy/compare/v1.0.2...v1.0.3) (2026-11-13)
+
+### Documentação
+
+- Fecha a spec 0012 (distribuição, documentação e merge) no `CLISPEC.md`,
+  com o pacote npm publicado e a instalação conferida.
+
 ## [1.0.2](https://github.com/promovaweb/clickupfy/compare/v1.0.1...v1.0.2) (2026-11-13)
 
 ### Documentação
