@@ -612,6 +612,302 @@
         ]
       },
       {
+        "name": "space",
+        "description": "Query ClickUp spaces.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the spaces of the workspace bound to the profile.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--archived",
+                "description": "Include archived spaces."
+              }
+            ],
+            "examples": [
+              "clickupfy space list",
+              "clickupfy space ls --archived --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy space list"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "folder",
+        "description": "Query ClickUp folders.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the folders of a space.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--space",
+                "description": "Space id. In MCP, defaults to the pinned space.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--archived",
+                "description": "Include archived folders."
+              }
+            ],
+            "examples": [
+              "clickupfy folder list --space 90070363783"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy folder list --space <id>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
+        "name": "list",
+        "description": "Query ClickUp lists.",
+        "commands": [
+          {
+            "name": "list",
+            "description": "List the lists of a folder, or the folderless lists of a space.",
+            "aliases": [
+              "ls"
+            ],
+            "options": [
+              {
+                "name": "--folder",
+                "description": "Folder id. Takes precedence over the space.",
+                "arguments": [
+                  {
+                    "name": "folder-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--space",
+                "description": "Space id, for lists without a folder.",
+                "arguments": [
+                  {
+                    "name": "space-id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--archived",
+                "description": "Include archived lists."
+              }
+            ],
+            "examples": [
+              "clickupfy list list --folder 123",
+              "clickupfy list ls --space 90070363783 --json"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          },
+          {
+            "name": "get",
+            "description": "Get a list and the statuses available for its tasks.",
+            "arguments": [
+              {
+                "name": "list-id",
+                "description": "List id.",
+                "required": true
+              }
+            ],
+            "examples": [
+              "clickupfy list get 901328052926"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              }
+            ]
+          }
+        ],
+        "examples": [
+          "clickupfy list list --folder <id>",
+          "clickupfy list get <list-id>"
+        ],
+        "exitCodes": [
+          {
+            "code": 0,
+            "description": "SUCCESS: Operation completed."
+          },
+          {
+            "code": 1,
+            "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+          },
+          {
+            "code": 2,
+            "description": "USAGE: Invalid arguments, options or subcommand."
+          }
+        ]
+      },
+      {
         "name": "tui",
         "description": "Open the terminal interface (Overview and About). Requires a TTY.",
         "options": [
@@ -1236,11 +1532,324 @@
           {
             "name": "--list",
             "description": "Instead of starting the server, list registered tools, resources and prompts and exit."
+          },
+          {
+            "name": "--list-id",
+            "description": "Pin the project list (same as --list <id> in mcp serve).",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--workspace",
+            "description": "Pin the workspace; the profile must be bound to it.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--space",
+            "description": "Pin the project space.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--folder",
+            "description": "Pin the project folder.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--sprint-folder",
+            "description": "Pin the Sprint folder.",
+            "arguments": [
+              {
+                "name": "id",
+                "required": true,
+                "arity": {
+                  "minimum": 1,
+                  "maximum": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "--read-only",
+            "description": "Register only the tools that do not change ClickUp or the local profiles."
+          }
+        ],
+        "commands": [
+          {
+            "name": "serve",
+            "description": "Start the MCP server pinned to a project, as in ClickUpfy 0.9.0 client configs.",
+            "options": [
+              {
+                "name": "--list",
+                "description": "Pin the project list.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--workspace",
+                "description": "Pin the workspace; the profile must be bound to it.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--space",
+                "description": "Pin the project space.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--folder",
+                "description": "Pin the project folder.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--sprint-folder",
+                "description": "Pin the Sprint folder.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--read-only",
+                "description": "Register only the tools that do not change ClickUp or the local profiles."
+              },
+              {
+                "name": "--describe",
+                "description": "List the registered tools for this scope and exit."
+              }
+            ],
+            "examples": [
+              "clickupfy mcp serve --account work --space 90070363783 --list 901328052926",
+              "clickupfy mcp serve --list 901328052926 --read-only --describe"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 9,
+                "description": "MCP: The MCP server failed to start or lost the stdio transport."
+              }
+            ]
+          },
+          {
+            "name": "setup",
+            "description": "Write a pinned MCP server entry to the project files of Claude Code, Codex, Gemini and OpenCode.",
+            "options": [
+              {
+                "name": "--name",
+                "description": "Unique MCP server name in the project.",
+                "arguments": [
+                  {
+                    "name": "name",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--space",
+                "description": "Space of the profile's workspace.",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--list",
+                "description": "List inside the space (folderless or in a folder).",
+                "arguments": [
+                  {
+                    "name": "id",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--clients",
+                "description": "Comma-separated: claude-code, codex, gemini, opencode. Default: all.",
+                "arguments": [
+                  {
+                    "name": "clients",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--project",
+                "description": "Project directory. Default: the current directory.",
+                "arguments": [
+                  {
+                    "name": "dir",
+                    "required": true,
+                    "arity": {
+                      "minimum": 1,
+                      "maximum": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "--read-only",
+                "description": "Configure only read tools."
+              },
+              {
+                "name": "--force",
+                "description": "Replace an entry with the same name."
+              },
+              {
+                "name": "--non-interactive",
+                "description": "Never prompt; require --name, --account, --space and --list."
+              }
+            ],
+            "examples": [
+              "clickupfy mcp setup",
+              "clickupfy mcp setup --name website --account work --space 90070363783 --list 901328052926 --clients claude-code,codex --non-interactive"
+            ],
+            "exitCodes": [
+              {
+                "code": 0,
+                "description": "SUCCESS: Operation completed."
+              },
+              {
+                "code": 1,
+                "description": "GENERIC_ERROR: Unexpected failure without a specific classification."
+              },
+              {
+                "code": 2,
+                "description": "USAGE: Invalid arguments, options or subcommand."
+              },
+              {
+                "code": 3,
+                "description": "CONFIG: settings.json missing, invalid or unknown key."
+              },
+              {
+                "code": 4,
+                "description": "CREDENTIALS: credentials.json unreadable, master key missing or credential not found."
+              },
+              {
+                "code": 5,
+                "description": "NETWORK_OR_API: Network failure or unexpected API response."
+              },
+              {
+                "code": 6,
+                "description": "NOT_FOUND: Requested resource does not exist."
+              },
+              {
+                "code": 7,
+                "description": "PERMISSION: Permission denied on the file system."
+              },
+              {
+                "code": 130,
+                "description": "INTERRUPTED: Input cancelled or process interrupted."
+              }
+            ]
           }
         ],
         "examples": [
           "clickupfy mcp",
-          "clickupfy mcp --list --json"
+          "clickupfy mcp --list --json",
+          "clickupfy mcp --list-id 901328052926 --read-only"
         ],
         "exitCodes": [
           {

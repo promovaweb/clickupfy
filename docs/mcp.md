@@ -28,8 +28,40 @@ Para desenvolvimento, sem compilar: `"command": "bun", "args": ["run", "src/main
 | `config_get` | `key` | valor da key; `isError` quando não existe |
 | `credentials_status` | nenhuma | file, master key source, count e names |
 
-Nenhuma tool devolve o valor de uma credencial, e nenhuma tool grava. Escrita
-continua no CLI, onde há confirmação humana.
+Nenhuma dessas tools devolve o valor de uma credencial ou grava arquivos.
+
+## Escopo fixado
+
+`{{bin}} mcp serve --account <perfil> --workspace <id> --space <id> --list <id>`
+fixa o perfil e parte da hierarquia, como no ClickUpfy 0.9.0. As tools usam
+esses ids como padrão e recusam outro id com `isError`. Toda tool do ClickUp
+aceita `account` opcional; num servidor fixado, outro perfil é recusado, e o
+workspace fixado precisa ser o do perfil. Com `--read-only`, as tools de
+escrita não aparecem em `tools/list`. Falhas esperadas voltam com
+`isError: true` e a mensagem, seguida do exit code equivalente do CLI.
+Tools destrutivas exigem `confirm: true`.
+
+## Tools de perfil e contexto
+
+| Tool | Entrada | Saída | Efeito |
+| --- | --- | --- | --- |
+| `clickupfy_mcp_context` | `account?` | `{ account, workspace, readOnly, scope }` com os ids fixados | read |
+| `clickupfy_accounts_list` | nenhuma | `{ accounts[] }`, sem API keys | read |
+| `clickupfy_whoami` | `account?` | `{ account, workspace, user }` | network |
+| `clickupfy_workspaces_list` | `account?` | `{ workspaces[] }` | network |
+| `clickupfy_account_use` | `account` | `{ activeAccount }`; só sem perfil fixado | write |
+| `clickupfy_workspace_use` | `account?`, `workspaceId` | `{ account, workspace }`; só sem perfil nem workspace fixados | write |
+
+## Tools da hierarquia
+
+| Tool | Entrada | Saída | Efeito |
+| --- | --- | --- | --- |
+| `clickupfy_spaces_list` | `account?`, `archived?` | `{ spaces[] }` | read |
+| `clickupfy_folders_list` | `account?`, `spaceId?` (padrão: space fixado), `archived?` | `{ folders[] }` | read |
+| `clickupfy_lists_list` | `account?`, `folderId?`, `spaceId?`, `archived?` | `{ lists[] }` | read |
+| `clickupfy_list_get` | `account?`, `listId?` (padrão: list fixada) | a list com `statuses[]` | read |
+
+<!-- clickupfy:families -->
 
 ## Resources
 

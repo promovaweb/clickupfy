@@ -19,6 +19,8 @@ import { statusCommand } from "./commands/status.ts";
 import { accountCommand } from "./commands/account.ts";
 import { workspaceCommand } from "./commands/workspace.ts";
 import { whoamiCommand } from "./commands/whoami.ts";
+import { buildCommands } from "../operations/cli.ts";
+import { groups, operations } from "../operations/index.ts";
 import type { Command } from "./registry.ts";
 
 export const root: Command = {
@@ -30,6 +32,7 @@ export const root: Command = {
     accountCommand,
     workspaceCommand,
     whoamiCommand,
+    ...buildCommands(operations, groups),
     tuiCommand, aboutCommand, configCommand, credentialsCommand, mcpCommand, createSkillCommand(() => root), doctorCommand, createCompletionCommand(() => root)],
   examples: [
     `${manifest.bin}`,

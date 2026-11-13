@@ -74,6 +74,45 @@ ativo em `accounts.json`. Sem nenhum deles o command sai com 4 e sugere
 `clickup.<perfil>.api_key` e nunca aparece na saída: `status` e
 `account show` mostram a versão mascarada e `account list` a omite.
 
+## Hierarquia
+
+Os commands abaixo consultam a hierarquia do workspace associado ao perfil.
+Listas saem como tabela em texto e dentro de um objeto no `--json`.
+
+| Command | Função | Options | data no `--json` |
+| --- | --- | --- | --- |
+| `space list` (alias `ls`) | Spaces do workspace do perfil. | `--archived` | `{ spaces[] }` |
+| `folder list` (alias `ls`) | Folders de um space. | `--space <id>` (obrigatória no CLI), `--archived` | `{ folders[] }` |
+| `list list` (alias `ls`) | Lists de um folder, ou lists sem folder de um space. | `--folder <id>` ou `--space <id>`, `--archived` | `{ lists[] }` |
+| `list get <list-id>` | Uma list e os status disponíveis para as tarefas. | nenhuma | a list da API, com `statuses[]` |
+
+Sem `--folder` nem `--space`, `list list` sai com 2. Um id inexistente sai
+com 6.
+
+<!-- clickupfy:families -->
+
+## Servidor MCP
+
+| Command | Função |
+| --- | --- |
+| `mcp` | Inicia o servidor stdio. `--list` descreve tools, resources e prompts; `--list-id <id>` fixa a list do projeto. |
+| `mcp serve` | Entrada do ClickUpfy 0.9.0, mantida para as configs existentes. Aqui `--list <id>` fixa a list do projeto e `--describe` lista as tools do escopo. |
+| `mcp setup` | Grava uma entrada fixada no `.mcp.json`, `.codex/config.toml`, `.gemini/settings.json` e `opencode.json` do projeto. |
+
+As flags de escopo valem para `mcp` e `mcp serve`: `--account <profile>`,
+`--workspace <id>`, `--space <id>`, `--folder <id>`, `--sprint-folder <id>`
+e `--read-only`. Um servidor fixado usa esses ids como padrão das tools e
+recusa outro id enviado pelo agente; com `--read-only`, as tools que alteram
+o ClickUp ou os perfis locais não são registradas.
+
+`mcp setup` escolhe perfil, space e list (perguntando no terminal, ou por
+`--account`, `--space` e `--list`), aceita `--name`, `--clients`
+(`claude-code`, `codex`, `gemini`, `opencode`), `--project`,
+`--read-only`, `--force` e `--non-interactive`, preserva as outras
+entradas e grava só o id do perfil, nunca a API key. Uma entrada com o mesmo
+nome exige `--force`; fora de TTY, sem as flags, sai com 2. O `--json`
+devolve `{ name, account, workspace, space, list, args[], files[] }`.
+
 ## Commands do esqueleto
 
 | Command | Função |
@@ -82,7 +121,7 @@ ativo em `accounts.json`. Sem nenhum deles o command sai com 4 e sugere
 | `about` | Version, executable, runtime, platform e credits. |
 | `config list\|get\|set\|unset\|path\|schema` | Preferências em settings.json. |
 | `credentials set\|get\|list\|remove\|status\|clear\|rotate-key` | Cofre cifrado em credentials.json. |
-| `mcp [--list]` | Servidor MCP via stdio, ou listagem do que ele registra. |
+| `mcp [--list]` | Servidor MCP via stdio, ou listagem do que ele registra; veja "Servidor MCP". |
 | `skill [topic]` | Mesmo efeito de `--skill`. |
 | `doctor` | Confere runtime, TTY, pasta, settings, chave e cofre. |
 | `completion <shell>` | Gera script para `bash`, `zsh` ou `fish`. |

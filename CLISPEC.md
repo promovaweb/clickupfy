@@ -64,7 +64,13 @@ ClickUp localmente: só settings, perfis e credenciais.
 | `credentials status` | Show file, master key source and number of credentials. | | `{ file, keySource, count }` | 4 | |
 | `credentials clear` | Delete credentials.json entirely. | `--yes` | `{ cleared }` | 7, 130 | |
 | `credentials rotate-key` | Re-encrypt the vault with a new master key. | `--from-env` | `{ rotated }` | 4, 7 | |
-| `mcp` | Start the MCP server (stdio). | `--list` | não se aplica | 9 | |
+| `mcp` | Start the MCP server (stdio). | `--list`, `--list-id <id>`, `--workspace <id>`, `--space <id>`, `--folder <id>`, `--sprint-folder <id>`, `--read-only` | catálogo com `--list` | 9 | |
+| `space list` (alias `ls`) | List the spaces of the workspace bound to the profile. | `--archived` | `{ spaces[] }` | 3, 4, 5, 6 | `clickup.<perfil>.api_key` |
+| `folder list` (alias `ls`) | List the folders of a space. | `--space <id>`, `--archived` | `{ folders[] }` | 2, 3, 4, 5, 6 | `clickup.<perfil>.api_key` |
+| `list list` (alias `ls`) | List the lists of a folder, or the folderless lists of a space. | `--folder <id>`, `--space <id>`, `--archived` | `{ lists[] }` | 2, 3, 4, 5, 6 | `clickup.<perfil>.api_key` |
+| `list get` | Get a list and the statuses available for its tasks. | `<list-id>` | list da API | 3, 4, 5, 6 | `clickup.<perfil>.api_key` |
+| `mcp serve` | Start the MCP server pinned to a project (ClickUpfy 0.9.0 entry). | `--list <id>`, `--workspace <id>`, `--space <id>`, `--folder <id>`, `--sprint-folder <id>`, `--read-only`, `--describe` | catálogo com `--describe` | 9 | `clickup.<perfil>.api_key` |
+| `mcp setup` | Write a pinned MCP server entry to the project client files. | `--name`, `--space`, `--list`, `--clients`, `--project`, `--read-only`, `--force`, `--non-interactive` | `{ name, account, workspace, space, list, args[], files[] }` | 2, 3, 4, 5, 6, 7, 130 | `clickup.<perfil>.api_key` |
 | `skill` | Print the embedded documentation, whole or by topic. | `<topic>` | `{ topic, markdown }` | 6 | |
 | `doctor` | Check runtime, terminal, settings, key source and vault readability. | | `{ ok, checks[] }` | 1 | |
 | `completion` | Print a completion script for bash, zsh or fish. | `<shell>` | não se aplica | 2 | |
@@ -93,6 +99,16 @@ ClickUp localmente: só settings, perfis e credenciais.
 | tool | `config_get` | valor de uma key | `read` |
 | tool | `credentials_status` | nomes salvos e origem da master key, sem valores | `read` |
 | tool | `doctor` | diagnóstico de runtime, terminal e configuração | `read` |
+| tool | `clickupfy_mcp_context` | perfil, workspace e escopo fixados | `read` |
+| tool | `clickupfy_accounts_list` | perfis locais sem API keys | `read` |
+| tool | `clickupfy_whoami` | usuário autenticado | `network` |
+| tool | `clickupfy_workspaces_list` | workspaces autorizados | `network` |
+| tool | `clickupfy_account_use` | define o perfil padrão; só sem perfil fixado | `write` |
+| tool | `clickupfy_workspace_use` | associa outro workspace; só sem perfil e workspace fixados | `write` |
+| tool | `clickupfy_spaces_list` | spaces do workspace | `network` |
+| tool | `clickupfy_folders_list` | folders de um space | `network` |
+| tool | `clickupfy_lists_list` | lists de um folder ou space | `network` |
+| tool | `clickupfy_list_get` | list e seus status | `network` |
 | resource | `clickupfy://about` | identidade e runtime em JSON | `read` |
 | resource | `clickupfy://exit-codes` | tabela de exit codes em JSON | `read` |
 | resource | `clickupfy://skill` | documentação completa em Markdown | `read` |
@@ -120,8 +136,8 @@ ClickUp localmente: só settings, perfis e credenciais.
 | ID | Título | Status |
 | --- | --- | --- |
 | 0001 | Perfis, API keys e client do ClickUp | done |
-| 0002 | Servidor MCP compatível | draft |
-| 0003 | Spaces, folders e lists | draft |
+| 0002 | Servidor MCP compatível | done |
+| 0003 | Spaces, folders e lists | done |
 | 0004 | Tarefas e tags | draft |
 | 0005 | Checklists e comentários | draft |
 | 0006 | Sprints | draft |
@@ -155,3 +171,5 @@ ClickUp localmente: só settings, perfis e credenciais.
 - 2026-11-13: o `--json` adota o envelope `{ ok, command, data }` do
   Termfy; scripts e skills do Hub que leem o objeto cru migram na spec 0012.
 - 2026-11-13: spec 0001 (Perfis, API keys e client do ClickUp) closed.
+- 2026-11-13: spec 0002 (Servidor MCP compatível) closed.
+- 2026-11-13: spec 0003 (Spaces, folders e lists) closed.
