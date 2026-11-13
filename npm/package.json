@@ -1,6 +1,6 @@
 {
   "name": "@promovaweb/clickupfy",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
   "license": "UNLICENSED",
   "author": "Promovaweb",

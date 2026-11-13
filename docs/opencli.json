@@ -3,7 +3,7 @@
   "opencli": "0.1",
   "info": {
     "title": "ClickUpfy",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "summary": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
     "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking. Without arguments it opens the TUI; \"clickupfy mcp\" starts the MCP server over stdio; any other command runs as a CLI with text or --json output.",
     "contact": {

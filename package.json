@@ -1,6 +1,6 @@
 {
   "name": "clickupfy",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI, TUI and MCP stdio server to manage ClickUp Sprints, tasks, Docs and time tracking.",
   "type": "module",
   "private": true,
@@ -34,7 +34,8 @@
     "init": "bun run scripts/init.ts",
     "api:generate": "bun run scripts/generate-api.ts",
     "validate": "bun run typecheck && bun test && bun run skills:check && bun run opencli:check && bun run docs:check && bun run build",
-    "docs:check": "bun run scripts/check-docs.ts"
+    "docs:check": "bun run scripts/check-docs.ts",
+    "npm:readme": "bun run scripts/npm-readme.ts"
   },
   "engines": {
     "bun": ">=1.4.4"

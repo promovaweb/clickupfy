@@ -4,7 +4,8 @@ Toda alteração publicada sai com versão, changelog, tag e GitHub Release.
 
 1. Atualize `version` em `package.json` e em `npm/package.json` (SemVer, o
    mesmo valor; o teste `tests/npm-wrapper.test.ts` e o workflow conferem).
-2. Registre a mudança em `CHANGELOG.md`, no formato Keep a Changelog.
+2. Registre a mudança em `CHANGELOG.md`, no formato Keep a Changelog. Se o
+   `README.md` mudou, rode `bun run npm:readme` para atualizar `npm/README.md`.
 3. Rode `bun run validate`.
 4. Commit: `release: <bin> vX.Y.Z`.
 5. Tag: `git tag vX.Y.Z`.

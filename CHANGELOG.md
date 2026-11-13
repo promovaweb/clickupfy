@@ -4,6 +4,19 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.0.2](https://github.com/promovaweb/clickupfy/compare/v1.0.1...v1.0.2) (2026-11-13)
+
+### Documentação
+
+- README reescrito para quem usa: instalação, primeiros passos, exemplos por
+  área, uso com agentes, saída para scripts, arquivos locais e migração do
+  0.9.0.
+- `CONTRIBUTING.md` novo, com ambiente, organização do código, fluxo por
+  specs, regras, validação e release.
+- O pacote npm passa a publicar `npm/README.md`, gerado do README com links
+  absolutos por `bun run npm:readme`; a página do npm deixa de mostrar o
+  README do 0.9.0.
+
 ## [1.0.1](https://github.com/promovaweb/clickupfy/compare/v1.0.0...v1.0.1) (2026-11-13)
 
 ### Correções

@@ -55,6 +55,13 @@ describe("npm wrapper", () => {
     expect(npm.bin.clickupfy).toBe("bin/clickupfy.cjs");
   });
 
+  test("npm/README.md is generated from README.md", async () => {
+    const { buildNpmReadme } = await import("../scripts/npm-readme.ts");
+    const npmReadme = readFileSync(join(root, "npm", "README.md"), "utf8");
+    expect(npmReadme).toBe(buildNpmReadme(readFileSync(join(root, "README.md"), "utf8")));
+    expect(npmReadme).not.toMatch(/\]\((?!https?:|#)/);
+  });
+
   test("asset names follow the release build", () => {
     expect(assetName("linux", "x64")).toBe("clickupfy-linux-x64");
     expect(assetName("darwin", "arm64")).toBe("clickupfy-darwin-arm64");

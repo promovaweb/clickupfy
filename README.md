@@ -1,129 +1,131 @@
 # ClickUpfy
 
-CLI, TUI e servidor MCP da Promovaweb para trabalhar no ClickUp sem abrir o
-navegador: tarefas, subtarefas, tags, checklists, comentários, Sprints, Docs
-e time tracking, para pessoas no terminal, scripts com `--json` e agentes de
-IA pelo MCP. É um binário único em [Bun](https://bun.sh), feito com o
-framework [Termfy](https://github.com/promovaweb/termfy).
+[![npm](https://img.shields.io/npm/v/@promovaweb/clickupfy)](https://www.npmjs.com/package/@promovaweb/clickupfy)
+[![GitHub Release](https://img.shields.io/github/v/release/promovaweb/clickupfy)](https://github.com/promovaweb/clickupfy/releases/latest)
 
-| Modo | Entrada | Para quem |
+Trabalhe no ClickUp pelo terminal e pelos seus agentes de IA. O ClickUpfy é
+um binário único que lista, cria e atualiza tarefas, subtarefas, tags,
+checklists, comentários, Sprints, Docs e registros de tempo, com três formas
+de uso:
+
+| Modo | Como abrir | Para quê |
 | --- | --- | --- |
-| TUI | `clickupfy` sem argumentos, em terminal interativo | perfil, workspace e cronômetro de relance |
-| CLI | `clickupfy <command> [options]`, saída em texto ou `--json` | pessoas e scripts |
-| MCP | `clickupfy mcp` ou `clickupfy mcp serve --list <id>`, via stdio | agentes de IA (Claude Code, Codex, OpenCode, Gemini) |
+| **CLI** | `clickupfy <command>` | consultar e alterar o ClickUp no terminal, em texto ou `--json` para scripts |
+| **MCP** | `clickupfy mcp serve` | dar ao Claude Code, Codex, OpenCode ou Gemini as tools `clickupfy_*`, presas a um projeto |
+| **TUI** | `clickupfy` | ver perfil, workspace e cronômetro em execução de relance |
 
-As API keys ficam cifradas em `~/.clickupfy/credentials.json`, uma por
-perfil, e os perfis em `~/.clickupfy/accounts.json`. Nenhum command, tool ou
-tela mostra uma chave.
+As API keys ficam cifradas no seu computador e nenhum command, tool ou tela
+mostra uma chave.
 
 ## Instalação
 
 ```bash
-npm install -g @promovaweb/clickupfy   # baixa o binário da plataforma na primeira execução
-clickupfy setup                         # API key pessoal do ClickUp e workspace
-clickupfy whoami
+npm install -g @promovaweb/clickupfy
 ```
 
-Sem npm, baixe o binário da plataforma (`clickupfy-linux-x64`,
-`clickupfy-darwin-arm64`, `clickupfy-windows-x64.exe`...) na
-[GitHub Release](https://github.com/promovaweb/clickupfy/releases), confira
-o `SHA256SUMS` e coloque o arquivo no `PATH`. `clickupfy upgrade` atualiza
-as duas instalações.
+Na primeira execução, o pacote baixa o binário da sua plataforma da
+[GitHub Release](https://github.com/promovaweb/clickupfy/releases/latest),
+confere o `SHA256SUMS` e o guarda em cache. O Node.js 18.17 ou superior serve
+só para isso; o ClickUpfy em si não usa Node.
 
-## Vindo do ClickUpfy 0.9.0
+Sem npm, baixe o binário da plataforma na release (`clickupfy-linux-x64`,
+`clickupfy-linux-arm64`, `clickupfy-darwin-x64`, `clickupfy-darwin-arm64` ou
+`clickupfy-windows-x64.exe`), confira o hash no `SHA256SUMS`, renomeie para
+`clickupfy` e coloque no `PATH`.
 
-A versão 1.0 refaz o CLI sobre o Termfy com os mesmos commands e as mesmas
-tools `clickupfy_*`. Na primeira execução, os perfis de
-`~/clickupfy/config.json` são importados para o cofre cifrado; o arquivo
-antigo não é alterado. `clickupfy account import --force` repete a
-importação. As configs MCP com `clickupfy mcp serve --account ... --list ...`
-continuam valendo. Duas mudanças pedem atenção:
-
-- o `--json` agora usa o envelope `{ ok, command, data }` (ou
-  `{ ok: false, command, error }`), com exit codes estáveis; scripts que
-  liam o objeto cru passam a ler `.data`;
-- as mensagens, options e campos do `--json` estão em inglês.
-
-## Requisitos
-
-Para usar: nenhum (binário compilado) ou Node.js 18.17+ pelo pacote npm.
-Para desenvolver: Bun 1.4.4 ou superior.
-
-## Rodar em desenvolvimento
+Para atualizar, nos dois casos:
 
 ```bash
-bun install
-bun run dev                 # TUI
-bun run dev -- --help       # help do CLI
-bun run dev -- about --json
-bun run dev -- mcp --list
-bun run api:generate        # regenera src/api/catalog.json a partir de api/
+clickupfy upgrade
 ```
 
-## Commands
+## Primeiros passos
 
-| Grupo | Commands |
-| --- | --- |
-| Perfis | `setup` (alias `install`), `status`, `whoami`, `account list\|show\|use\|remove\|import`, `workspace list\|use` |
-| Hierarquia | `space list`, `folder list`, `list list\|get` |
-| Tarefas | `task list\|get\|search\|create\|update\|delete\|add-tag\|remove-tag`, `tag list\|create\|update\|delete` |
-| Execução | `checklist create\|item-create\|set`, `comment list\|create`, `time current\|start\|stop` |
-| Sprints | `sprint list\|current\|get\|tasks\|add-task\|remove-task\|set-points` |
-| Docs | `doc list\|get\|create`, `doc page list\|get\|tree\|create\|update` |
-| API | `api list\|describe\|call` (173 operações v2 e v3) |
-| Agentes | `mcp`, `mcp serve`, `mcp setup`, `agent skill list\|show\|install`, `agent install` |
-| Manutenção | `doctor [--online]`, `upgrade [target]`, `config`, `credentials`, `about`, `tui`, `skill`, `completion` |
-
-Options globais: `--help`, `--version`, `--json`, `--account <profile>`,
-`--skill [topic]`, `--opencli`, `--no-color`. Referência completa em
-[docs/cli.md](docs/cli.md); o manual do usuário fica em
-[docs/user/](docs/user/README.md) e gera o ebook em [ebook/](ebook/).
-
-## Documentação embutida
+Crie uma API key pessoal no ClickUp (Settings, Apps, API Token) e configure
+o perfil:
 
 ```bash
-clickupfy --skill            # tudo, em Markdown
-clickupfy --skill mcp        # uma seção: cli, tui, mcp, config, exit-codes
-clickupfy --opencli          # descrição OpenCLI em JSON
+clickupfy setup          # pede a chave sem mostrar e escolhe o workspace
+clickupfy whoami         # confirma a chave
+clickupfy space list     # explora a hierarquia
+clickupfy list list --space 90070363783
 ```
 
-A pasta [docs/](docs/README.md) entra no binário em tempo de build. Um agente
-lê a documentação sem acesso ao repositório.
-
-## Exit codes
-
-| Code | Name |
-| --- | --- |
-| 0 | `SUCCESS` |
-| 1 | `GENERIC_ERROR` |
-| 2 | `USAGE` |
-| 3 | `CONFIG` |
-| 4 | `CREDENTIALS` |
-| 5 | `NETWORK_OR_API` |
-| 6 | `NOT_FOUND` |
-| 7 | `PERMISSION` |
-| 8 | `NO_TTY` |
-| 9 | `MCP` |
-| 130 | `INTERRUPTED` |
-
-Detalhes em [docs/exit-codes.md](docs/exit-codes.md).
-
-## Configuração e credenciais
+Com mais de uma conta, cada uma vira um perfil:
 
 ```bash
-clickupfy setup                     # API key sem eco, workspace e perfil ativo
+clickupfy setup --name cliente-a
 clickupfy account list
-clickupfy config set tui.theme day
-clickupfy credentials status
+clickupfy --account cliente-a task list --list 901328052926
 ```
 
-Os arquivos ficam em `~/.clickupfy/` com permissão 0600: `accounts.json`
-(perfis, sem segredos), `credentials.json` (API keys cifradas com
-AES-256-GCM, uma por perfil) e `settings.json`. A master key vem de
-`CLICKUPFY_MASTER_KEY` ou de `~/.clickupfy/master.key`. Veja
-[docs/configuration.md](docs/configuration.md).
+## Uso no terminal
 
-## MCP
+### Tarefas
+
+```bash
+clickupfy task list --list 901328052926 --status "em andamento"
+clickupfy task get 86abc123          # tarefa, subtarefas e checklists numa fila
+clickupfy task search --query "login"
+clickupfy task create --list 901328052926 --name "Revisar onboarding" \
+  --markdown-content "## Contexto" --priority 2 --due-date 2026-11-20
+clickupfy task update 86abc123 --status revisar
+clickupfy task add-tag 86abc123 backend
+```
+
+`--start-date` e `--due-date` recebem `AAAA-MM-DD` e gravam o início do dia
+no seu fuso. `--status` e `--assignee` aceitam vários valores separados por
+vírgula.
+
+### Checklists e comentários
+
+```bash
+clickupfy checklist create 86abc123 --name "Etapas"
+clickupfy checklist item-create <checklist-id> --name "Escrever testes"
+clickupfy checklist set 86abc123 <checklist-id> <item-id> --resolved
+clickupfy comment create --task 86abc123 --text "Plano publicado"
+```
+
+### Tempo
+
+```bash
+clickupfy time start --task 86abc123 --description "Implementação"
+clickupfy time current
+clickupfy time stop
+```
+
+Se outro cronômetro estiver rodando em outra tarefa, o `time start` avisa e
+mostra qual foi trocado.
+
+### Sprints e Docs
+
+```bash
+clickupfy sprint current --folder <sprint-folder-id>
+clickupfy sprint tasks <sprint-id> --open-only
+clickupfy doc list
+clickupfy doc page update <doc-id> <page-id> --file notas.md
+```
+
+### Qualquer endpoint da API
+
+O catálogo cobre as 173 operações das APIs v2 e v3 do ClickUp:
+
+```bash
+clickupfy api list --group Tasks
+clickupfy api describe v2-get-task
+clickupfy api call v2-get-task --path '{"task_id":"86abc123"}'
+```
+
+## Uso com agentes (MCP)
+
+Na pasta do projeto, o assistente escolhe perfil, space e list e grava a
+configuração do MCP para Claude Code, Codex, Gemini e OpenCode:
+
+```bash
+clickupfy mcp setup
+```
+
+O resultado é uma entrada como esta no `.mcp.json`:
 
 ```json
 {
@@ -136,49 +138,80 @@ AES-256-GCM, uma por perfil) e `settings.json`. A master key vem de
 }
 ```
 
-`clickupfy mcp setup` grava essa entrada no `.mcp.json`, no
-`.codex/config.toml`, no `.gemini/settings.json` e no `opencode.json`. O
-servidor fixa perfil, space, folder, list e Sprint folder, e `--read-only`
-esconde as tools de escrita. São mais de 50 tools `clickupfy_*` (perfis,
-hierarquia, tarefas, tags, checklists, comentários, Sprints, Docs e tempo),
-mais uma tool por operação do catálogo da API. Detalhes em
-[docs/mcp.md](docs/mcp.md).
+O servidor fica preso a esse perfil e a essa list: as tools usam os ids
+fixados como padrão e recusam outro. Com `--read-only`, as tools que alteram
+o ClickUp não aparecem. São mais de 50 tools `clickupfy_*` (tarefas, tags,
+checklists, comentários, Sprints, Docs, tempo e hierarquia), mais uma tool
+por operação do catálogo da API. As skills do ClickUpfy para agentes se
+instalam com `clickupfy agent skill install`.
 
-## Estrutura
+## Saída para scripts
 
-```text
-src/        código do binário (app, cli, clickup, operations, api, agent, config, mcp, tui, skill)
-docs/       documentação embutida, opencli.json e o manual do usuário (docs/user)
-api/        especificações OpenAPI v2 e v3 que geram src/api/catalog.json
-npm/        pacote npm @promovaweb/clickupfy (launcher que baixa o binário)
-specs/      CLISPEC.md e as specs de cada evolução
-ebook/      guia do usuário em PDF e EPUB, gerado de docs/user
-template/   stubs de command, screen e tool
-.agents/    skills do framework Termfy (skills-lock.json)
-.codex/     skills do ClickUpfy, embutidas no binário
-scripts/    build, geração do catálogo e checks
-tests/      bun test
+Com `--json`, toda resposta usa o mesmo envelope, inclusive os erros:
+
+```json
+{ "ok": true, "command": "clickupfy task create", "data": { "id": "86abc123", "url": "https://app.clickup.com/t/86abc123" } }
 ```
 
-Cada operação do ClickUp é declarada uma vez em `src/clickup/<família>.ts` e
-vira command do CLI e tool MCP pela camada `src/operations/`. Arquitetura
-em [docs/architecture.md](docs/architecture.md); visão do produto em
-[CLISPEC.md](CLISPEC.md).
-
-## Validar, compilar e publicar
-
-```bash
-bun run validate      # typecheck, testes, skills:check, opencli:check, docs:check, build
-bun run build         # dist/clickupfy
-bun run build:all     # linux-x64, linux-arm64, darwin-x64, darwin-arm64, windows-x64
+```json
+{ "ok": false, "command": "clickupfy task get", "error": { "code": 6, "name": "NOT_FOUND", "message": "Task not found" } }
 ```
 
-Releases seguem [docs/release.md](docs/release.md): versão em
-`package.json`, entrada no `CHANGELOG.md`, tag `vX.Y.Z` e GitHub Release com
-binários gerados pelo workflow, que também publica o pacote npm. O guia do
-usuário em PDF e EPUB sai de `bash .ebook/build-ebook.sh`.
+O exit code do processo é o mesmo de `error.code`:
+
+| Code | Significado |
+| --- | --- |
+| 0 | sucesso |
+| 2 | uso inválido (option, argumento ou confirmação ausente) |
+| 3 | configuração inválida |
+| 4 | credencial ausente ou recusada |
+| 5 | rede ou API do ClickUp |
+| 6 | recurso inexistente |
+| 7 | permissão no sistema de arquivos |
+| 130 | interrompido |
+
+## Arquivos e segurança
+
+Tudo fica em `~/.clickupfy/`, com permissão 0600:
+
+| Arquivo | Conteúdo |
+| --- | --- |
+| `accounts.json` | perfis (usuário e workspace), sem segredos |
+| `credentials.json` | API keys cifradas com AES-256-GCM, uma por perfil |
+| `master.key` | chave do cofre; pode vir de `CLICKUPFY_MASTER_KEY` |
+| `settings.json` | preferências (`clickupfy config list`) |
+
+`clickupfy doctor` confere perfil, chave, cofre e as configs de MCP do
+projeto; `clickupfy doctor --online` também valida a chave na API.
+
+## Vindo do ClickUpfy 0.9.0
+
+A 1.0 mantém os commands e as tools `clickupfy_*`. Na primeira execução, os
+perfis de `~/clickupfy/config.json` são importados para o cofre e o arquivo
+antigo não é alterado (`clickupfy account import --force` repete a
+importação). As configs MCP com `clickupfy mcp serve --account ... --list ...`
+continuam funcionando. Mudaram:
+
+- o `--json`, que agora vem no envelope `{ ok, command, data }`: scripts
+  leem `.data`;
+- mensagens, options e campos do JSON, agora em inglês;
+- os valores múltiplos, agora separados por vírgula.
+
+O histórico completo está no [CHANGELOG](CHANGELOG.md).
+
+## Documentação
+
+- Manual completo em [promovaweb.com/docs/clickupfy](https://promovaweb.com/docs/clickupfy/),
+  também em [PDF](https://promovaweb.com/pdf/ebook-clickupfy.pdf) e
+  [EPUB](https://promovaweb.com/pdf/ebook-clickupfy.epub).
+- No terminal: `clickupfy --help`, `clickupfy <command> --help` e
+  `clickupfy --skill`, que imprime a referência inteira para agentes.
+
+## Contribuir
+
+Instruções para desenvolver, testar e publicar estão no
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licença
 
-Código da Promovaweb publicado sem licença de uso aberta (`UNLICENSED`, como no
-0.9.0).
+Código da Promovaweb publicado sem licença de uso aberta (`UNLICENSED`).
