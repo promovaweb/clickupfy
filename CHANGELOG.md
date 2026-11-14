@@ -4,6 +4,12 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.1.3] - 2026-11-14
+
+### Corrigido
+
+- Revisada a redação do guia do usuário em `docs/user/`, com explicações mais precisas e correções de linguagem.
+
 ## [1.1.2](https://github.com/promovaweb/clickupfy/compare/v1.1.1...v1.1.2) (2026-11-13)
 
 ### Documentação

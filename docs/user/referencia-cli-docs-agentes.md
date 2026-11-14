@@ -91,8 +91,8 @@ clickupfy doc get 8cdu8-123 --json > /tmp/doc-8cdu8-123.json
 ```
 
 O último exemplo guarda o objeto completo. Para processamento por outro
-programa, use `--json` e preserve os dados do workspace como informação interna
-da equipe. Doc inexistente sai com `6`.
+programa, use `--json` e trate o conteúdo do workspace como informação interna.
+Doc inexistente sai com `6`.
 
 ### `clickupfy doc create --name <nome>`
 
@@ -401,13 +401,13 @@ projeto.
 
 Instala todas as skills quando nenhum nome é informado, ou somente as skills
 posicionais escolhidas, chamando `npx skills add promovaweb/clickupfy`. Sem
-`--global`, o destino é o catálogo de skills do projeto atual, e o gerenciador
+`--global`, o destino é o catálogo de skills do projeto atual. O gerenciador
 atualiza o `skills-lock.json`. `--global` instala no catálogo do usuário.
 
 O comando roda `npx --yes skills add promovaweb/clickupfy --yes --copy --agent
 codex --skill <nome>...` e confere o resultado com `npx skills list --json`.
-`--force` existe apenas por compatibilidade com o 0.9.0, porque reinstalar é
-sempre permitido.
+`--force` existe apenas por compatibilidade com o 0.9.0, porque o comando
+permite reinstalar sem essa opção.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -440,8 +440,8 @@ clickupfy agent skill install clickupfy-release --force
 Skill desconhecida sai com `6`. Falha do `npx skills` ou `npx` ausente do `PATH`
 sai com `1`. Os caminhos canônicos pertencem ao gerenciador `npx skills`, por
 isso o ClickUpfy não aceita um `--target` próprio. Revise a fonte com
-`agent skill show` e consulte `npx skills list` antes de atualizar regras de um
-projeto.
+`agent skill show` e consulte `npx skills list` antes de atualizar as
+instruções de um projeto.
 
 ### `clickupfy agent install`
 
@@ -450,8 +450,8 @@ e no `.codex/config.toml` do projeto atual. `--space` e `--list` são
 obrigatórias. `clickupfy agent init` é um alias compatível.
 
 A entrada usa `mcp serve --account <perfil> --space <id> --list <id>` e
-acrescenta os IDs opcionais informados. A API key nunca vai para os arquivos: só
-o identificador do perfil é gravado. Uma entrada `promovaweb-clickupfy` já
+acrescenta os IDs opcionais informados. Os arquivos recebem só o identificador
+do perfil, sem a API key. Uma entrada `promovaweb-clickupfy` já
 existente é substituída e as demais configurações são preservadas.
 
 | Parâmetro | Obrigatório | Uso |
@@ -487,7 +487,7 @@ clickupfy agent init --account cliente-a --workspace 9007154145 --space 90132806
 ```
 
 O `data` do `--json` traz `{ account, name, args, skills, files }`. Falta de
-`--space` ou `--list`, e um `--workspace` diferente do perfil, saem com `2`.
+`--space` ou `--list` e um `--workspace` diferente do perfil saem com `2`.
 Perfil inexistente sai com `6`. Reabra o cliente MCP e chame
 `clickupfy_mcp_context` para conferir o destino.
 
@@ -599,7 +599,7 @@ pode deixar parte dos clientes atualizada. Os demais servidores e ajustes são
 preservados. O TOML é reserializado e perde comentários; comentários do JSONC do
 OpenCode são preservados.
 
-O escopo segue as regras de `mcp serve`: Docs continuam no workspace e as
+O escopo segue o comportamento de `mcp serve`: Docs continuam no workspace e as
 permissões da API key continuam sendo as concedidas pelo ClickUp. O setup não
 cria uma credencial com permissões reduzidas. Em JSON, o `data` traz
 `{ name, account, workspace, space, list, args, files }`.

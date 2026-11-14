@@ -8,7 +8,7 @@
 | Escopo | ferramentas MCP de Docs do ClickUp, seleção de perfil e seleção de workspace |
 | Autoridade | `src/operations/mcp.ts`, `src/clickup/docs.ts`, `src/clickup/scope.ts` e os schemas registrados em `src/mcp/server.ts` |
 
-As ferramentas de Docs sempre usam o workspace resolvido pelo perfil, sem aplicar
+As ferramentas de Docs usam o workspace resolvido pelo perfil, sem aplicar
 o isolamento de Space, Folder ou List do projeto. As ferramentas de seleção de
 perfil e de workspace só são registradas quando o servidor tem escrita e não
 recebeu os respectivos valores fixos. Objetos JSON a seguir representam os
@@ -220,8 +220,8 @@ permissões de um Doc existente ou reordenar a árvore depois da criação.
 ### `clickupfy_doc_create`
 
 Cria um Doc no workspace. `name` é obrigatório. Quando `parentId` é informado,
-`parentType` também é obrigatório; `parentId` sem `parentType` é recusado antes de
-tocar na API. `visibility` pode ser `PRIVATE` ou `PUBLIC`; `createPage` cria uma
+`parentType` também é obrigatório. Um `parentId` sem `parentType` é recusado antes da
+chamada à API. `visibility` pode ser `PRIVATE` ou `PUBLIC`, enquanto `createPage` cria uma
 página em branco junto do Doc.
 
 | Campo | Tipo | Obrigatório | Uso |
@@ -380,7 +380,7 @@ inexistente retorna `isError` com o exit code `6`.
 
 Associa um workspace autorizado ao perfil. Só aparece quando o processo não fixou
 `--account` nem `--workspace` e tem escrita. O servidor confere a autorização
-contra a API antes de salvar a associação no perfil local.
+contra a API antes de gravar a associação no perfil local.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |

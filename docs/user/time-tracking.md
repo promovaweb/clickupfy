@@ -27,17 +27,17 @@ clickupfy time start \
   --description "Implementação e testes"
 ```
 
-Use uma descrição curta e observável. O registro pertence ao usuário
+Use uma descrição curta e observável. O registro fica com o usuário
 autenticado pelo perfil selecionado.
 
-O ClickUp mantém um cronômetro por pessoa. Se outro cronômetro estiver ativo em
-outra tarefa, `time start` troca o cronômetro, avisa no stderr e devolve a
-tarefa anterior em `previous`, com `id`, `taskId`, `taskName`, `description` e
-`start`. A troca não é impedida.
+O ClickUp mantém um cronômetro por usuário. Se outro cronômetro estiver ativo
+em outra tarefa, `time start` faz a troca, avisa no stderr e devolve a tarefa
+anterior em `previous`. Esse objeto traz `id`, `taskId`, `taskName`,
+`description` e `start`.
 
 Em um fluxo com agente, inicie o tempo somente quando a implementação realmente
 começar. Leitura inicial, esclarecimento e espera por autorização não devem ser
-registrados automaticamente sem uma regra explícita da equipe.
+registrados automaticamente sem uma convenção explícita do projeto.
 
 ## Encerre o registro
 
@@ -69,10 +69,10 @@ workspaces diferentes na mesma máquina.
 ## Relação com comentários e status
 
 Time tracking não muda status nem publica comentário. As três ações representam
-evidências diferentes:
+registros diferentes:
 
 - status indica a etapa no fluxo
-- comentário registra um evento legível pela equipe
+- comentário registra um evento legível pelos participantes da tarefa
 - time entry mede o período atribuído ao trabalho.
 
 A skill de implementação coordena essas ações, mas cada mutação continua

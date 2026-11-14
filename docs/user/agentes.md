@@ -66,7 +66,7 @@ Para instalar só algumas skills, informe os nomes:
 clickupfy agent skill install clickupfy-dev clickup-issue-implement
 ```
 
-Prefira a instalação local quando projetos usam versões ou regras diferentes.
+Prefira a instalação local quando os projetos usam versões ou instruções diferentes.
 Consulte a instalação efetiva com:
 
 ```bash
@@ -105,10 +105,10 @@ Use $clickup-issue-implement para executar a tarefa <task-id> até a validação
 final.
 ```
 
-O fluxo lê a tarefa inteira, monta um plano visível, registra início, datas e
-time tracking quando aplicável, percorre subtarefas e checklist items e publica
-checkpoints. Um item de teste só é resolvido depois do comando correspondente
-passar.
+O fluxo lê a tarefa inteira e monta um plano visível. Depois registra o início
+e as datas (com time tracking quando aplicável), percorre subtarefas e
+checklist items e publica checkpoints. Um item de teste só é resolvido depois
+que o comando correspondente passa.
 
 A conclusão exige releitura do estado remoto, regressão aplicável e um status
 terminal existente na List.
@@ -122,14 +122,14 @@ Use $clickupfy-dev para ler a tarefa <task-id>, publicar o resultado dos testes
 e marcar apenas o checklist correspondente.
 ```
 
-Escopo e autorização continuam limitados pelo pedido. A skill não transforma
-uma consulta em implementação completa.
+Escopo e autorização continuam limitados pela instrução recebida, sem que a
+skill transforme uma consulta em implementação completa.
 
 ## Prepare uma release
 
 `clickupfy-release` lê a documentação de release do próprio repositório e
 acompanha versão, changelog, validações e artefatos. Ela não deve ser instalada
-como regra genérica em projetos que apenas consomem o CLI.
+como instrução genérica em projetos que apenas consomem o CLI.
 
 ## Leia a documentação embutida
 

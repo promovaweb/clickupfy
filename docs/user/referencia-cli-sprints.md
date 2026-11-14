@@ -19,7 +19,7 @@ lida ao meio-dia UTC, portanto o resultado não muda com o fuso da máquina.
 `--at` muda somente o cálculo; ele não altera a Sprint nem suas tarefas.
 
 Em JSON, as listas vêm dentro de um objeto, como `{ "sprints": [] }` e
-`{ "tasks": [] }`, e o erro carrega o exit code em `error.code`.
+`{ "tasks": [] }`. O erro carrega o exit code em `error.code`.
 
 ## Consulta de ciclos
 
@@ -260,9 +260,10 @@ operação.
 
 ### `clickupfy sprint set-points <task-id> <points>`
 
-Define Sprint Points de uma tarefa. O número deve ser igual ou maior que zero.
-O ClickUpfy não interpreta a escala: a equipe define se `1`, `2`, `3`, `5` ou
-outros valores representam tamanho, esforço ou complexidade.
+Define Sprint Points de uma tarefa com um número igual ou maior que zero. O
+ClickUpfy não interpreta a escala: o responsável pelo planejamento define o
+que cada valor (`1`, `2`, `3`, `5` e outros) representa em tamanho, esforço ou
+complexidade.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -293,4 +294,4 @@ clickupfy sprint set-points 77def456 8 --account cliente-a --json
 
 Pontos negativos saem com `2`, sem chamar a API. O `data` traz a tarefa
 atualizada. `task update <task-id> --points <n>` altera o mesmo campo; use apenas
-uma das interfaces por alteração e releia a tarefa para confirmar o valor salvo.
+uma das interfaces por alteração e releia a tarefa para confirmar o valor gravado.

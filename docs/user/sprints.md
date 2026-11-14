@@ -18,8 +18,8 @@ usado.
 O status (`planned`, `active` ou `completed`) é calculado contra a data de
 referência: hoje ou o valor de `--at <AAAA-MM-DD>`.
 
-O CLI não cria Sprints nem habilita o Sprint ClickApp. Essas operações
-continuam na interface do ClickUp.
+O CLI não cria Sprints nem habilita o Sprint ClickApp, porque essas ações continuam
+na interface do ClickUp.
 
 ## Liste os ciclos
 
@@ -104,7 +104,7 @@ O mesmo campo pode ser atualizado pelo grupo de tarefas:
 clickupfy task update <task-id> --points 8
 ```
 
-Use a escala adotada pela equipe. O ClickUpfy transmite o número, mas não
+Use a escala adotada no planejamento do projeto. O ClickUpfy transmite o número, mas não
 define se ele representa complexidade, esforço ou tamanho relativo.
 
 ## Configure o MCP para Sprints
@@ -120,8 +120,8 @@ clickupfy --account produto agent install \
 ```
 
 As ferramentas de Sprint podem omitir `folderId` quando esse valor está
-fixado. Um ID diferente é recusado. Consultas permanecem disponíveis em
-read-only. Associação e Points aparecem apenas no servidor com escrita.
+fixado e recusam um ID diferente. Consultas permanecem disponíveis em
+read-only, enquanto associação e Points aparecem apenas no servidor com escrita.
 
 Depois do planejamento, aprenda a
 [registrar o tempo](time-tracking.md).

@@ -35,7 +35,7 @@ em `data.task` e `data.execution`.
 ## Entenda a fila executável
 
 O objeto `execution` transforma a árvore em itens ordenados. Uma chave como
-`task:86abc123` identifica uma tarefa ou subtarefa. Uma chave como
+`task:86abc123` identifica uma tarefa ou subtarefa, enquanto
 `checklist:check-1:item-1` identifica um item de checklist.
 
 O resumo informa totais abertos e concluídos. Cada item inclui `parentKey` e
@@ -43,8 +43,8 @@ O resumo informa totais abertos e concluídos. Cada item inclui `parentKey` e
 tratá-la como item independente. O campo `action` traz o comando do CLI e a
 chamada MCP que concluem o item.
 
-A fila é uma projeção da leitura atual, não um segundo estado. Sempre releia a
-tarefa depois de uma mutação.
+A fila é uma projeção da leitura atual, não um segundo estado. Releia a tarefa
+depois de cada escrita.
 
 ## Crie uma tarefa
 
@@ -61,8 +61,8 @@ clickupfy task create \
 ```
 
 Datas aceitam o formato `AAAA-MM-DD` e são gravadas no início do dia no fuso
-local da máquina. Antes de criar, confira o fuso e a política de datas da
-equipe.
+local da máquina. Antes de criar, confira o fuso e a convenção de datas do
+projeto.
 
 Para criar uma subtarefa, informe o pai:
 
@@ -74,8 +74,8 @@ clickupfy task create \
   --markdown-content "Cobrir sucesso, credencial inválida e limite."
 ```
 
-Subtarefas podem receber novas subtarefas. A leitura executável preserva todos
-os níveis. A tarefa criada volta com `id` e `url`.
+Subtarefas podem receber novas subtarefas. A leitura executável preserva
+todos os níveis. A tarefa criada volta com `id` e `url`.
 
 ## Monte checklists verificáveis
 
@@ -158,7 +158,7 @@ clickupfy comment create \
 
 Um comentário útil registra um evento verificável: início, impedimento,
 checkpoint de teste ou conclusão. Evite publicar raciocínio interno, secrets,
-logs extensos ou promessas sem evidência. `--notify-all` notifica os
+logs extensos ou promessas sem comprovação. `--notify-all` notifica os
 participantes da tarefa.
 
 ## Exclua apenas com alvo confirmado
@@ -172,5 +172,5 @@ tarefa, confira List e nome e confirme se a solicitação autoriza exclusão ant
 de usar `--yes`. Fora de um terminal interativo, sem `--yes`, o comando sai com
 exit code 2; recusar a confirmação sai com 130.
 
-Quando a equipe trabalha por ciclos, continue em
+Quando o projeto trabalha por ciclos, continue em
 [Sprints e Sprint Points](sprints.md).

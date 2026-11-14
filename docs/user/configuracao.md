@@ -11,20 +11,20 @@
 ## Crie a API key
 
 Use uma API key pessoal criada nas configurações do ClickUp. O ClickUpfy
-valida a chave antes de salvar, consulta o usuário autenticado e lista os
+valida a chave antes de gravar, consulta o usuário autenticado e lista os
 workspaces permitidos.
 
-Não cole a chave em issue, comentário, arquivo `.env` versionado, `.mcp.json`,
-`.codex/config.toml` ou comando compartilhado no histórico da equipe. Em um
-terminal interativo, prefira o setup com prompt oculto:
+Não cole a chave em issue, comentário ou arquivo versionado (`.env`,
+`.mcp.json` ou `.codex/config.toml`), nem em comando que fique num histórico
+compartilhado. Em um terminal interativo, prefira o setup com prompt oculto:
 
 ```bash
 clickupfy setup
 ```
 
 Escolha um nome local para o perfil e selecione o workspace. O nome vira um
-identificador normalizado, como `promovaweb` ou `cliente-a`. `install` continua
-aceito como alias de `setup`.
+identificador normalizado, como `promovaweb` ou `cliente-a`. O comando
+`install` continua aceito como alias de `setup`.
 
 A chave fica no cofre cifrado como `clickup.<perfil>.api_key`. Nenhum comando,
 tool ou tela mostra o valor: `status` e `account show` exibem a versão
@@ -105,7 +105,7 @@ clickupfy account import --force
 ```
 
 Sem `--force`, perfis que já existem são pulados e aparecem em `skipped`; com
-`--force`, eles são substituídos pelos dados do arquivo antigo. Em JSON, o
+`--force`, eles são substituídos pelo conteúdo do arquivo antigo. Em JSON, o
 comando devolve `{ source, imported, skipped, activeAccount }`, sem chaves.
 
 ## Gerencie perfis
@@ -119,9 +119,9 @@ clickupfy status
 clickupfy whoami
 ```
 
-`status` mostra o caminho do `accounts.json`, o perfil resolvido, se ele é o
-ativo, a chave mascarada, o usuário e o workspace. Não chama a API. `whoami`
-faz uma chamada autenticada e confirma se a chave ainda é válida.
+`status` mostra o caminho do `accounts.json` e o perfil resolvido (se é o
+ativo), com a chave mascarada, o usuário e o workspace, sem chamar a API.
+`whoami` faz uma chamada autenticada e confirma se a chave ainda é válida.
 
 Para conferir o setup local, as permissões dos arquivos, o schema, o cofre e os
 arquivos de integração do projeto, execute:
@@ -169,7 +169,7 @@ fixam `--workspace` precisam continuar correspondendo ao perfil.
 clickupfy account remove cliente-antigo
 ```
 
-O comando pede confirmação e apaga os metadados e a credencial do perfil. Em
+O comando exige confirmação e apaga os metadados e a credencial do perfil. Em
 automação, `--yes` confirma sem prompt. A remoção apaga o perfil local, não
 revoga a API key no ClickUp. Revogue a chave no ClickUp quando ela não for mais
 necessária.

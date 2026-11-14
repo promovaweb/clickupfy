@@ -34,7 +34,7 @@ processo MCP. Execute-a como primeira chamada de um agente: ela informa quais ID
 podem ser omitidos nas ferramentas seguintes, se o servidor é somente leitura e
 se o projeto tem Sprint Folder fixado.
 
-O `data` traz `{ account, workspace, readOnly, scope }`, e `scope` reúne os IDs
+O `data` traz `{ account, workspace, readOnly, scope }`. O `scope` reúne os IDs
 fixados. O único argumento aceito é `account`, opcional.
 
 | Campo | Tipo | Obrigatório | Efeito |
@@ -72,8 +72,8 @@ fixado, passar outro perfil retorna `isError` e não troca o destino.
 
 Lista os perfis configurados na máquina, com nome, usuário, workspace e marca do
 perfil ativo. Ela não recebe argumentos e não faz requisição à API do ClickUp.
-Use-a para localizar o identificador de um perfil, nunca para obter uma
-credencial. O retorno é `{ accounts: [] }`, sem API keys.
+Use-a para localizar o identificador de um perfil, já que ela não devolve
+credenciais. O retorno é `{ accounts: [] }`, sem API keys.
 
 Exemplos:
 
@@ -101,8 +101,8 @@ Os cinco exemplos são idênticos porque a ferramenta não possui parâmetro. Em
 cliente com chamada nomeada, a variação fica no nome da ferramenta, não nos
 argumentos. Esse fato é importante para agentes: não invente filtros como
 `workspace`, `query` ou `includeArchived`, pois o schema os rejeita. Como a
-ferramenta não recebe `account`, ela sempre lê o arquivo local da máquina em que
-o servidor roda.
+ferramenta não recebe `account`, ela lê o arquivo local da máquina onde o
+servidor roda.
 
 ### `clickupfy_whoami`
 
@@ -147,7 +147,7 @@ exit code `4`; chave recusada pela API retorna `5`.
 ### `clickupfy_workspaces_list`
 
 Lista os workspaces autorizados pela API key do perfil. Ela não recebe ID de
-workspace porque consulta todos os workspaces acessíveis, e o servidor usa o
+workspace porque consulta todos os workspaces acessíveis. O servidor usa o
 perfil para autenticar a chamada. O retorno é `{ workspaces: [] }`.
 
 | Campo | Tipo | Obrigatório | Efeito |
@@ -256,7 +256,7 @@ Exemplos:
 {"account":"cliente-a","spaceId":"9007154145","archived":false}
 ```
 
-O primeiro exemplo só funciona quando o processo MCP já recebeu `--space`. Uma
+O primeiro exemplo exige que o processo MCP já tenha recebido `--space`. Uma
 resposta vazia pode significar que o Space guarda Lists diretamente; ela não
 autoriza assumir que o projeto não tem Lists. Nesse caso, consulte
 `clickupfy_lists_list` com `spaceId`.

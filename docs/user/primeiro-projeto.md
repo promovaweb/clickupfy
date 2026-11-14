@@ -29,7 +29,7 @@ clickupfy status
 clickupfy whoami
 ```
 
-Confirme o nome do perfil, o usuário e o workspace. Se qualquer dado estiver
+Confirme o nome do perfil, o usuário e o workspace e, se algum deles estiver
 errado, volte à [configuração](configuracao.md).
 
 ## Descubra a hierarquia
@@ -62,9 +62,9 @@ clickupfy --account promovaweb agent install \
   --list 30
 ```
 
-`space` e `list` são obrigatórios. Workspace e Folder podem ser omitidos
-quando não forem necessários ao escopo. Acrescente `--sprint-folder <id>` se o
-projeto usa Sprints. `agent init` é o alias de `agent install`.
+`space` e `list` são obrigatórios, enquanto workspace e Folder podem ser
+omitidos quando não fizerem parte do escopo. Acrescente `--sprint-folder <id>`
+se o projeto usa Sprints. `agent init` é o alias de `agent install`.
 
 O comando instala as skills e mescla o servidor no `.mcp.json` e no
 `.codex/config.toml` existentes sem remover outros servidores ou configurações.
@@ -102,7 +102,7 @@ command = "clickupfy"
 args = ["mcp", "serve", "--account", "promovaweb", "--workspace", "123", "--space", "10", "--folder", "20", "--list", "30"]
 ```
 
-Só o id do perfil vai para os arquivos, nunca a API key.
+Só o id do perfil vai para os arquivos, enquanto a API key fica no cofre local.
 
 Se o projeto usa outros clientes, `clickupfy mcp setup` grava a mesma entrada
 em `.mcp.json`, `.codex/config.toml`, `.gemini/settings.json` e
@@ -118,9 +118,9 @@ clickupfy mcp setup \
   --non-interactive
 ```
 
-Antes de abrir o cliente MCP pela primeira vez, acrescente `--read-only` ao
-fim de `args`. O `agent install` prepara o servidor completo. Essa edição
-consciente reduz a superfície durante a conferência inicial.
+O `agent install` prepara o servidor completo. Antes de abrir o cliente MCP
+pela primeira vez, acrescente `--read-only` ao fim de `args` para limitar o
+servidor a consultas durante a conferência inicial.
 
 ## Confira no agente
 
@@ -138,8 +138,8 @@ Compare o resultado com os IDs anotados. Depois liste as tarefas:
 Use clickupfy_tasks_list sem informar listId.
 ```
 
-O servidor deve aplicar a List configurada. Uma tentativa de consultar outra
-List deve ser recusada.
+O servidor deve aplicar a List configurada e recusar a consulta a qualquer
+outra List.
 
 ## Libere escrita
 
@@ -147,8 +147,8 @@ Quando o destino estiver correto, remova apenas `--read-only` da entrada
 gerenciada. Reabra o cliente MCP e confirme que as ferramentas de escrita
 aparecem em `tools/list`.
 
-Crie uma tarefa de teste somente se o projeto e a equipe autorizarem a
-mutação. Caso contrário, use uma tarefa real já existente para validar leitura,
+Crie uma tarefa de teste somente se o responsável pelo projeto autorizar a
+escrita. Caso contrário, use uma tarefa já existente para validar leitura,
 comentários e checklists.
 
 ## Primeira leitura de uma tarefa

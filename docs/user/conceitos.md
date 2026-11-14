@@ -10,14 +10,14 @@
 
 ## O problema que a ferramenta resolve
 
-O ClickUp continua sendo a fonte do trabalho: tarefa, descrição, status,
-checklist, comentário, Sprint e registro de tempo permanecem no workspace. O
+O ClickUp continua sendo a fonte do trabalho. A tarefa com descrição, status e
+checklist, assim como comentários, Sprints e registros de tempo, permanece no workspace. O
 ClickUpfy não cria um gerenciador paralelo. Ele oferece uma interface previsível
 para consultar e alterar essa fonte pelo terminal ou por um agente.
 
 Sem essa camada, cada agente precisa descobrir como autenticar, quais endpoints
 usar, em qual List trabalhar e como representar uma tarefa grande. O ClickUpfy
-centraliza essas decisões em três contratos:
+centraliza essas escolhas em três contratos:
 
 - o perfil local associa uma API key a um workspace
 - o projeto fixa o perfil e a hierarquia autorizada nos arquivos do cliente MCP
@@ -28,8 +28,8 @@ centraliza essas decisões em três contratos:
 ### ClickUp
 
 É o sistema remoto e a fonte de verdade. O ClickUpfy usa as APIs públicas v2 e
-v3 para ler workspaces, Spaces, Folders, Lists, tarefas, checklists,
-comentários, Sprints, Docs e time entries. Permissões e ClickApps continuam
+v3 para ler a hierarquia (workspaces, Spaces, Folders e Lists) e o trabalho
+(tarefas, checklists, comentários, Sprints, Docs e time entries). Permissões e ClickApps continuam
 sendo administrados no ClickUp.
 
 ### CLI
@@ -49,8 +49,8 @@ edição.
 ### Servidor MCP
 
 É a interface para agentes. Ele usa transporte stdio e expõe ferramentas com
-schemas explícitos. Uma configuração por projeto pode fixar account,
-workspace, Space, Folder, List e Sprint Folder. A List é obrigatória porque
+schemas explícitos. Uma configuração por projeto pode fixar o account e os IDs
+da hierarquia, do workspace ao Sprint Folder. A List é obrigatória porque
 define o destino das consultas, buscas e criações de tarefa.
 
 ### Skills
@@ -69,10 +69,10 @@ não fica nesse arquivo: ela é gravada cifrada no cofre
 Um **projeto** é uma raiz de código que pode conter `.mcp.json`,
 `.codex/config.toml`, `.gemini/settings.json` e `opencode.json`. Esses arquivos
 selecionam um account e fixam IDs da hierarquia no formato esperado por cada
-cliente. Eles podem ser versionados quando os IDs não forem considerados
-sensíveis pela equipe, pois nunca contêm a API key.
+cliente. Eles podem ser versionados quando os responsáveis pelo projeto não
+consideram os IDs sensíveis, porque esses arquivos não guardam a API key.
 
-O mesmo account pode servir mais de um projeto. Ambientes de clientes ou
+O mesmo account pode servir mais de um projeto, mas ambientes de clientes ou
 workspaces diferentes devem receber perfis separados.
 
 ## Leitura compacta e leitura executável
@@ -90,8 +90,8 @@ Cada item informa:
 - o estado aberto ou concluído
 - a ação equivalente no CLI e no MCP.
 
-Essa fila ajuda o agente a selecionar um item pendente sem perder a hierarquia.
-Quando o contexto precisa ser lido como documento, `task get --markdown`
+Com essa fila, o agente seleciona um item pendente sem perder a hierarquia.
+Quando a tarefa precisa ser lida como documento, `task get --markdown`
 produz metadados, descrição, resumo e checkboxes em um único texto.
 
 ## Limites importantes
@@ -106,7 +106,7 @@ O CLI também não decide sozinho qual status representa conclusão. Use
 implementação devem escolher um status terminal existente, não inventar uma
 grafia.
 
-Tarefas, Docs e histórico não são guardados localmente. O binário persiste
-apenas preferências, perfis e credenciais em `~/.clickupfy/`.
+Tarefas, Docs e histórico ficam só no ClickUp: o binário persiste apenas
+preferências, perfis e credenciais em `~/.clickupfy/`.
 
 Agora siga para a [instalação](instalacao.md).

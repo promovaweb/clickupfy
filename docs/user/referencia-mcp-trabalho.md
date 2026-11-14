@@ -29,7 +29,7 @@ As listas de tarefas em MCP saem em linhas compactas com `id`, `custom_id`,
 
 Lista tarefas da List autorizada. Omitir `listId` usa a List fixada. Os filtros
 aceitam arrays: `status` é uma lista de nomes configurados na List e `assignees`
-contém IDs de pessoas em texto. `page` deve ser inteiro maior ou igual a zero.
+contém IDs de usuários em texto. `page` deve ser inteiro maior ou igual a zero.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -63,8 +63,8 @@ Exemplos:
 ```
 
 Cada página traz até 100 tarefas. Para obter descrição, subtarefas e checklist
-items de uma tarefa, chame `clickupfy_task_get` com o `id` devolvido. Nunca use
-um `listId` diferente do fixado pelo projeto.
+items de uma tarefa, chame `clickupfy_task_get` com o `id` devolvido. Use só o
+`listId` fixado pelo projeto.
 
 ### `clickupfy_task_get`
 
@@ -103,10 +103,10 @@ Exemplos:
 ```
 
 Os itens usam chaves como `task:86abc123` e
-`checklist:b955c4dc:21e08dc8`. `parentKey` e `depth` preservam a árvore, e
+`checklist:b955c4dc:21e08dc8`. `parentKey` e `depth` preservam a árvore.
 `state` vale `done` ou `pending`. A ação `complete` de cada item mostra o comando
 do CLI e a chamada MCP adequados, mas a autorização para executar essa ação
-continua vindo do pedido recebido pelo agente.
+continua vindo da instrução recebida pelo agente.
 
 ### `clickupfy_tasks_search`
 
@@ -184,7 +184,7 @@ Exemplos:
 ```
 
 Leia essa ferramenta antes de publicar mudança de status ou comentário de
-progresso, e não trate um comentário antigo como instrução mais recente sem
+progresso. Não trate um comentário antigo como instrução mais recente sem
 conferir as datas. Ela não expõe anexos como conteúdo, não publica respostas e não
 altera o campo de status.
 
@@ -353,7 +353,7 @@ subtarefas e checklist items de um item específico, chame
 ## Ferramentas de escrita de trabalho
 
 As ferramentas seguintes só aparecem fora de `--read-only`. Informe apenas campos
-que devem mudar. Elas usam o mesmo perfil e as mesmas regras de isolamento das
+que devem mudar. Elas usam o mesmo perfil e o mesmo isolamento de escopo das
 consultas.
 
 ### `clickupfy_task_create`
@@ -584,7 +584,7 @@ Exemplos:
 ```
 
 Leia `clickupfy_sprint_tasks` depois da escrita. Só associe a tarefa quando o
-planejamento da Sprint estiver incluído no pedido.
+planejamento da Sprint fizer parte da instrução recebida.
 
 ### `clickupfy_sprint_remove_task`
 
@@ -626,8 +626,8 @@ explicitamente autorizada.
 ### `clickupfy_sprint_set_points`
 
 Define Sprint Points de uma tarefa. `points` é um número maior ou igual a zero. O
-ClickUpfy transmite o valor; a escala pertence ao time. O retorno é a tarefa
-atualizada.
+ClickUpfy transmite o valor sem interpretar a escala, definida pelo
+responsável pelo planejamento. O retorno é a tarefa atualizada.
 
 | Campo | Tipo | Obrigatório | Uso |
 | --- | --- | --- | --- |
@@ -701,8 +701,8 @@ qualquer exemplo deste tipo. Para somente retirar a tarefa do ciclo, use
 
 ### `clickupfy_comment_create`
 
-Publica comentário em uma tarefa. `notifyAll` é opcional; ele pede ao ClickUp para
-notificar participantes. A ferramenta não modifica status, timer ou checklist. O
+Publica comentário em uma tarefa. Com `notifyAll`, opcional, o ClickUp notifica
+os participantes. A ferramenta não modifica status, timer ou checklist. O
 retorno é `{ id, hist_id, date }`.
 
 | Campo | Tipo | Obrigatório | Uso |
@@ -710,7 +710,7 @@ retorno é `{ id, hist_id, date }`.
 | `account` | string | não | Perfil a resolver. |
 | `taskId` | string | sim | Tarefa que receberá o comentário. |
 | `text` | string | sim | Conteúdo do comentário. |
-| `notifyAll` | booleano | não | Pede notificação aos participantes. |
+| `notifyAll` | booleano | não | Notifica os participantes. |
 
 Exemplos:
 
@@ -769,8 +769,8 @@ Exemplos:
 ### `clickupfy_time_start`
 
 Inicia um time entry para uma tarefa. Consulte `clickupfy_time_current` antes. O
-ClickUp mantém um cronômetro por pessoa: quando um já roda em outra tarefa, ele é
-substituído, e a tarefa anterior volta em `previous` com `id`, `taskId`,
+ClickUp mantém um cronômetro por usuário: quando um já roda em outra tarefa, ele é
+substituído. A tarefa anterior volta em `previous` com `id`, `taskId`,
 `taskName`, `description` e `start`.
 
 | Campo | Tipo | Obrigatório | Uso |

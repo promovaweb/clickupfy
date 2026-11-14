@@ -2,11 +2,11 @@
 
 ## Classificação
 
-| Campo | Valor |
-| --- | --- |
-| Natureza | referência |
-| Escopo | grupos públicos, opções globais, formatos de saída e exit codes |
-| Autoridade | registry de commands em src/cli/commands.ts |
+| Campo      | Valor                                                           |
+| ---------- | --------------------------------------------------------------- |
+| Natureza   | referência                                                      |
+| Escopo     | grupos públicos, opções globais, formatos de saída e exit codes |
+| Autoridade | registry de commands em src/cli/commands.ts                     |
 
 ## Sintaxe global
 
@@ -25,15 +25,15 @@ clickupfy upgrade [alvo]
 
 As opções globais valem em qualquer posição, antes ou depois do comando:
 
-| Opção                | Efeito                                                              |
-| -------------------- | ------------------------------------------------------------------- |
-| `-V`, `--version`    | Mostra a versão.                                                    |
-| `-h`, `--help`       | Mostra o help do comando atual.                                     |
-| `--account <perfil>` | Usa outro perfil somente nessa execução.                            |
-| `--json`             | Imprime a resposta no envelope `{ ok, command, data }`.             |
-| `--skill [tópico]`   | Imprime a documentação embutida, inteira ou por tópico.             |
-| `--opencli`          | Imprime a descrição OpenCLI da árvore de commands em JSON.          |
-| `--no-color`         | Desliga cores ANSI. `NO_COLOR=1` tem o mesmo efeito.                |
+| Opção                | Efeito                                                     |
+| -------------------- | ---------------------------------------------------------- |
+| `-V`, `--version`    | Mostra a versão.                                           |
+| `-h`, `--help`       | Mostra o help do comando atual.                            |
+| `--account <perfil>` | Usa outro perfil somente nessa execução.                   |
+| `--json`             | Imprime a resposta no envelope `{ ok, command, data }`.    |
+| `--skill [tópico]`   | Imprime a documentação embutida, inteira ou por tópico.    |
+| `--opencli`          | Imprime a descrição OpenCLI da árvore de commands em JSON. |
+| `--no-color`         | Desliga cores ANSI. `NO_COLOR=1` tem o mesmo efeito.       |
 
 Os tópicos de `--skill` são `cli`, `tui`, `mcp`, `config`, `exit-codes` e
 `reference`.
@@ -74,7 +74,7 @@ Em erro:
 ```
 
 Listas vêm dentro de um objeto, como `data.tasks`, `data.spaces` ou
-`data.comments`. O exit code do processo é sempre o mesmo de `error.code`.
+`data.comments`. O exit code do processo é igual ao de `error.code` em toda falha.
 
 ## Configuração e identidade
 
@@ -112,15 +112,19 @@ processo com ou sem prompts:
 | `--non-interactive` | Executa sem abrir prompts e exige os valores necessários por opção. |
 
 `account remove <perfil>` aceita `--yes` para confirmar a remoção sem prompt.
-`account import` aceita `--force` para substituir perfis já existentes. As
+Já `account import` aceita `--force` para substituir perfis já existentes. As
 outras ações desse grupo não possuem opções próprias.
 
-`clickupfy doctor` verifica localmente o runtime, o terminal, as permissões da
-pasta, o `settings.json`, a origem da master key, o cofre, o
-`~/.clickupfy/accounts.json`, o perfil resolvido, a presença da API key, o
-config antigo do ClickUpfy 0.9.0 e os arquivos `.mcp.json` e
-`.codex/config.toml` do projeto quando existirem. Use `--json` para automação.
-O comando não faz chamada ao ClickUp e não cria arquivos.
+`clickupfy doctor` verifica localmente três grupos de itens:
+
+- o runtime, o terminal e as permissões da pasta;
+- o `settings.json`, a origem da master key, o cofre, o
+  `~/.clickupfy/accounts.json`, o perfil resolvido e a presença da API key;
+- o config antigo do ClickUpfy 0.9.0 e os arquivos `.mcp.json` e
+  `.codex/config.toml` do projeto, quando existirem.
+
+Use `--json` para automação. O comando não faz chamada ao ClickUp e não cria
+arquivos.
 
 `clickupfy doctor --online` também valida a API key em `GET /user` e lê as
 skills instaladas com `npx skills list --json`. Essas verificações podem chamar
@@ -176,9 +180,8 @@ clickupfy task remove-tag <task-id> <tag-name>
 `--status` e `--assignee` aceitam vários valores separados por vírgula, como
 em `--status "to do,review"` e `--assignee 7,8`.
 
-`--raw` e `--markdown` não podem ser usados juntos. As duas opções também são
-incompatíveis com `--json`, e o CLI encerra a execução com uma mensagem de uso
-quando encontra a combinação.
+`--raw` e `--markdown` não podem ser usados juntos nem com `--json`. Quando
+encontra essa combinação, o CLI encerra a execução com uma mensagem de uso.
 
 ### Campos de criação
 
@@ -313,8 +316,8 @@ clickupfy doc page create <doc-id> --name <nome> [options]
 clickupfy doc page update <doc-id> <page-id> [options]
 ```
 
-Docs usam a API v3 do ClickUp e sempre operam no workspace do perfil ativo,
-sem depender de Space, Folder ou List.
+Docs usam a API v3 do ClickUp e operam no workspace do perfil ativo,
+fora da hierarquia de Space, Folder ou List.
 
 | Comando                          | Opção                        | Efeito                                                                       |
 | -------------------------------- | ---------------------------- | ---------------------------------------------------------------------------- |
@@ -325,7 +328,7 @@ sem depender de Space, Folder ou List.
 | `doc list`                       | `--archived`                 | Inclui Docs arquivados.                                                      |
 | `doc list`                       | `--creator <id>`             | Restringe ao ID numérico do criador.                                         |
 | `doc list`                       | `--max-pages <n>`            | Limita a paginação por cursor, entre uma e 50 páginas.                       |
-| `doc create`                     | `--parent-id <id>`           | Local onde o Doc nasce; exige `--parent-type`.                               |
+| `doc create`                     | `--parent-id <id>`           | Local onde o Doc é criado; exige `--parent-type`.                            |
 | `doc create`                     | `--parent-type <n>`          | Tipo do local; exige `--parent-id`.                                          |
 | `doc create`                     | `--visibility <valor>`       | `PRIVATE` ou `PUBLIC`.                                                       |
 | `doc create`                     | `--create-page`              | Cria também a primeira página em branco.                                     |
@@ -366,7 +369,7 @@ clickupfy api call v2-create-task-attachment --path '{"task_id":"abc123"}' --fil
 ```
 
 `api call` aceita `--path`, `--query`, `--body`, `--body-file`, `--input`,
-`--content-type`, `--file`, `--yes` e `--dry-run`. Operações `DELETE` pedem
+`--content-type`, `--file`, `--yes` e `--dry-run`. Operações `DELETE` exigem
 confirmação no terminal; fora dele, sem `--yes`, saem com exit code 2.
 
 ## Agentes e MCP
@@ -402,8 +405,8 @@ e no `.codex/config.toml`, preservando as outras entradas de cada arquivo.
 `--name`, `--space`, `--list`, `--clients`, `--project`, `--read-only`,
 `--force` e `--non-interactive`.
 
-`mcp serve` exige `--list <id>`. `mcp` aceita `--list-id <id>`. Os dois
-aceitam `--account <perfil>`, `--workspace <id>`, `--space <id>`,
+`mcp serve` exige `--list <id>`, enquanto `mcp` aceita `--list-id <id>`. Os
+dois aceitam `--account <perfil>`, `--workspace <id>`, `--space <id>`,
 `--folder <id>`, `--sprint-folder <id>` e `--read-only`.
 
 ## Manutenção e outros modos
@@ -418,26 +421,26 @@ clickupfy completion bash
 ```
 
 `clickupfy` sem argumentos abre a TUI na aba Overview, com o perfil, o
-workspace e o cronômetro em execução. A tecla `r` atualiza os dados.
+workspace e o cronômetro em execução. A tecla `r` atualiza a tela.
 
-`clickupfy --skill` imprime a documentação embutida. `clickupfy completion`
-gera o script para `bash`, `zsh` ou `fish`.
+`clickupfy --skill` imprime a documentação embutida. Já `clickupfy completion`
+gera o script de autocompletar para `bash`, `zsh` ou `fish`.
 
 ## Exit codes
 
-| Code | Name | Quando |
-| --- | --- | --- |
-| `0` | `SUCCESS` | operação concluída |
-| `1` | `GENERIC_ERROR` | falha inesperada sem classificação |
-| `2` | `USAGE` | arguments, options ou subcommand inválidos |
-| `3` | `CONFIG` | settings.json ausente, inválido ou key desconhecida |
-| `4` | `CREDENTIALS` | cofre ilegível, master key ausente ou credencial não encontrada |
-| `5` | `NETWORK_OR_API` | falha de rede ou resposta de API fora do esperado |
-| `6` | `NOT_FOUND` | recurso solicitado não existe |
-| `7` | `PERMISSION` | permissão negada no sistema de arquivos |
-| `8` | `NO_TTY` | a TUI exige um terminal interativo |
-| `9` | `MCP` | o servidor MCP falhou ao iniciar ou perdeu o transporte |
-| `130` | `INTERRUPTED` | entrada cancelada ou processo interrompido com Ctrl+C |
+| Code  | Name             | Quando                                                          |
+| ----- | ---------------- | --------------------------------------------------------------- |
+| `0`   | `SUCCESS`        | operação concluída                                              |
+| `1`   | `GENERIC_ERROR`  | falha inesperada sem classificação                              |
+| `2`   | `USAGE`          | arguments, options ou subcommand inválidos                      |
+| `3`   | `CONFIG`         | settings.json ausente, inválido ou key desconhecida             |
+| `4`   | `CREDENTIALS`    | cofre ilegível, master key ausente ou credencial não encontrada |
+| `5`   | `NETWORK_OR_API` | falha de rede ou resposta de API fora do esperado               |
+| `6`   | `NOT_FOUND`      | recurso solicitado não existe                                   |
+| `7`   | `PERMISSION`     | permissão negada no sistema de arquivos                         |
+| `8`   | `NO_TTY`         | a TUI exige um terminal interativo                              |
+| `9`   | `MCP`            | o servidor MCP falhou ao iniciar ou perdeu o transporte         |
+| `130` | `INTERRUPTED`    | entrada cancelada ou processo interrompido com Ctrl+C           |
 
 ## Escolha o formato de saída
 
@@ -445,7 +448,7 @@ A tabela compacta é adequada para leitura humana. Use `--json` quando um
 script precisar de campos completos ou quando a tabela não mostrar um detalhe
 da API. Listas vêm dentro de um objeto, como `data.tasks`.
 
-Use `task get --markdown` para contexto textual. Use `--raw` apenas quando
+Use `task get --markdown` para ler a tarefa como texto. Use `--raw` apenas quando
 precisar comparar a resposta original do ClickUp com a projeção do ClickUpfy.
 
 ## Ajuda é a referência da versão instalada

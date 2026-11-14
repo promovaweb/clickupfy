@@ -10,12 +10,12 @@
 
 Este capítulo descreve cada comando que prepara uma sessão de trabalho e
 localiza os IDs usados pelos demais capítulos. Os exemplos usam IDs fictícios.
-Substitua somente os valores entre colchetes ou os números de exemplo. Nunca
+Substitua somente os valores entre colchetes ou os números de exemplo. Não
 cole uma API key em arquivo versionado, conversa pública, comentário de tarefa
 ou captura de tela.
 
 O binário guarda tudo em `~/.clickupfy/`. Os perfis ficam em `accounts.json`,
-sem segredo nenhum, e a API key de cada perfil fica cifrada em
+sem segredo nenhum. A API key de cada perfil fica cifrada em
 `credentials.json` como `clickup.<perfil>.api_key`. Os dois arquivos são
 gravados com permissão `0600`.
 
@@ -75,10 +75,10 @@ Em erro, o objeto traz `ok: false`, `command` e `error` com `code`, `name`,
 }
 ```
 
-O exit code do processo é sempre o mesmo de `error.code`. Um script deve ler os
-dois: o envelope para a mensagem e o code para a classe da falha. Listas vêm
-dentro de um objeto, como `{ "tasks": [] }` ou `{ "spaces": [] }`, e nunca como
-array na raiz de `data`.
+O exit code do processo é igual ao de `error.code` em toda falha. Um script deve
+ler os dois: o envelope para a mensagem e o code para a classe da falha. Listas
+vêm dentro de um objeto, como `{ "tasks": [] }` ou `{ "spaces": [] }`, nunca
+como array na raiz de `data`.
 
 ### `clickupfy upgrade`
 
@@ -137,7 +137,7 @@ plataforma. Em seguida verifica os perfis e os arquivos MCP do projeto atual.
 | `legacy-config` | O config do ClickUpfy 0.9.0 ainda existe e guarda API keys em texto puro. |
 | `mcp-json`, `codex-config` | Servidores `clickupfy` no `.mcp.json` e no `.codex/config.toml` do diretório atual. |
 
-Cada linha usa `✓`, `!` ou `✗`. Em JSON, `data` traz `{ checks, ok }`, e cada
+Cada linha usa `✓`, `!` ou `✗`. Em JSON, `data` traz `{ checks, ok }`. Cada
 check tem `name`, `status` (`ok`, `warn` ou `fail`), `detail` e, quando se
 refere a um arquivo, `path`. Arquivo ainda não criado e ausência de TTY geram
 `warn`. Um check com `fail` produz exit code `3`; os demais retornam `0`.
@@ -219,7 +219,7 @@ clickupfy setup \
 
 Quando a API key for inválida, execute `whoami` para conferir a autenticação.
 Quando o workspace informado não pertencer à chave, o comando sai com `6` e
-lista os IDs disponíveis em `error.details.available`. Nunca escreva a chave
+lista os IDs disponíveis em `error.details.available`. Não escreva a chave
 diretamente no histórico do shell; prefira uma variável de ambiente temporária
 ou a entrada interativa.
 
@@ -257,8 +257,8 @@ clickupfy status > /tmp/clickupfy-status.txt
 
 O terceiro exemplo consulta o perfil `produto` sem alterar o perfil que será
 usado pela próxima chamada sem `--account`. A redireção do último exemplo é
-segura porque a saída mascara a chave, mas ainda pode conter nomes de pessoas e
-de workspaces.
+segura porque a saída mascara a chave, mas ainda pode conter nomes de usuários
+e de workspaces.
 
 ## Perfis locais
 
@@ -300,7 +300,7 @@ clickupfy account list | less
 ```
 
 Mesmo com `--account`, a lista continua mostrando todos os perfis; a opção só
-tem efeito quando uma ação precisa resolver uma conta. Em JSON, `data` traz
+tem efeito quando uma ação precisa resolver um perfil. Em JSON, `data` traz
 `{ accounts: [] }`. Use a tabela para conferir o identificador exato antes de
 chamar `account show`, `account use` ou um comando de trabalho.
 
@@ -343,7 +343,7 @@ sem iniciar uma requisição ao ClickUp.
 
 Define o perfil ativo em `accounts.json`. É uma alteração local e não muda nada
 no ClickUp. Evite usar este comando em automações ou quando dois projetos usam
-contas diferentes ao mesmo tempo; nesses casos, informe `--account` em cada
+perfis diferentes ao mesmo tempo. Nesses casos, informe `--account` em cada
 chamada ou fixe o perfil no MCP de cada projeto.
 
 | Parâmetro | Obrigatório | Uso |
@@ -381,7 +381,7 @@ explícito e não interfere no restante da máquina.
 
 Remove os metadados do perfil e a API key correspondente do cofre. Não revoga a
 API key no ClickUp, não remove usuários e não exclui tarefas. Em terminal
-interativo, pede confirmação; fora dele, `--yes` é obrigatório.
+interativo, exige confirmação. Fora dele, `--yes` é obrigatório.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -410,7 +410,7 @@ clickupfy account remove homologacao --yes
 clickupfy account remove temporario --yes && clickupfy account list
 ```
 
-Recusar a confirmação sai com `130`. Se você remover o perfil ativo, o ClickUpfy
+Recusar a confirmação sai com `130`. Ao remover o perfil ativo, o ClickUpfy
 torna ativo o primeiro perfil que sobrar ou deixa `activeAccount` como `null`
 quando não houver outro. Leia `account list` após a remoção, especialmente em
 uma máquina compartilhada.
@@ -498,7 +498,7 @@ ClickUp em vez de tentar adivinhar um ID.
 ### `clickupfy workspace use <workspace-id>`
 
 Associa um workspace autorizado ao perfil resolvido. O comando consulta a API e
-só salva o ID quando ele aparece na lista permitida, portanto um número copiado
+só grava o ID quando ele aparece na lista permitida, portanto um número copiado
 de outro perfil é recusado com `6`.
 
 | Parâmetro | Obrigatório | Uso |
@@ -565,7 +565,7 @@ Uma resposta de `status` não substitui este teste: ela lê a configuração loc
 
 ## Descoberta da hierarquia
 
-O ClickUp organiza trabalho em workspace, Space, Folder e List. Uma List pode
+O ClickUp distribui o trabalho em workspace, Space, Folder e List. Uma List pode
 existir diretamente dentro de um Space, sem Folder. IDs não são intercambiáveis:
 um `space-id` não serve no lugar de um `folder-id`, por exemplo. Comece no
 workspace selecionado e preserve os IDs retornados em um local seguro.

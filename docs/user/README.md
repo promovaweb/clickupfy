@@ -10,10 +10,10 @@
 <!-- markdownlint-enable MD033 -->
 
 O ClickUpfy conecta o trabalho mantido no ClickUp ao terminal e aos agentes de
-código. Um único executável em Bun configura vários perfis, percorre a
-hierarquia do ClickUp, administra tarefas, checklists, Sprints, Docs,
-comentários e time tracking, instala skills no projeto e oferece as mesmas
-operações por MCP.
+código. Um único executável em Bun configura vários perfis e percorre a
+hierarquia do ClickUp. Ele administra tarefas e checklists, Sprints e Docs,
+comentários e time tracking. Também instala skills no projeto e oferece os
+mesmos recursos por MCP.
 
 Este guia ensina essa jornada em sequência. Você começa instalando o binário e
 associando uma API key a um workspace. Depois encontra os IDs do projeto,
@@ -35,8 +35,8 @@ Estas páginas também formam o **ClickUpfy, o guia completo do usuário**. A
 e registra os hashes que comprovam a origem comum dos formatos.
 
 O PDF favorece leitura, compartilhamento e impressão. O EPUB se adapta ao
-tamanho de fonte e ao leitor digital. Os dois são reconstruídos sempre que uma
-página desta documentação muda.
+tamanho de fonte e ao leitor digital. Os dois são reconstruídos a cada mudança
+numa página desta documentação.
 
 ## Percurso pedagógico
 
@@ -49,7 +49,7 @@ Siga esta ordem na primeira leitura:
 3. [Configure perfis e credenciais](configuracao.md) sem colocar a API key no
    repositório.
 4. Consulte a [referência de perfis e hierarquia](referencia-cli-perfis-hierarquia.md)
-   sempre que precisar de parâmetro, efeito persistente ou variação de comando.
+   para conferir parâmetros, efeitos persistentes e variações de comando.
 5. [Prepare o primeiro projeto](primeiro-projeto.md) e confira o escopo antes
    de permitir escrita.
 6. [Navegue pela hierarquia](hierarquia.md) até encontrar Space, Folder, List

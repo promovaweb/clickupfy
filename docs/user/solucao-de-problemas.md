@@ -35,8 +35,8 @@ clickupfy whoami
 Se falhar, gere ou confira a chave no ClickUp e execute `clickupfy setup` de
 novo. Uma chave revogada não pode ser recuperada pelo ClickUpfy.
 
-Nunca publique a chave para pedir suporte. Informe apenas o perfil, o
-workspace mascarado quando necessário e a mensagem de erro sem headers.
+Não publique a chave ao abrir um chamado de suporte. Informe apenas o perfil,
+o workspace mascarado quando necessário e a mensagem de erro sem headers.
 
 ## O workspace está incorreto
 
@@ -59,8 +59,8 @@ clickupfy folder list --space <space-id> --archived
 clickupfy list list --folder <folder-id> --archived
 ```
 
-Para List sem Folder, use `--space`. Permissões da API key também podem ocultar
-recursos.
+Para List sem Folder, use `--space`. Confira também as permissões da API key,
+que podem ocultar recursos.
 
 ## O status foi rejeitado
 
@@ -68,7 +68,7 @@ recursos.
 clickupfy list get <list-id>
 ```
 
-Copie a grafia de um status retornado. Status são configuráveis por List.
+Copie a grafia de um status retornado, porque os status são configuráveis por List.
 
 ## O MCP não inicia
 
@@ -103,8 +103,8 @@ contorne a proteção repetindo a chamada com outro recurso.
 
 ## Uma ferramenta de escrita não aparece
 
-O servidor pode estar em read-only. Confira os argumentos. Remover
-`--read-only` amplia as permissões do cliente e deve ser uma decisão explícita.
+O servidor pode estar em read-only, então confira os argumentos. Remover
+`--read-only` amplia as permissões do cliente e deve ser uma escolha explícita.
 
 ## A Sprint atual não foi encontrada
 
@@ -135,7 +135,7 @@ clickupfy time current
 clickupfy time stop
 ```
 
-Confira o item antes de encerrar. Depois inicie o registro correto.
+Confira o item antes de encerrar e depois inicie o registro correto.
 
 ## A saída compacta não mostra um campo
 
@@ -150,8 +150,8 @@ tarefa longa consumida por agente, prefira `--markdown`.
 
 ## Um script antigo quebrou depois da migração
 
-O `--json` da versão 1.0 usa o envelope `{ ok, command, data }`. Scripts que
-liam o objeto cru passam a ler `.data`, e o código de erro fica em
+O `--json` da versão 1.0 usa o envelope `{ ok, command, data }`, por isso
+scripts que liam o objeto cru precisam ler `.data`. O código de erro fica em
 `error.code`. Veja a [referência do CLI](cli.md) e a tabela de exit codes no
 help.
 
@@ -166,7 +166,8 @@ Ao relatar um problema, inclua:
 - se o modo era CLI, TUI ou MCP
 - escopo sem credenciais.
 
-Remova API keys, tokens, headers, conteúdo de clientes e dados pessoais.
+Remova credenciais (API keys, tokens e headers), conteúdo de clientes e dados
+pessoais.
 
 Volte ao [início do guia](README.md) ou consulte a
 [referência do CLI](cli.md).

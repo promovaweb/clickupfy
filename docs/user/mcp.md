@@ -91,7 +91,7 @@ que as ferramentas de escrita não foram registradas.
 ## Entenda o isolamento
 
 O MCP recebe IDs no processo. Quando uma ferramenta omite um ID, o servidor
-usa o valor fixado. Quando recebe um valor diferente, recusa a operação com
+usa o valor fixado. Quando recebe um valor diferente, recusa a chamada com
 `isError`. Essa comparação protege estes níveis:
 
 - account
@@ -180,9 +180,9 @@ Em `clickupfy_task_create`, datas são timestamp em milissegundos. Em
 `clickupfy_task_update`, `clearStartDate` e `clearDueDate` removem as datas.
 
 As ferramentas de Docs não seguem o isolamento por Space, Folder ou List: elas
-sempre operam no workspace do perfil resolvido, porque Docs não pertencem a
-uma List. `clickupfy_doc_create` exige `parentType` sempre que `parentId` for
-informado, seguindo os mesmos tipos de local da API do ClickUp (`4` Space,
+operam no workspace do perfil resolvido, porque Docs não pertencem a uma List.
+`clickupfy_doc_create` exige `parentType` quando `parentId` é informado,
+seguindo os mesmos tipos de local da API do ClickUp (`4` Space,
 `5` Folder, `6` List, `7` Everything, `12` tarefa).
 
 ## Use Markdown para contexto longo

@@ -10,7 +10,7 @@
 
 ## A ordem dos recursos
 
-O ClickUp organiza o trabalho nesta cadeia:
+O ClickUp distribui o trabalho nesta cadeia:
 
 ```text
 Workspace
@@ -23,7 +23,7 @@ Workspace
 Sprints também são Lists, mas vivem normalmente dentro de um Sprint Folder e
 possuem `start_date` e `due_date`.
 
-O perfil já conhece um workspace. Por isso, `space list` não exige esse ID. A
+Como o perfil já conhece um workspace, `space list` não exige esse ID. A
 partir do Space, os comandos precisam do pai para evitar uma busca ambígua.
 
 ## Liste workspaces e Spaces
@@ -35,7 +35,7 @@ clickupfy space list --archived
 ```
 
 O asterisco na saída compacta indica o workspace associado ao perfil. Use
-`--archived` somente quando precisar localizar uma estrutura antiga.
+`--archived` somente para localizar uma estrutura antiga.
 
 ## Liste Folders e Lists
 
@@ -59,9 +59,9 @@ mesmo tempo: sem nenhum deles o comando sai com exit code 2.
 clickupfy list get <list-id>
 ```
 
-Essa leitura é importante antes de atualizar uma tarefa. Os nomes e tipos de
-status são configuráveis no ClickUp. Uma equipe pode usar `feito`, outra
-`concluído`, e uma terceira pode manter mais de um estado terminal.
+Faça essa leitura antes de atualizar uma tarefa, porque os nomes e tipos de
+status são configuráveis no ClickUp. Uma List pode usar `feito`, outra
+`concluído`. Uma terceira pode manter mais de um estado terminal.
 
 Registre o ID da List e escolha um status terminal existente. Não assuma que
 `done` ou `complete` será aceito.
@@ -75,7 +75,7 @@ clickupfy task search --query "autenticação"
 
 `task list` consulta uma List conhecida. `task search` procura no workspace,
 mas o MCP de projeto restringe a busca à List fixada para impedir vazamento de
-contexto entre projetos. Vários valores de `--status` e `--assignee` são
+tarefas entre projetos. Vários valores de `--status` e `--assignee` são
 separados por vírgula:
 
 ```bash
@@ -83,19 +83,19 @@ clickupfy task list --list <list-id> --status "to do,in progress"
 clickupfy task list --list <list-id> --assignee 7,8
 ```
 
-Use `--json` quando precisar inspecionar campos não exibidos na tabela:
+Use `--json` para inspecionar campos não exibidos na tabela:
 
 ```bash
 clickupfy task list --list <list-id> --json
 ```
 
-A resposta segue o envelope `{ ok, command, data }`, e as tarefas ficam em
+A resposta segue o envelope `{ ok, command, data }`, com as tarefas em
 `data.tasks`. Options globais valem em qualquer posição, antes ou depois do
 comando.
 
 ## Escolha o menor escopo suficiente
 
-Um MCP de projeto sempre exige List. Space e Folder ajudam as ferramentas de
+Todo MCP de projeto exige uma List. Space e Folder servem às ferramentas de
 navegação, mas não ampliam o destino de criação. Sprint Folder só deve ser
 configurado quando as Sprints do projeto estiverem dentro dele.
 

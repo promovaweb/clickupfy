@@ -15,8 +15,8 @@ erro não confirma que o ClickUp persistiu o valor esperado.
 
 Duas convenções valem para todos os comandos abaixo. Valores múltiplos de
 `--status` e `--assignee` são separados por vírgula, sem espaço, como em
-`--status "to do,review"` e `--assignee 42,57`. E o `--json` devolve sempre o
-envelope `{ ok, command, data }`, com listas dentro de um objeto, como
+`--status "to do,review"` e `--assignee 42,57`. Já o `--json` devolve o
+envelope `{ ok, command, data }` em todos os comandos, com listas dentro de um objeto, como
 `{ "tasks": [] }`.
 
 ## Leitura de tarefas
@@ -58,8 +58,8 @@ clickupfy task list --list 901328052926 --include-closed --page 0
 clickupfy task list --list 901328052926 --page 2 --account produto --json
 ```
 
-A saída comum é uma tabela com ID, nome, status, prioridade, pontos, pessoas e
-link. Com `--json`, `data` traz `{ tasks: [] }` e o CLI devolve as tarefas
+A saída comum é uma tabela com ID, nome, status, prioridade, pontos,
+responsáveis e link. Com `--json`, `data` traz `{ tasks: [] }` e o CLI devolve as tarefas
 completas da API. Para encontrar uma tarefa fora de uma List conhecida, use
 `task search`.
 
@@ -143,8 +143,8 @@ clickupfy task search --assignee 42 --include-closed --max-pages 5
 clickupfy task search --query "checkout" --max-pages 10 --account cliente-a --json
 ```
 
-Se mais de uma tarefa corresponder ao pedido, apresente os IDs e nomes para a
-pessoa escolher a correta antes de executar uma escrita. Em um MCP de projeto, a
+Se mais de uma tarefa corresponder à busca, apresente os IDs e nomes para o
+usuário escolher a correta antes de executar uma escrita. Em um MCP de projeto, a
 tool `clickupfy_tasks_search` percorre somente a List fixada; sem List fixada,
 percorre o workspace, como o CLI.
 
@@ -155,8 +155,8 @@ percorre o workspace, como o CLI.
 Cria tarefa ou subtarefa na List indicada. `--name` é obrigatório e `--list` é
 obrigatória no CLI; no MCP a List fixada é o padrão. Use `--description` para
 texto simples ou `--markdown-content` quando a descrição precisa preservar
-Markdown. O comando não impõe uma regra de prioridade, status ou pontos do seu
-time; ele transmite valores válidos para a API.
+Markdown. O comando não impõe uma convenção de prioridade, status ou pontos:
+ele transmite valores válidos para a API.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -276,7 +276,7 @@ compare cada campo solicitado com o estado devolvido.
 
 ### `clickupfy task delete <task-id>`
 
-Exclui permanentemente uma tarefa. Em terminal interativo, pede confirmação; em
+Exclui permanentemente uma tarefa. Em terminal interativo, exige confirmação. Em
 automação, exige `--yes`, senão sai com `2`. Leia nome, List e relação com
 Sprint antes de executar. A exclusão não é uma forma de retirar a tarefa de uma
 Sprint: use `sprint remove-task` para remover apenas a associação. Em JSON,
@@ -431,8 +431,8 @@ clickupfy checklist set 77def456 3f1a7c22 8b2d7e10 --open
 O `data` do `--json` traz o item na forma da fila de `task get`: `key`, `type`,
 `taskId`, `parentKey`, `depth`, `name`, `done`, `state`, `checklistId`,
 `checklistName` e `action`. Não use `--resolved --open` nem omita as duas: o
-comando sai com `2`. Item que não pertence ao checklist da tarefa sai com `6`, e
-estado não confirmado na releitura sai com `5`.
+comando sai com `2`. Item que não pertence ao checklist da tarefa sai com `6`.
+Estado não confirmado na releitura sai com `5`.
 
 ### `clickupfy comment list --task <id>`
 
@@ -468,14 +468,14 @@ clickupfy comment list --task 77def456 --account cliente-a --json
 ```
 
 Leia os comentários antes de atualizar status ou publicar outro progresso, pois
-podem conter uma orientação nova. Nunca publique credenciais, dados pessoais,
+podem conter uma orientação nova. Não publique credenciais, dados pessoais,
 URLs assinadas ou logs extensos em um comentário.
 
 ### `clickupfy comment create --task <id> --text <texto>`
 
-Publica um comentário em uma tarefa. `--notify-all` pede ao ClickUp que notifique
-todos os participantes. Use o comando para registrar início, resultado de teste,
-mudança de escopo ou conclusão, sempre com informação verificável.
+Publica um comentário em uma tarefa. Com `--notify-all`, o ClickUp notifica
+todos os participantes. Use o comando para registrar início, resultado de
+teste, mudança de escopo ou conclusão com informação verificável.
 
 | Parâmetro | Obrigatório | Uso |
 | --- | --- | --- |
@@ -550,7 +550,7 @@ Inicia um time entry associado à tarefa. A descrição é opcional e deve dizer
 trabalho em curso. O registro pertence ao usuário autenticado pelo perfil e ao
 workspace desse perfil.
 
-O ClickUp mantém um cronômetro por pessoa. Quando já existe um em outra tarefa,
+O ClickUp mantém um cronômetro por usuário. Quando já existe um em outra tarefa,
 o ClickUp troca o cronômetro; antes de iniciar, o comando consulta o atual,
 avisa no stderr e devolve a tarefa anterior em `previous`, sem impedir a troca.
 `previous` traz `id`, `taskId`, `taskName`, `description` e `start`.
@@ -591,7 +591,7 @@ status da tarefa nem avisa participantes; essas ações usam `task update` e
 
 Encerra o time entry em execução no workspace do perfil. Não recebe argumento de
 tarefa: ele para o registro atual. Por isso a consulta anterior é necessária em
-trabalhos paralelos ou quando mais de uma pessoa usa o mesmo perfil local.
+trabalhos paralelos ou quando mais de um usuário usa o mesmo perfil local.
 
 Exemplos:
 

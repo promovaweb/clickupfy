@@ -51,11 +51,12 @@ clickupfy upgrade
 ```
 
 O alvo padrão é `latest`. Para fixar uma versão, use
-`clickupfy upgrade 1.0.1`. Instalado pelo npm, o comando roda
-`npm install -g @promovaweb/clickupfy@<alvo>`. Como binário avulso, baixa o
-arquivo da plataforma e o `SHA256SUMS` da GitHub Release, confere o hash e
-troca o executável. Rodando direto do código-fonte, o comando sai com exit code
-2.
+`clickupfy upgrade 1.0.1`. O comportamento depende da forma de instalação:
+
+- pelo npm, o comando roda `npm install -g @promovaweb/clickupfy@<alvo>`;
+- como binário avulso, baixa o arquivo da plataforma e o `SHA256SUMS` da
+  GitHub Release, confere o hash e troca o executável;
+- direto do código-fonte, o comando sai com exit code 2.
 
 ## Instale um binário avulso
 
@@ -108,7 +109,7 @@ bun run dev -- about --json
 bun run dev -- mcp --list
 ```
 
-Use esse modo apenas quando precisar desenvolver ou validar uma mudança local.
+Use esse modo apenas para desenvolver ou validar uma mudança local.
 Para voltar ao pacote publicado, instale a versão do npm.
 
 ## Confirme a instalação
@@ -125,8 +126,7 @@ O catálogo deve listar `clickupfy-setup`, `clickupfy-dev`,
 `clickup-issue-create`, `clickup-issue-implement` e `clickupfy-release`. A
 presença das skills confirma que os assets foram empacotados junto ao binário.
 
-Ainda não execute comandos remotos. Primeiro
-[configure um perfil](configuracao.md).
+Antes de executar comandos remotos, [configure um perfil](configuracao.md).
 
 ## Windows: PATH e PowerShell
 
