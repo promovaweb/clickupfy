@@ -37,7 +37,8 @@ let timerText: TextRenderable | undefined;
 let loading = false;
 
 async function refreshTimer(): Promise<void> {
-  if (!timerText || loading) return;
+  const target = timerText;
+  if (!target || target.isDestroyed || loading) return;
   let file: AccountsFile;
   try {
     file = readAccountsFile();
@@ -47,18 +48,20 @@ async function refreshTimer(): Promise<void> {
   const id = resolvedId(file);
   const account = id ? file.accounts[id] : undefined;
   if (!id || !account) {
-    timerText.content = "no profile";
+    target.content = "no profile";
     return;
   }
   loading = true;
-  timerText.content = "loading…";
+  target.content = "loading…";
   try {
     const entry = await currentTimeEntry(clientFor(id), account.workspace.id);
-    timerText.content = entry?.task
+    if (target !== timerText || target.isDestroyed) return;
+    target.content = entry?.task
       ? `${glyphs.ok} ${entry.task.custom_id ?? entry.task.id ?? ""} ${entry.task.name ?? ""}  ${elapsed(entry.start)}`.trim()
       : "no timer running";
   } catch (e) {
-    timerText.content = `unavailable: ${e instanceof Error ? e.message : String(e)}`;
+    if (target !== timerText || target.isDestroyed) return;
+    target.content = `unavailable: ${e instanceof Error ? e.message : String(e)}`;
   } finally {
     loading = false;
   }

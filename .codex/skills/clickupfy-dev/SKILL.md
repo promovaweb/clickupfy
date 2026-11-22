@@ -225,3 +225,7 @@ Depois de cada escrita:
 2. Comparar o valor persistido com o valor solicitado.
 3. Informar o ID, a mudança confirmada e qualquer pendência real.
 4. Nunca declarar sucesso usando apenas a ausência de erro do comando.
+
+## Status das tarefas no Hub
+
+Após cada commit bem-sucedido, marque como `pronto` a tarefa ou subtarefa vinculada à entrega. Após o push bem-sucedido desse commit, marque-a como `publicado`. Consulte a [regra global de status do ClickUp](../../../AGENTS.md#status-das-tarefas-no-clickup).

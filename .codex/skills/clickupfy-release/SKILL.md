@@ -93,3 +93,7 @@ Não mova nem reutilize uma tag publicada. Para erro no código, publique uma
 nova patch. Para arquivo ausente ou job interrompido, reexecute o workflow no
 commit da tag. Só use operações manuais do GitHub CLI com autorização
 explícita e registre no handoff o motivo, a tag, os arquivos e as validações.
+
+## Status das tarefas no Hub
+
+Após cada commit bem-sucedido, marque como `pronto` a tarefa ou subtarefa vinculada à entrega. Após o push bem-sucedido desse commit, marque-a como `publicado`. Consulte a [regra global de status do ClickUp](../../../AGENTS.md#status-das-tarefas-no-clickup).

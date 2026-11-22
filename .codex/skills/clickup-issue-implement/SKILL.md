@@ -245,17 +245,7 @@ Não sobrescrever uma data existente.
 Parar o timer iniciado ou reutilizado para a tarefa atual e confirmar que não
 há um time entry ativo dessa tarefa.
 
-Escolher o status terminal com os dados de `clickupfy_list_get`:
-
-1. Preferir um status existente cujo nome normalizado corresponda a revisão,
-   como `em revisão`, `revisão`, `in review` ou `review`.
-2. Se não houver status de revisão, usar o primeiro status terminal da List
-   cujo `type` seja `closed`. Usar `done` somente quando não houver `closed`.
-3. Nunca criar um status, adivinhar um nome ou usar um status não retornado
-   pela List.
-
-Atualizar a tarefa e confirmar o valor por releitura. Se nenhum status terminal
-existir, comentar o impedimento e não declarar conclusão.
+Confira os nomes da lista com `clickupfy_list_get`. Use `revisar` na entrega validada que aguarda revisão. Após cada commit bem-sucedido, marque como `pronto` a tarefa ou subtarefa vinculada à entrega. Após o push bem-sucedido desse commit, marque-a como `publicado`. Releia a tarefa após cada atualização. Se faltar o status, registre a divergência e peça o mapeamento. Consulte a [regra global de status do ClickUp](../../../AGENTS.md#status-das-tarefas-no-clickup).
 
 Publicar o comentário final somente depois de todas as confirmações:
 
@@ -268,7 +258,7 @@ Publicar o comentário final somente depois de todas as confirmações:
 - **Validações:** <evidências finais>.
 - **Datas:** <início e fim preservados ou preenchidos>.
 - **Time tracking:** parado.
-- **Status:** <revisão ou conclusão confirmado>.
+- **Status:** <status confirmado para esta entrega>.
 - **Pendências:** nenhuma.
 ```
 

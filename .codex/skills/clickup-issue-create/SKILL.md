@@ -148,3 +148,7 @@ Responder com:
 
 Não comentar na tarefa, iniciar timer, mudar status ou marcar checklist como
 efeito colateral desta skill.
+
+## Status das tarefas no Hub
+
+Na criação, use `nao iniciado` para demanda sem prioridade, `triagem` para pedido a esclarecer e `proxima etapa` para trabalho priorizado com ação definida. Consulte a [regra global de status do ClickUp](../../../AGENTS.md#status-das-tarefas-no-clickup).

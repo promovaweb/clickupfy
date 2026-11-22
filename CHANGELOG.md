@@ -4,6 +4,11 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.1.5] - 2026-11-22
+
+- Evita atualizar o cronômetro depois que a tela de visão geral foi encerrada.
+- Documenta a atualização das tarefas do ClickUp para pronto após o commit e publicado após o push.
+
 ## [1.1.4] - 2026-11-14
 
 ### Corrigido
