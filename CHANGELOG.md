@@ -4,6 +4,10 @@ Todas as mudanças relevantes do ClickUpfy são registradas neste arquivo. O
 projeto segue versionamento semântico; o fluxo de publicação está em
 `docs/release.md`.
 
+## [1.1.6] - 2026-11-22
+
+- Atualiza a identidade visual do projeto e sua apresentação no README.
+
 ## [1.1.5] - 2026-11-22
 
 - Evita atualizar o cronômetro depois que a tela de visão geral foi encerrada.

@@ -1,8 +1,10 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/promovaweb/clickupfy/main/brand/logo/logo-dark.png">
-    <img alt="ClickUpfy" src="https://raw.githubusercontent.com/promovaweb/clickupfy/main/brand/logo/logo-light.png" width="360">
-  </picture>
+  <a href="https://promovaweb.com/clickupfy/">
+    <picture>
+      <source type="image/svg+xml" srcset="https://raw.githubusercontent.com/promovaweb/clickupfy/main/brand/logo/icon.svg">
+      <img alt="ClickUpfy" src="https://raw.githubusercontent.com/promovaweb/clickupfy/main/brand/logo/icon.png" width="112" height="112">
+    </picture>
+  </a>
 </p>
 
 <h1 align="center">ClickUpfy</h1>
@@ -25,7 +27,10 @@
 </p>
 
 <p align="center">
+  <a href="https://promovaweb.com/clickupfy/">Site do ClickUpfy</a> ·
   <a href="https://promovaweb.com/docs/clickupfy/">Documentação</a> ·
+  <a href="https://promovaweb.com/harness/">Harness</a> ·
+  <a href="https://promovaweb.com/ferramentas/">Ferramentas</a> ·
   <a href="https://promovaweb.com/discord">Discord</a> ·
   <a href="https://promovaweb.com/planos?utm_source=github&utm_medium=readme&utm_campaign=clickupfy">Planos da Promovaweb</a> ·
   <a href="https://github.com/promovaweb/clickupfy/blob/main/CHANGELOG.md">Changelog</a>
@@ -235,7 +240,7 @@ O histórico completo está no [CHANGELOG](https://github.com/promovaweb/clickup
   também em [PDF](https://promovaweb.com/pdf/ebook-clickupfy.pdf) e
   [EPUB](https://promovaweb.com/pdf/ebook-clickupfy.epub).
 - Página do projeto em
-  [promovaweb.com/opensource/clickupfy](https://promovaweb.com/opensource/clickupfy/).
+  [promovaweb.com/clickupfy](https://promovaweb.com/clickupfy/).
 - No terminal: `clickupfy --help`, `clickupfy <command> --help` e
   `clickupfy --skill`, que imprime a referência inteira para agentes.
 

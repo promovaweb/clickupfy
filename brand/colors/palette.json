@@ -1,4 +1,9 @@
 {
+  "projectColor": {
+    "name": "Azul de ação",
+    "hex": "#3B82F6",
+    "meaning": "O azul marca o check que responde ao comando de concluir uma tarefa no ClickUp."
+  },
   "name": "ClickUpfy",
   "families": {
     "primary": {
